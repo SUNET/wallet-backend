@@ -109,7 +109,7 @@ type IDMappingReply struct {
 //	@Success		200	{object}	IDMappingReply			"Success"
 //	@Failure		400	{object}	helpers.ErrorResponse	"Bad Request"
 //	@Param			req	body		model.MetaData			true	" "
-//	@Router			/id_mapping [post]
+//	@Router			/id/mapping [post]
 func (c *Client) IDMapping(ctx context.Context, reg *IDMappingRequest) (*IDMappingReply, error) {
 	if err := helpers.Check(ctx, c.cfg, reg, c.log); err != nil {
 		return nil, err
@@ -221,16 +221,16 @@ type GetDocumentAttestationReply struct {
 
 // GetDocumentAttestation return a specific document ??
 //
-//	@Summary		GetDocumentByCollectCode
-//	@ID				get-document-collect-code
-//	@Description	Get document by collect code endpoint
+//	@Summary		GetDocumentAttestation
+//	@ID				get-document-attestation
+//	@Description	Get document attestation endpoint
 //	@Tags			dc4eu
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	GetDocumentReply		"Success"
+//	@Success		200	{object}	GetDocumentAttestationReply		"Success"
 //	@Failure		400	{object}	helpers.ErrorResponse	"Bad Request"
-//	@Param			req	body		model.MetaData			true	" "
-//	@Router			/document/collection_code [post]
+//	@Param			req	body		GetDocumentAttestationRequest			true	" "
+//	@Router			/document/attestation [post]
 func (c *Client) GetDocumentAttestation(ctx context.Context, req *GetDocumentAttestationRequest) (*GetDocumentAttestationReply, error) {
 	if err := helpers.Check(ctx, c.cfg, req, c.log); err != nil {
 		return nil, err

@@ -1,0 +1,13 @@
+scrape_configs:
+- job_name: apigw
+  scrape_interval: 10s
+  static_configs:
+  - targets:
+    - vc_apigw:8080
+
+- job_name: persistent
+  scrape_interval: 10s
+  static_configs:
+  - targets:
+    - vc_persistent:8080
+  

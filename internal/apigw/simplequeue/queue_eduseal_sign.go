@@ -6,13 +6,16 @@ import (
 	"vc/pkg/logger"
 
 	retask "github.com/masv3971/goretask"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.opentelemetry.io/otel/codes"
 )
 
 // EduSealSign is the ladok unsigned queue
 type EduSealSign struct {
-	service *Service
-	log     *logger.Log
+	service              *Service
+	log                  *logger.Log
+	metricEnqueueCounter prometheus.Counter
 	*retask.Queue
 }
 
@@ -25,6 +28,11 @@ func NewEduSealSign(ctx context.Context, service *Service, queueName string, log
 
 	eduSealSign.Queue = eduSealSign.service.queueClient.NewQueue(ctx, queueName)
 
+	eduSealSign.metricEnqueueCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "apigw_queue_eduseal_sign_enqueue_total",
+		Help: "The total number of added messages to the eduseal_sign queue",
+	})
+
 	eduSealSign.log.Info("Started")
 
 	return eduSealSign, nil
@@ -34,6 +42,8 @@ func NewEduSealSign(ctx context.Context, service *Service, queueName string, log
 func (s *EduSealSign) Enqueue(ctx context.Context, message any) (*retask.Job, error) {
 	ctx, span := s.service.tp.Start(ctx, "simplequeue:EduSealSign:Enqueue")
 	defer span.End()
+
+	s.metricEnqueueCounter.Inc()
 
 	data, err := json.Marshal(message)
 	if err != nil {

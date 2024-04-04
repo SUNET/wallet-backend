@@ -17,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // Service is the service object for httpserver
@@ -79,6 +80,9 @@ func New(ctx context.Context, config *model.Cfg, api *apiv1.Client, tp *trace.Tr
 
 	rgRoot := s.gin.Group("/")
 	s.regEndpoint(ctx, rgRoot, http.MethodGet, "health", s.endpointStatus)
+
+	rgMetrics := rgRoot.Group("/metrics")
+	rgMetrics.GET("/", gin.WrapH(promhttp.Handler()))
 
 	// Run http server
 	go func() {

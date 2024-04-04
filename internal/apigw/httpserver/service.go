@@ -19,6 +19,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -32,6 +33,7 @@ type Service struct {
 	gin       *gin.Engine
 	tlsConfig *tls.Config
 	tp        *trace.Tracer
+	metrics   *metrics
 }
 
 // New creates a new httpserver service
@@ -44,7 +46,10 @@ func New(ctx context.Context, config *model.Cfg, api *apiv1.Client, tp *trace.Tr
 		server: &http.Server{
 			ReadHeaderTimeout: 2 * time.Second,
 		},
+		metrics: &metrics{},
 	}
+
+	s.metrics.init()
 
 	switch s.config.Common.Production {
 	case true:
@@ -90,6 +95,9 @@ func New(ctx context.Context, config *model.Cfg, api *apiv1.Client, tp *trace.Tr
 	rgDocs := rgRoot.Group("/swagger")
 	rgDocs.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	rgMetrics := rgRoot.Group("/metrics")
+	rgMetrics.GET("/", gin.WrapH(promhttp.Handler()))
+
 	rgAPIv1 := rgRoot.Group("api/v1")
 
 	s.regEndpoint(ctx, rgAPIv1, http.MethodPost, "/upload", s.endpointUpload)
@@ -100,7 +108,7 @@ func New(ctx context.Context, config *model.Cfg, api *apiv1.Client, tp *trace.Tr
 	s.regEndpoint(ctx, rgAPIv1, http.MethodPost, "/id/mapping", s.endpointIDMapping)
 	s.regEndpoint(ctx, rgAPIv1, http.MethodPost, "/portal", s.endpointPortal)
 
-	rgEduSealV1 := rgAPIv1.Group("/ladok/pdf", s.middlewareClientCertAuth(ctx))
+	rgEduSealV1 := rgAPIv1.Group("/eduseal/pdf", s.middlewareClientCertAuth(ctx))
 	rgEduSealV1.Use(s.middlewareAuthLog(ctx))
 	s.regEndpoint(ctx, rgEduSealV1, http.MethodPost, "/sign", s.endpointSignPDF)
 	s.regEndpoint(ctx, rgEduSealV1, http.MethodPost, "/validate", s.endpointValidatePDF)

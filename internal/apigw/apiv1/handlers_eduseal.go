@@ -36,7 +36,7 @@ type PDFSignReply struct {
 //	@Success		200	{object}	PDFSignReply			"Success"
 //	@Failure		400	{object}	helpers.ErrorResponse	"Bad Request"
 //	@Param			req	body		PDFSignRequest			true	" "
-//	@Router			/ladok/pdf/sign [post]
+//	@Router			/leduseal/pdf/sign [post]
 func (c *Client) PDFSign(ctx context.Context, req *PDFSignRequest) (*PDFSignReply, error) {
 	ctx, span := c.tp.Start(ctx, "apiv1:PDFSign")
 	defer span.End()
@@ -55,7 +55,7 @@ func (c *Client) PDFSign(ctx context.Context, req *PDFSignRequest) (*PDFSignRepl
 		Base64Data:    req.PDF,
 	}
 
-	_, err := c.simpleQueue.LadokSign.Enqueue(ctx, unsignedDocument)
+	_, err := c.simpleQueue.EduSealSign.Enqueue(ctx, unsignedDocument)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
@@ -64,7 +64,7 @@ func (c *Client) PDFSign(ctx context.Context, req *PDFSignRequest) (*PDFSignRepl
 	persistentDocument := &types.Document{
 		TransactionID: transactionID,
 	}
-	_, err = c.simpleQueue.LadokPersistentSave.Enqueue(ctx, persistentDocument)
+	_, err = c.simpleQueue.EduSealPersistentSave.Enqueue(ctx, persistentDocument)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
@@ -102,7 +102,7 @@ type PDFValidateReply struct {
 //	@Success		200	{object}	PDFValidateReply		"Success"
 //	@Failure		400	{object}	helpers.ErrorResponse	"Bad Request"
 //	@Param			req	body		PDFValidateRequest		true	" "
-//	@Router			/ladok/pdf/validate [post]
+//	@Router			/eduseal/pdf/validate [post]
 func (c *Client) PDFValidate(ctx context.Context, req *PDFValidateRequest) (*PDFValidateReply, error) {
 	ctx, span := c.tp.Start(ctx, "apiv1:PDFValidate")
 	defer span.End()
@@ -111,7 +111,7 @@ func (c *Client) PDFValidate(ctx context.Context, req *PDFValidateRequest) (*PDF
 		Base64Data: req.PDF,
 	}
 
-	job, err := c.simpleQueue.LadokValidate.Enqueue(ctx, validateCandidate)
+	job, err := c.simpleQueue.EduSealValidate.Enqueue(ctx, validateCandidate)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
@@ -150,7 +150,7 @@ func (c *Client) PDFValidate(ctx context.Context, req *PDFValidateRequest) (*PDF
 					return nil, err
 				}
 				if validationReply.Error != "" {
-					span.SetStatus(codes.Error, err.Error())
+					span.SetStatus(codes.Error, validationReply.Error)
 					return nil, helpers.NewErrorFromError(errors.New(validationReply.Error))
 				}
 
@@ -192,7 +192,7 @@ type PDFGetSignedReply struct {
 //	@Success		200				{object}	PDFGetSignedReply		"Success"
 //	@Failure		400				{object}	helpers.ErrorResponse	"Bad Request"
 //	@Param			transaction_id	path		string					true	"transaction_id"
-//	@Router			/ladok/pdf/{transaction_id} [get]
+//	@Router			/eduseal/pdf/{transaction_id} [get]
 func (c *Client) PDFGetSigned(ctx context.Context, req *PDFGetSignedRequest) (*PDFGetSignedReply, error) {
 	ctx, span := c.tp.Start(ctx, "apiv1:PDFGetSigned")
 	defer span.End()
@@ -223,7 +223,7 @@ func (c *Client) PDFGetSigned(ctx context.Context, req *PDFGetSignedRequest) (*P
 		TransactionID: req.TransactionID,
 	}
 
-	if _, err := c.simpleQueue.LadokDelSigned.Enqueue(ctx, delReq); err != nil {
+	if _, err := c.simpleQueue.EduSealDelSigned.Enqueue(ctx, delReq); err != nil {
 		c.log.Info("PDFGetSigned", "Enqueue", err)
 		span.SetStatus(codes.Error, err.Error())
 		return nil, err
@@ -274,7 +274,7 @@ type PDFRevokeReply struct {
 //	@Success		200				{object}	PDFRevokeReply			"Success"
 //	@Failure		400				{object}	helpers.ErrorResponse	"Bad Request"
 //	@Param			transaction_id	path		string					true	"transaction_id"
-//	@Router			/ladok/pdf/revoke/{transaction_id} [put]
+//	@Router			/eduseal/pdf/revoke/{transaction_id} [put]
 func (c *Client) PDFRevoke(ctx context.Context, req *PDFRevokeRequest) (*PDFRevokeReply, error) {
 	ctx, span := c.tp.Start(ctx, "apiv1:PDFRevoke")
 	defer span.End()

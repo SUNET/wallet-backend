@@ -6,13 +6,16 @@ import (
 	"vc/pkg/logger"
 
 	retask "github.com/masv3971/goretask"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.opentelemetry.io/otel/codes"
 )
 
-// VCPersistentSave holds the ladok delete signed queue
+// VCPersistentDelete holds the ladok delete signed queue
 type VCPersistentDelete struct {
-	service *Service
-	log     *logger.Log
+	service              *Service
+	log                  *logger.Log
+	metricEnqueueCounter prometheus.Counter
 	*retask.Queue
 }
 
@@ -25,6 +28,11 @@ func NewVCPersistentDelete(ctx context.Context, service *Service, queueName stri
 
 	vcPersistentDelete.Queue = vcPersistentDelete.service.queueClient.NewQueue(ctx, queueName)
 
+	vcPersistentDelete.metricEnqueueCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "apigw_vc_queue_persistent_delete_enqueue_total",
+		Help: "The total number of added messages to the persistent_delete queue",
+	})
+
 	vcPersistentDelete.log.Info("Started")
 
 	return vcPersistentDelete, nil
@@ -35,6 +43,8 @@ func (s *VCPersistentDelete) Enqueue(ctx context.Context, message any) (*retask.
 	s.log.Info("Enqueue")
 	ctx, span := s.service.tp.Start(ctx, "simplequeue:VCPersistentDelete:Enqueue")
 	defer span.End()
+
+	s.metricEnqueueCounter.Inc()
 
 	data, err := json.Marshal(message)
 	if err != nil {

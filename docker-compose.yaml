@@ -7,7 +7,7 @@ services:
     image: docker.sunet.se/dc4eu/apigw:latest
     restart: always
     volumes:
-      - ./dev_config_docker.yaml:/config.yaml:ro
+      - ./configfiles/dev_config_docker.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     depends_on:
       - redis
@@ -24,7 +24,7 @@ services:
     restart: always
     volumes:
       - ./cert:/cert:ro
-      - ./dev_config_docker.yaml:/config.yaml:ro
+      - ./configfiles/dev_config_docker.yaml:/config.yaml:ro
     depends_on:
       - redis
       - mongo
@@ -39,7 +39,7 @@ services:
     image: docker.sunet.se/dc4eu/registry:latest
     restart: always
     volumes:
-      - ./dev_config_docker.yaml:/config.yaml:ro
+      - ./configfiles/dev_config_docker.yaml:/config.yaml:ro
     depends_on:
       - redis
       - mongo
@@ -54,7 +54,7 @@ services:
     image: docker.sunet.se/dc4eu/cache:latest
     restart: always
     volumes:
-      - ./dev_config_docker.yaml:/config.yaml:ro
+      - ./configfiles/dev_config_docker.yaml:/config.yaml:ro
     depends_on:
       - redis
     networks:
@@ -68,7 +68,7 @@ services:
     image: docker.sunet.se/dc4eu/persistent:latest
     restart: always
     volumes:
-      - ./dev_config_docker.yaml:/config.yaml:ro
+      - ./configfiles/dev_config_docker.yaml:/config.yaml:ro
     depends_on:
       - redis
       - mongo
@@ -83,7 +83,7 @@ services:
     image: docker.sunet.se/dc4eu/py_pdfsigner_dev:latest
     restart: always
     volumes:
-      - ./dev_config_docker.yaml:/config.yaml:ro
+      - ./configfiles/dev_config_docker.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     depends_on:
       - redis
@@ -98,7 +98,7 @@ services:
     image: docker.sunet.se/dc4eu/py_pdfvalidator_dev:latest
     restart: always
     volumes:
-      - ./dev_config_docker.yaml:/config.yaml:ro
+      - ./configfiles/dev_config_docker.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     # - ./certs/SectigoRSADocumentSigningCA.crt:/app/SectigoRSADocumentSigningCA.crt:ro
     # - ./certs/USERTrustRSAAddTrustCA.crt:/app/USERTrustRSAAddTrustCA.crt:ro
@@ -149,6 +149,36 @@ services:
     environment:
       - "COLLECTOR_OTLP_ENABLED=true"
 
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    networks:
+      vc-net:
+        ipv4_address: 172.16.50.12
+    restart: unless-stopped
+    volumes:
+      - ./configfiles/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    networks:
+      vc-net:
+        ipv4_address: 172.16.50.13
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+    volumes:
+      - ./configfiles/grafana:/etc/grafana/provisioning/datasources
+
 networks:
   vc-net:
     driver: bridge
@@ -161,3 +191,4 @@ networks:
 volumes:
   redis_data:
   mongo_data:
+  prometheus_data:

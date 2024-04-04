@@ -7,13 +7,16 @@ import (
 	"vc/pkg/model"
 
 	retask "github.com/masv3971/goretask"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.opentelemetry.io/otel/codes"
 )
 
 // VCPersistentSave holds the ladok delete signed queue
 type VCPersistentSave struct {
-	service *Service
-	log     *logger.Log
+	service             *Service
+	log                 *logger.Log
+	metricWorkerCounter prometheus.Counter
 	*retask.Queue
 }
 
@@ -25,6 +28,10 @@ func NewVCPersistentSave(ctx context.Context, service *Service, queueName string
 	}
 
 	vcPersistentSave.Queue = vcPersistentSave.service.queueClient.NewQueue(ctx, queueName)
+
+	vcPersistentSave.metricWorkerCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "persistent_queue_vc_save_worker_total",
+	})
 
 	vcPersistentSave.log.Info("Started")
 
@@ -94,6 +101,7 @@ func (s *VCPersistentSave) Worker(ctx context.Context) error {
 			return err
 		case task := <-taskChan:
 			s.log.Info("Got task", "task", task.Data)
+			s.metricWorkerCounter.Inc()
 			document := &model.Upload{}
 			if err := json.Unmarshal([]byte(task.Data), document); err != nil {
 				span.SetStatus(codes.Error, err.Error())

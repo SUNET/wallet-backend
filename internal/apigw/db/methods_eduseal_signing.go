@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/masv3971/gosunetca/types"
+	"github.com/prometheus/client_golang/prometheus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.opentelemetry.io/otel/codes"
@@ -13,8 +14,22 @@ import (
 
 // EduSealSigningColl is the generic collection
 type EduSealSigningColl struct {
-	service *Service
-	coll    *mongo.Collection
+	service           *Service
+	coll              *mongo.Collection
+	metricSaveCounter prometheus.Counter
+}
+
+func newEduSealSigningColl(ctx context.Context, service *Service, coll *mongo.Collection) (*EduSealSigningColl, error) {
+	c := &EduSealSigningColl{
+		service: service,
+		coll:    coll,
+	}
+
+	if err := c.createIndex(ctx); err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 func (c *EduSealSigningColl) createIndex(ctx context.Context) error {
@@ -34,18 +49,23 @@ func (c *EduSealSigningColl) createIndex(ctx context.Context) error {
 }
 
 // Save saves one document
-func (c *EduSealSigningColl) Save(ctx context.Context, doc *types.Document) error {
-	ctx, span := c.service.tp.Start(ctx, "db:doc:save")
-	defer span.End()
-
-	_, err := c.coll.InsertOne(ctx, doc)
-	if err != nil {
-		span.SetStatus(codes.Error, err.Error())
-		return err
-	}
-	c.service.log.Info("saved document", "transaction_id", doc.TransactionID)
-	return nil
-}
+//func (c *EduSealSigningColl) Save(ctx context.Context, doc *types.Document) error {
+//	ctx, span := c.service.tp.Start(ctx, "db:doc:save")
+//	defer span.End()
+//
+//	c.metricSaveCounter = promauto.NewCounter(prometheus.CounterOpts{
+//		Name: "apigw_db_eduseal_sign_save_total",
+//		Help: "The total number saved eduseal_del_signed queue",
+//	})
+//
+//	_, err := c.coll.InsertOne(ctx, doc)
+//	if err != nil {
+//		span.SetStatus(codes.Error, err.Error())
+//		return err
+//	}
+//	c.service.log.Info("saved document", "transaction_id", doc.TransactionID)
+//	return nil
+//}
 
 // Revoke revokes a document
 func (c *EduSealSigningColl) Revoke(ctx context.Context, transactionID string) error {

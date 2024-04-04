@@ -6,13 +6,16 @@ import (
 	"vc/pkg/logger"
 
 	retask "github.com/masv3971/goretask"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.opentelemetry.io/otel/codes"
 )
 
 // EduSealPersistentSave holds the ladok delete signed queue
 type EduSealPersistentSave struct {
-	service *Service
-	log     *logger.Log
+	service              *Service
+	log                  *logger.Log
+	metricEnqueueCounter prometheus.Counter
 	*retask.Queue
 }
 
@@ -25,6 +28,11 @@ func NewEduSealPersistentSave(ctx context.Context, service *Service, queueName s
 
 	eduSealPersistentSave.Queue = eduSealPersistentSave.service.queueClient.NewQueue(ctx, queueName)
 
+	eduSealPersistentSave.metricEnqueueCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "apigw_queue_eduseal_persistent_save_enqueue_total",
+		Help: "The total number of added messages to the eduseal_persistent_save queue",
+	})
+
 	eduSealPersistentSave.log.Info("Started")
 
 	return eduSealPersistentSave, nil
@@ -35,6 +43,8 @@ func (s *EduSealPersistentSave) Enqueue(ctx context.Context, message any) (*reta
 	s.log.Info("Enqueue delete signed pdf")
 	ctx, span := s.service.tp.Start(ctx, "simplequeue:EduSealPersistentSave:Enqueue")
 	defer span.End()
+
+	s.metricEnqueueCounter.Inc()
 
 	data, err := json.Marshal(message)
 	if err != nil {

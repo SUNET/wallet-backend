@@ -6,14 +6,17 @@ import (
 	"vc/pkg/logger"
 
 	retask "github.com/masv3971/goretask"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.opentelemetry.io/otel/codes"
 )
 
 // EduSealValidate is the ladok unsigned queue
 type EduSealValidate struct {
-	service   *Service
-	queueName string
-	log       *logger.Log
+	service              *Service
+	queueName            string
+	log                  *logger.Log
+	metricEnqueueCounter prometheus.Counter
 	*retask.Queue
 }
 
@@ -26,6 +29,11 @@ func NewEduSealValidate(ctx context.Context, service *Service, queueName string,
 
 	eduSealValidate.Queue = eduSealValidate.service.queueClient.NewQueue(ctx, queueName)
 
+	eduSealValidate.metricEnqueueCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "apigw_queue_eduseal_validate_enqueue_total",
+		Help: "The total number of added messages to the eduseal_validate queue",
+	})
+
 	eduSealValidate.log.Info("Started")
 
 	return eduSealValidate, nil
@@ -35,6 +43,8 @@ func NewEduSealValidate(ctx context.Context, service *Service, queueName string,
 func (s *EduSealValidate) Enqueue(ctx context.Context, message any) (*retask.Job, error) {
 	ctx, span := s.service.tp.Start(ctx, "simplequeue:EduSealValidate:Enqueue")
 	defer span.End()
+
+	s.metricEnqueueCounter.Inc()
 
 	data, err := json.Marshal(message)
 	if err != nil {

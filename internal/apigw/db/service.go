@@ -55,19 +55,14 @@ func New(ctx context.Context, cfg *model.Cfg, tp *trace.Tracer, log *logger.Log)
 		return nil, err
 	}
 
-	service.EduSealSigningColl = &EduSealSigningColl{
-		service: service,
-		coll:    service.dbClient.Database("eduseal").Collection("documents"),
-	}
-	if err := service.EduSealSigningColl.createIndex(ctx); err != nil {
+	var err error
+	service.EduSealSigningColl, err = newEduSealSigningColl(ctx, service, service.dbClient.Database("eduseal").Collection("documents"))
+	if err != nil {
 		return nil, err
 	}
 
-	service.VCDatastoreColl = &VCDatastoreColl{
-		Service: service,
-		Coll:    service.dbClient.Database("vc").Collection("datastore"),
-	}
-	if err := service.VCDatastoreColl.createIndex(ctx); err != nil {
+	service.VCDatastoreColl, err = newVCDatastoreColl(ctx, service, service.dbClient.Database("vc").Collection("datastore"))
+	if err != nil {
 		return nil, err
 	}
 

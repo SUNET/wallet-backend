@@ -4,6 +4,8 @@ import (
 	"context"
 	"vc/pkg/model"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,8 +15,9 @@ import (
 
 // VCDatastoreColl is the collection of datastore
 type VCDatastoreColl struct {
-	service *Service
-	coll    *mongo.Collection
+	service    *Service
+	coll       *mongo.Collection
+	metricSave prometheus.Counter
 }
 
 func (c *VCDatastoreColl) createIndex(ctx context.Context) error {
@@ -42,11 +45,17 @@ func (c *VCDatastoreColl) Save(ctx context.Context, doc *model.Upload) error {
 	ctx, span := c.service.tp.Start(ctx, "db:vc:datastore:save")
 	defer span.End()
 
+	c.metricSave = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "persistent_vc_db_save_total",
+	})
+
+	
 	res, err := c.coll.InsertOne(ctx, doc)
 	if err != nil {
 		span.SetStatus(codes.Error, err.Error())
 		return err
 	}
+	c.metricSave.Inc()
 	c.service.log.Info("saved document", "document_id", doc.Meta.DocumentID, "inserted_id", res.InsertedID)
 	return nil
 }

@@ -15,6 +15,19 @@ type VCDatastoreColl struct {
 	Coll    *mongo.Collection
 }
 
+func newVCDatastoreColl(ctx context.Context, service *Service, coll *mongo.Collection) (*VCDatastoreColl, error) {
+	c := &VCDatastoreColl{
+		Service: service,
+		Coll:    coll,
+	}
+
+	if err := c.createIndex(ctx); err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
 func (c *VCDatastoreColl) createIndex(ctx context.Context) error {
 	ctx, span := c.Service.tp.Start(ctx, "db:vc:datastore:createIndex")
 	defer span.End()
