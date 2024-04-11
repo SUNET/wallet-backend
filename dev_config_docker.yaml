@@ -78,6 +78,10 @@ persistent:
 apigw:
   api_server:
     addr: :8080
+    tls:
+      enabled: false
+      cert_file_path: ""
+      key_file_path: ""
 
 py_pdfsigner:
   sign_queue_name: sign

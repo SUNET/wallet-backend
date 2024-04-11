@@ -147,7 +147,7 @@ docker-push-apigw:
 	$(info Pushing docker images)
 	docker push $(DOCKER_TAG_APIGW)
 
-docker-push: docker-push-gobuild docker-push-datastore docker-push-datastore docker-push-verifier docker-push-registry docker-push-cache docker-push-persistent docker-push-apigw
+docker-push: docker-push-datastore docker-push-datastore docker-push-verifier docker-push-registry docker-push-cache docker-push-persistent docker-push-apigw
 	$(info Pushing docker images)
 
 docker-pull:
@@ -213,6 +213,14 @@ swagger-verifier:
 swagger-apigw:
 	swag init -d internal/apigw/apiv1/ -g client.go --output docs/apigw --parseDependency --packageName docs
 
+openapi3-apigw: swagger-apigw
+	docker run --rm -v ./docs/apigw:/work openapitools/openapi-generator-cli:latest-release generate -i /work/swagger.yaml -o ./work/v3 -g openapi-yaml --minimal-update
+	docker run --rm -v ./docs/apigw:/work openapitools/openapi-generator-cli:latest-release generate -i /work/swagger.json -o ./work/v3 -g openapi --minimal-update
+	sudo mv ./docs/apigw/v3/openapi/openapi.yaml ./internal/apigw/httpserver/openapiv3/openapi.yaml
+	sudo mv ./docs/apigw/v3/openapi.json ./internal/apigw/httpserver/openapiv3/openapi.json
+	sudo rm -rf ./docs/apigw/v3
+	sudo chown -R $(shell id -u):$(shell id -g) ./internal/apigw/httpserver/openapiv3/
+
 install-tools:
 	$(info Install from apt)
 	apt-get update && apt-get install -y \
@@ -239,4 +247,5 @@ vscode:
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest && \
 	go install golang.org/x/tools/cmd/deadcode@latest && \
 	go install github.com/securego/gosec/v2/cmd/gosec@latest && \
-	go install honnef.co/go/tools/cmd/staticcheck@latest
+	go install honnef.co/go/tools/cmd/staticcheck@latest && \
+	go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest

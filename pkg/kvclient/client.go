@@ -52,6 +52,9 @@ func New(ctx context.Context, cfg *model.Cfg, tracer *trace.Tracer, log *logger.
 
 // Status returns the status of the database
 func (c *Client) Status(ctx context.Context) *apiv1_status.StatusProbe {
+	ctx, span := c.tp.Start(ctx, "kvclient:Status")
+	defer span.End()
+
 	if time.Now().Before(c.probeStore.NextCheck.AsTime()) {
 		return c.probeStore.PreviousResult
 	}

@@ -48,14 +48,14 @@ func New(ctx context.Context, cfg *model.Cfg, log *logger.Log, projectName, serv
 	}
 
 	tracer := &Tracer{
-		TP:  newTraceProvider(exp, projectName),
+		TP:  newTraceProvider(exp, serviceName),
 		log: log,
 	}
 
 	otel.SetTracerProvider(tracer.TP)
 	otel.SetTextMapPropagator(jaegerPropagator.Jaeger{})
 
-	tracer.Tracer = otel.Tracer("")
+	tracer.Tracer = otel.Tracer(projectName)
 
 	return tracer, nil
 }
@@ -63,5 +63,9 @@ func New(ctx context.Context, cfg *model.Cfg, log *logger.Log, projectName, serv
 // Shutdown shuts down the tracer
 func (t *Tracer) Shutdown(ctx context.Context) error {
 	t.log.Info("Shutting down tracer")
-	return t.TP.Shutdown(ctx)
+	if err := t.TP.Shutdown(ctx); err != nil {
+		return err
+	}
+	ctx.Done()
+	return nil
 }

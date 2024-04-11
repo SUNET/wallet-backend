@@ -1,0 +1,1020 @@
+{
+  "openapi" : "3.0.1",
+  "info" : {
+    "contact" : { },
+    "title" : "Datastore API",
+    "version" : "0.1.0"
+  },
+  "servers" : [ {
+    "url" : "/api/v1"
+  } ],
+  "paths" : {
+    "/document" : {
+      "delete" : {
+        "description" : "delete one document endpoint",
+        "operationId" : "delete-document",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/apiv1.DeleteDocumentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : { },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "DeleteDocument",
+        "tags" : [ "dc4eu" ],
+        "x-codegen-request-body-name" : "req"
+      },
+      "post" : {
+        "description" : "Get document endpoint",
+        "operationId" : "get-document",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/apiv1.GetDocumentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/apiv1.GetDocumentReply"
+                }
+              }
+            },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "GetDocument",
+        "tags" : [ "dc4eu" ],
+        "x-codegen-request-body-name" : "req"
+      }
+    },
+    "/document/collection_code" : {
+      "post" : {
+        "description" : "Get document by collect code endpoint",
+        "operationId" : "get-document-collect-code",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/model.MetaData"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/apiv1.GetDocumentReply"
+                }
+              }
+            },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "GetDocumentByCollectCode",
+        "tags" : [ "dc4eu" ],
+        "x-codegen-request-body-name" : "req"
+      }
+    },
+    "/id_mapping" : {
+      "post" : {
+        "description" : "ID mapping endpoint",
+        "operationId" : "id-mapping",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/model.MetaData"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/apiv1.IDMappingReply"
+                }
+              }
+            },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "IDMapping",
+        "tags" : [ "dc4eu" ],
+        "x-codegen-request-body-name" : "req"
+      }
+    },
+    "/ladok/pdf/revoke/{transaction_id}" : {
+      "put" : {
+        "description" : "revoke a singed pdf",
+        "operationId" : "ladok-pdf-revoke",
+        "parameters" : [ {
+          "description" : "transaction_id",
+          "in" : "path",
+          "name" : "transaction_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/apiv1.PDFRevokeReply"
+                }
+              }
+            },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "revoke signed pdf",
+        "tags" : [ "ladok" ]
+      }
+    },
+    "/ladok/pdf/sign" : {
+      "post" : {
+        "description" : "sign base64 encoded PDF",
+        "operationId" : "ladok-pdf-sign",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/apiv1.PDFSignRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/apiv1.PDFSignReply"
+                }
+              }
+            },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Sign pdf",
+        "tags" : [ "ladok" ],
+        "x-codegen-request-body-name" : "req"
+      }
+    },
+    "/ladok/pdf/validate" : {
+      "post" : {
+        "description" : "validate a signed base64 encoded PDF",
+        "operationId" : "ladok-pdf-validate",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/apiv1.PDFValidateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/apiv1.PDFValidateReply"
+                }
+              }
+            },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Validate pdf",
+        "tags" : [ "ladok" ],
+        "x-codegen-request-body-name" : "req"
+      }
+    },
+    "/ladok/pdf/{transaction_id}" : {
+      "get" : {
+        "description" : "fetch a singed pdf",
+        "operationId" : "ladok-pdf-fetch",
+        "parameters" : [ {
+          "description" : "transaction_id",
+          "in" : "path",
+          "name" : "transaction_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/apiv1.PDFGetSignedReply"
+                }
+              }
+            },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "fetch singed pdf",
+        "tags" : [ "ladok" ]
+      }
+    },
+    "/notification" : {
+      "post" : {
+        "description" : "notification endpoint",
+        "operationId" : "generic-notification",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/apiv1.NotificationRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/apiv1.NotificationReply"
+                }
+              }
+            },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Notification",
+        "tags" : [ "dc4eu" ],
+        "x-codegen-request-body-name" : "req"
+      }
+    },
+    "/portal" : {
+      "post" : {
+        "description" : "Get portal data endpoint",
+        "operationId" : "portal",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/apiv1.PortalRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/apiv1.PortalReply"
+                }
+              }
+            },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Portal",
+        "tags" : [ "dc4eu" ],
+        "x-codegen-request-body-name" : "req"
+      }
+    },
+    "/revoke" : {
+      "post" : {
+        "description" : "Revoke endpoint",
+        "operationId" : "generic-revoke",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/apiv1.RevokeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/apiv1.RevokeReply"
+                }
+              }
+            },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Revoke",
+        "tags" : [ "dc4eu" ],
+        "x-codegen-request-body-name" : "req"
+      }
+    },
+    "/upload" : {
+      "post" : {
+        "description" : "Upload endpoint",
+        "operationId" : "generic-upload",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/model.Upload"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/apiv1.UploadReply"
+                }
+              }
+            },
+            "description" : "Success"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/helpers.ErrorResponse"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          }
+        },
+        "summary" : "Upload",
+        "tags" : [ "dc4eu" ],
+        "x-codegen-request-body-name" : "req"
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "apiv1.DeleteDocumentRequest" : {
+        "properties" : {
+          "authentic_source" : {
+            "description" : "required: true\nexample: skatteverket",
+            "type" : "string"
+          },
+          "document_id" : {
+            "description" : "required: true\nexample: 5e7a981c-c03f-11ee-b116-9b12c59362b9",
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.GetDocumentReply" : {
+        "properties" : {
+          "data" : {
+            "$ref" : "#/components/schemas/model.Upload"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.GetDocumentRequest" : {
+        "properties" : {
+          "authentic_source" : {
+            "type" : "string"
+          },
+          "document_id" : {
+            "type" : "string"
+          },
+          "document_type" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.IDMappingReply" : {
+        "properties" : {
+          "data" : {
+            "$ref" : "#/components/schemas/apiv1_IDMappingReply_data"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.NotificationReply" : {
+        "properties" : {
+          "data" : {
+            "$ref" : "#/components/schemas/model.QR"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.NotificationRequest" : {
+        "properties" : {
+          "authentic_source" : {
+            "type" : "string"
+          },
+          "document_id" : {
+            "type" : "string"
+          },
+          "document_type" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.PDFGetSignedReply" : {
+        "properties" : {
+          "data" : {
+            "$ref" : "#/components/schemas/apiv1_PDFGetSignedReply_data"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.PDFRevokeReply" : {
+        "properties" : {
+          "data" : {
+            "$ref" : "#/components/schemas/apiv1_PDFRevokeReply_data"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.PDFSignReply" : {
+        "properties" : {
+          "data" : {
+            "$ref" : "#/components/schemas/apiv1_PDFSignReply_data"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.PDFSignRequest" : {
+        "properties" : {
+          "pdf" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "pdf" ],
+        "type" : "object"
+      },
+      "apiv1.PDFValidateReply" : {
+        "properties" : {
+          "data" : {
+            "$ref" : "#/components/schemas/types.Validation"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.PDFValidateRequest" : {
+        "properties" : {
+          "pdf" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.PortalReply" : {
+        "properties" : {
+          "data" : {
+            "items" : {
+              "$ref" : "#/components/schemas/model.Upload"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.PortalRequest" : {
+        "properties" : {
+          "authentic_source" : {
+            "type" : "string"
+          },
+          "authentic_source_person_id" : {
+            "type" : "string"
+          },
+          "validity_from" : {
+            "type" : "string"
+          },
+          "validity_to" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "authentic_source", "authentic_source_person_id" ],
+        "type" : "object"
+      },
+      "apiv1.RevokeReply" : {
+        "properties" : {
+          "data" : {
+            "$ref" : "#/components/schemas/apiv1_PDFRevokeReply_data"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.RevokeRequest" : {
+        "properties" : {
+          "authentic_source" : {
+            "type" : "string"
+          },
+          "document_id" : {
+            "type" : "string"
+          },
+          "document_type" : {
+            "type" : "string"
+          },
+          "revocation_id" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1.UploadReply" : {
+        "properties" : {
+          "data" : {
+            "$ref" : "#/components/schemas/apiv1_UploadReply_data"
+          }
+        },
+        "type" : "object"
+      },
+      "helpers.Error" : {
+        "properties" : {
+          "details" : {
+            "type" : "object"
+          },
+          "title" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "helpers.ErrorResponse" : {
+        "properties" : {
+          "error" : {
+            "$ref" : "#/components/schemas/helpers.Error"
+          }
+        },
+        "type" : "object"
+      },
+      "model.Attestation" : {
+        "properties" : {
+          "description_long" : {
+            "description" : "TODO(masv): change TextLong to DescriptionLong\nrequired: true\nexample: European Health Insurance Card",
+            "type" : "string"
+          },
+          "description_short" : {
+            "description" : "TODO(masv): ShortText to DescriptionShort, more descriptive, pun intended\nrequired: true\nexample: EHIC",
+            "type" : "string"
+          },
+          "type" : {
+            "description" : "required: true\nexample: secure",
+            "type" : "string"
+          },
+          "version" : {
+            "description" : "TODO(masv): change AttestationDataVersion to AttestationVersion, data seems redundant\nrequired: true\nexample: 1.0.0",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "description_long", "description_short", "type", "version" ],
+        "type" : "object"
+      },
+      "model.Identity" : {
+        "properties" : {
+          "age_birth_year" : {
+            "description" : "TODO(masv): int instead of string?\nrequired: false\nexample: 1970",
+            "type" : "string"
+          },
+          "age_in_years" : {
+            "description" : "TODO(masv): int instead of string?\nrequired: false\nexample: 19",
+            "type" : "string"
+          },
+          "age_over_18" : {
+            "description" : "TODO(masv): int instead of string?\nrequired: false\nexample: 19",
+            "type" : "string"
+          },
+          "age_over_nn" : {
+            "description" : "TODO(masv): int instead of string? How is supposed to work, query NN?\nrequired: false\nexample: 19",
+            "type" : "string"
+          },
+          "birth_city" : {
+            "description" : "required: false\nexample: Stockholm",
+            "type" : "string"
+          },
+          "birth_country" : {
+            "description" : "TODO(masv): full name or just country code?\nrequired: false\nexample: sweden",
+            "type" : "string"
+          },
+          "birth_date" : {
+            "description" : "required: true\nexample: 1970-01-01",
+            "type" : "string"
+          },
+          "birth_place" : {
+            "description" : "required: false\nexample: Stockholm",
+            "type" : "string"
+          },
+          "birth_state" : {
+            "description" : "required: false\nexample: Stockholm",
+            "type" : "string"
+          },
+          "family_name" : {
+            "description" : "required: true\nexample: Svensson",
+            "type" : "string"
+          },
+          "family_name_at_birth" : {
+            "description" : "required: false\nexample: Karlsson",
+            "type" : "string"
+          },
+          "gender" : {
+            "description" : "required: false\nexample: male",
+            "type" : "string"
+          },
+          "given_name" : {
+            "description" : "required: true\nexample: Magnus",
+            "type" : "string"
+          },
+          "given_name_at_birth" : {
+            "description" : "required: false\nexample: Magnus",
+            "type" : "string"
+          },
+          "nationality" : {
+            "description" : "required: false\nexample: swedish",
+            "type" : "string"
+          },
+          "resident_address" : {
+            "description" : "required: false\nexample: 221b baker street",
+            "type" : "string"
+          },
+          "resident_city" : {
+            "description" : "required: false\nexample: london",
+            "type" : "string"
+          },
+          "resident_country" : {
+            "description" : "required: false\nexample: england",
+            "type" : "string"
+          },
+          "resident_house_number" : {
+            "description" : "required: false\nexample: 221b",
+            "type" : "string"
+          },
+          "resident_postal_code" : {
+            "description" : "required: false\nexample: W1U 6SG",
+            "type" : "string"
+          },
+          "resident_state" : {
+            "description" : "required: false\nexample: england",
+            "type" : "string"
+          },
+          "resident_street" : {
+            "description" : "required: false\nexample: baker street",
+            "type" : "string"
+          },
+          "uid" : {
+            "description" : "required: true\nexample: 85f90d4c-c03f-11ee-9386-ef1b105c4f3e",
+            "type" : "string"
+          },
+          "version" : {
+            "description" : "required: true\nexample: 1.0.0",
+            "type" : "string"
+          }
+        },
+        "required" : [ "birth_date", "family_name", "given_name", "uid", "version" ],
+        "type" : "object"
+      },
+      "model.MetaData" : {
+        "properties" : {
+          "authentic_source" : {
+            "description" : "required: true\nexample: SUNET",
+            "type" : "string"
+          },
+          "authentic_source_person_id" : {
+            "description" : "required: true\nexample: 65636cbc-c03f-11ee-8dc4-67135cc9bd8a",
+            "type" : "string"
+          },
+          "collect_id" : {
+            "description" : "required: false\nexample: 98fe67fc-c03f-11ee-bbee-4345224d414f",
+            "type" : "string"
+          },
+          "created_at" : {
+            "description" : "required: false\nexample: 2024-03-15T10:00:00Z+01:00",
+            "type" : "string"
+          },
+          "date_of_birth" : {
+            "description" : "required: true\nexample: 1970-01-01",
+            "type" : "string"
+          },
+          "document_id" : {
+            "description" : "required: true\nexample: 5e7a981c-c03f-11ee-b116-9b12c59362b9",
+            "type" : "string"
+          },
+          "document_type" : {
+            "description" : "required: true\nexample: PDA1",
+            "enum" : [ "PDA1", "EHIC" ],
+            "type" : "string"
+          },
+          "document_version" : {
+            "description" : "required: true\nexample: 1",
+            "minimum" : 1,
+            "type" : "integer"
+          },
+          "first_name" : {
+            "description" : "required: true\nexample: John",
+            "type" : "string"
+          },
+          "last_name" : {
+            "description" : "required: true\nexample: Doe",
+            "type" : "string"
+          },
+          "member_state" : {
+            "description" : "required: true\nexample: \"DE\"",
+            "type" : "string"
+          },
+          "revocation_id" : {
+            "description" : "required: false\nexample: 8dbd2680-c03f-11ee-a21b-034aafe41222",
+            "type" : "string"
+          },
+          "uid" : {
+            "description" : "required: true\nexample: 85f90d4c-c03f-11ee-9386-ef1b105c4f3e",
+            "type" : "string"
+          },
+          "valid_from" : {
+            "description" : "TODO(masv): ISO8601?\nrequired: true\nexample: 2024-01-01",
+            "type" : "string"
+          },
+          "valid_to" : {
+            "description" : "TODO(masv): ISO8601?\nrequired: true\nexample: 2024-12-31",
+            "type" : "string"
+          }
+        },
+        "required" : [ "authentic_source", "authentic_source_person_id", "collect_id", "date_of_birth", "document_id", "document_type", "document_version", "first_name", "last_name", "member_state", "revocation_id", "uid", "valid_from", "valid_to" ],
+        "type" : "object"
+      },
+      "model.QR" : {
+        "properties" : {
+          "base64_image" : {
+            "type" : "string"
+          },
+          "deep_link" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "base64_image", "deep_link" ],
+        "type" : "object"
+      },
+      "model.Upload" : {
+        "properties" : {
+          "attestation" : {
+            "$ref" : "#/components/schemas/model.Attestation"
+          },
+          "document_data" : {
+            "type" : "object"
+          },
+          "identity" : {
+            "$ref" : "#/components/schemas/model.Identity"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/model.MetaData"
+          },
+          "qr" : {
+            "$ref" : "#/components/schemas/model.QR"
+          }
+        },
+        "required" : [ "attestation", "document_data", "identity", "meta" ],
+        "type" : "object"
+      },
+      "types.Document" : {
+        "properties" : {
+          "base64_data" : {
+            "type" : "string"
+          },
+          "contact_info" : {
+            "type" : "string"
+          },
+          "create_ts" : {
+            "type" : "integer"
+          },
+          "error" : {
+            "type" : "string"
+          },
+          "location" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "modify_ts" : {
+            "type" : "integer"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "revoked_ts" : {
+            "type" : "integer"
+          },
+          "transaction_id" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "types.Validation" : {
+        "properties" : {
+          "error" : {
+            "type" : "string"
+          },
+          "is_revoked" : {
+            "type" : "boolean"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "transaction_id" : {
+            "type" : "string"
+          },
+          "valid_signature" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1_IDMappingReply_data" : {
+        "properties" : {
+          "authentic_source_person_id" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1_PDFGetSignedReply_data" : {
+        "properties" : {
+          "document" : {
+            "$ref" : "#/components/schemas/types.Document"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1_PDFRevokeReply_data" : {
+        "properties" : {
+          "status" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      },
+      "apiv1_PDFSignReply_data" : {
+        "properties" : {
+          "transaction_id" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "transaction_id" ],
+        "type" : "object"
+      },
+      "apiv1_UploadReply_data" : {
+        "properties" : {
+          "status" : {
+            "type" : "string"
+          }
+        },
+        "type" : "object"
+      }
+    }
+  },
+  "x-original-swagger-version" : "2.0"
+}

@@ -13,6 +13,7 @@ func (c *Client) mockOne(ctx context.Context, authenticSource, documentType stri
 	meta := &model.MetaData{
 		AuthenticSource:         authenticSource,
 		AuthenticSourcePersonID: gofakeit.UUID(),
+		DocumentVersion:         1,
 		DocumentType:            documentType,
 		DocumentID:              gofakeit.UUID(),
 		FirstName:               person.FirstName,
@@ -21,9 +22,49 @@ func (c *Client) mockOne(ctx context.Context, authenticSource, documentType stri
 		UID:                     gofakeit.UUID(),
 		RevocationID:            gofakeit.UUID(),
 		CollectID:               gofakeit.UUID(),
+		MemberState:             "SE",
+		ValidFrom:               gofakeit.Date().String(),
+		ValidTo:                 gofakeit.Date().String(),
 	}
+
+	attestation := &model.Attestation{
+		Version:          1,
+		Type:             documentType,
+		DescriptionShort: "a short description",
+		DescriptionLong:  "a longer description",
+	}
+
+	identity := &model.Identity{
+		Version:             "1",
+		FamilyName:          gofakeit.LastName(),
+		GivenName:           gofakeit.FirstName(),
+		BirthDate:           gofakeit.Date().String(),
+		UID:                 gofakeit.UUID(),
+		FamilyNameAtBirth:   gofakeit.LastName(),
+		GivenNameAtBirth:    gofakeit.FirstName(),
+		BirthPlace:          gofakeit.City(),
+		Gender:              gofakeit.RandomString([]string{"M", "F", "X"}),
+		AgeOver18:           "",
+		AgeOverNN:           "",
+		AgeInYears:          "",
+		AgeBirthYear:        "",
+		BirthCountry:        "",
+		BirthState:          "",
+		BirthCity:           "",
+		ResidentAddress:     "",
+		ResidentCountry:     "",
+		ResidentState:       "",
+		ResidentCity:        "",
+		ResidentPostalCode:  "",
+		ResidentStreet:      "",
+		ResidentHouseNumber: "",
+		Nationality:         "",
+	}
+
 	mockUpload := &model.Upload{
-		Meta: meta,
+		Meta:        meta,
+		Attestation: attestation,
+		Identity:    identity,
 	}
 
 	switch documentType {

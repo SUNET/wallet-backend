@@ -9,11 +9,12 @@ import (
 	"vc/pkg/trace"
 
 	"github.com/go-playground/validator/v10"
+	"go.opentelemetry.io/otel/codes"
 )
 
 // Check checks for validation error
 func Check(ctx context.Context, cfg *model.Cfg, s any, log *logger.Log) error {
-	tp, err := trace.New(ctx, cfg, log, "vc", "vc")
+	tp, err := trace.New(ctx, cfg, log, "vc", "helpers:check")
 	if err != nil {
 		return err
 	}
@@ -33,6 +34,7 @@ func Check(ctx context.Context, cfg *model.Cfg, s any, log *logger.Log) error {
 	})
 
 	if err := validate.Struct(s); err != nil {
+		span.SetStatus(codes.Error, err.Error())
 		return NewErrorFromError(err)
 	}
 

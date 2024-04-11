@@ -6,9 +6,11 @@ import (
 )
 
 func (s *Service) applyTLSConfig(ctx context.Context) {
+	ctx, span := s.tp.Start(ctx, "httpserver:applyTLSConfig")
+	defer span.End()
+
 	cfg := &tls.Config{
 		MinVersion:               tls.VersionTLS12,
-		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
 		PreferServerCipherSuites: true,
 	}
 

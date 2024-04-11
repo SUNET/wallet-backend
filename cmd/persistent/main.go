@@ -35,7 +35,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	tracer, err := trace.New(ctx, cfg, log, "vc_persistent", "cache")
+	tracer, err := trace.New(ctx, cfg, log, "vc", "persistent")
 	if err != nil {
 		panic(err)
 	}

@@ -29,6 +29,7 @@ func (c *Client) uploader(ctx context.Context, upload *model.Upload) (*uploaderR
 		reply,
 	)
 	if err != nil {
+		c.log.Debug("uploader", "error", err)
 		return nil, resp, err
 	}
 
@@ -90,6 +91,7 @@ func (c *Client) do(ctx context.Context, req *http.Request, value any) (*http.Re
 			c.log.Debug("json unmarshal", "error", err)
 			return nil, err
 		}
+		c.log.Debug("checkResponse", "error", err)
 		return nil, caError
 	}
 
@@ -121,11 +123,13 @@ func (c *Client) call(ctx context.Context, method, path string, body, reply any)
 		body,
 	)
 	if err != nil {
+		c.log.Debug("call", "error", err)
 		return nil, err
 	}
 
 	resp, err := c.do(ctx, request, reply)
 	if err != nil {
+		c.log.Debug("do", "error", err)
 		return resp, err
 	}
 

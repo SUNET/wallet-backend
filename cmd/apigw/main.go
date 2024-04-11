@@ -20,8 +20,6 @@ type service interface {
 	Close(ctx context.Context) error
 }
 
-var GitCommit string
-
 func main() {
 	var wg sync.WaitGroup
 	ctx := context.Background()
@@ -37,7 +35,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	log.Info("compile variable", "git commit", GitCommit)
 	tracer, err := trace.New(ctx, cfg, log, "vc", "apigw")
 	if err != nil {
 		panic(err)

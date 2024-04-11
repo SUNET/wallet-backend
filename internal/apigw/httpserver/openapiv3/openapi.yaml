@@ -1,0 +1,1164 @@
+openapi: 3.0.1
+info:
+  contact: {}
+  title: Datastore API
+  version: 0.1.0
+servers:
+- url: /api/v1
+paths:
+  /document:
+    delete:
+      description: delete one document endpoint
+      operationId: delete-document
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/apiv1.DeleteDocumentRequest'
+        required: true
+      responses:
+        "200":
+          content: {}
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: DeleteDocument
+      tags:
+      - dc4eu
+      x-codegen-request-body-name: req
+    post:
+      description: Get document endpoint
+      operationId: get-document
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/apiv1.GetDocumentRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiv1.GetDocumentReply'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: GetDocument
+      tags:
+      - dc4eu
+      x-codegen-request-body-name: req
+  /document/collection_code:
+    post:
+      description: Get document by collect code endpoint
+      operationId: get-document-collect-code
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/model.MetaData'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiv1.GetDocumentReply'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: GetDocumentByCollectCode
+      tags:
+      - dc4eu
+      x-codegen-request-body-name: req
+  /id_mapping:
+    post:
+      description: ID mapping endpoint
+      operationId: id-mapping
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/model.MetaData'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiv1.IDMappingReply'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: IDMapping
+      tags:
+      - dc4eu
+      x-codegen-request-body-name: req
+  /ladok/pdf/{transaction_id}:
+    get:
+      description: fetch a singed pdf
+      operationId: ladok-pdf-fetch
+      parameters:
+      - description: transaction_id
+        in: path
+        name: transaction_id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiv1.PDFGetSignedReply'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: fetch singed pdf
+      tags:
+      - ladok
+  /ladok/pdf/revoke/{transaction_id}:
+    put:
+      description: revoke a singed pdf
+      operationId: ladok-pdf-revoke
+      parameters:
+      - description: transaction_id
+        in: path
+        name: transaction_id
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiv1.PDFRevokeReply'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: revoke signed pdf
+      tags:
+      - ladok
+  /ladok/pdf/sign:
+    post:
+      description: sign base64 encoded PDF
+      operationId: ladok-pdf-sign
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/apiv1.PDFSignRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiv1.PDFSignReply'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: Sign pdf
+      tags:
+      - ladok
+      x-codegen-request-body-name: req
+  /ladok/pdf/validate:
+    post:
+      description: validate a signed base64 encoded PDF
+      operationId: ladok-pdf-validate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/apiv1.PDFValidateRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiv1.PDFValidateReply'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: Validate pdf
+      tags:
+      - ladok
+      x-codegen-request-body-name: req
+  /notification:
+    post:
+      description: notification endpoint
+      operationId: generic-notification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/apiv1.NotificationRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiv1.NotificationReply'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: Notification
+      tags:
+      - dc4eu
+      x-codegen-request-body-name: req
+  /portal:
+    post:
+      description: Get portal data endpoint
+      operationId: portal
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/apiv1.PortalRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiv1.PortalReply'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: Portal
+      tags:
+      - dc4eu
+      x-codegen-request-body-name: req
+  /revoke:
+    post:
+      description: Revoke endpoint
+      operationId: generic-revoke
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/apiv1.RevokeRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiv1.RevokeReply'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: Revoke
+      tags:
+      - dc4eu
+      x-codegen-request-body-name: req
+  /upload:
+    post:
+      description: Upload endpoint
+      operationId: generic-upload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/model.Upload'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/apiv1.UploadReply'
+          description: Success
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/helpers.ErrorResponse'
+          description: Bad Request
+      summary: Upload
+      tags:
+      - dc4eu
+      x-codegen-request-body-name: req
+components:
+  schemas:
+    apiv1.DeleteDocumentRequest:
+      properties:
+        authentic_source:
+          description: |-
+            required: true
+            example: skatteverket
+          type: string
+        document_id:
+          description: |-
+            required: true
+            example: 5e7a981c-c03f-11ee-b116-9b12c59362b9
+          type: string
+      type: object
+    apiv1.GetDocumentReply:
+      example:
+        data:
+          qr:
+            base64_image: base64_image
+            deep_link: deep_link
+          attestation:
+            description_short: description_short
+            description_long: description_long
+            type: type
+            version: 0
+          document_data: "{}"
+          identity:
+            given_name_at_birth: given_name_at_birth
+            resident_street: resident_street
+            birth_city: birth_city
+            gender: gender
+            age_over_18: age_over_18
+            birth_date: birth_date
+            birth_place: birth_place
+            age_in_years: age_in_years
+            given_name: given_name
+            birth_state: birth_state
+            resident_postal_code: resident_postal_code
+            version: version
+            birth_country: birth_country
+            resident_house_number: resident_house_number
+            uid: uid
+            nationality: nationality
+            age_birth_year: age_birth_year
+            resident_address: resident_address
+            resident_state: resident_state
+            age_over_nn: age_over_nn
+            resident_country: resident_country
+            family_name: family_name
+            family_name_at_birth: family_name_at_birth
+            resident_city: resident_city
+          meta:
+            collect_id: collect_id
+            date_of_birth: date_of_birth
+            created_at: created_at
+            last_name: last_name
+            valid_from: valid_from
+            document_id: document_id
+            document_version: 1
+            uid: uid
+            authentic_source: authentic_source
+            authentic_source_person_id: authentic_source_person_id
+            member_state: member_state
+            revocation_id: revocation_id
+            valid_to: valid_to
+            first_name: first_name
+            document_type: PDA1
+      properties:
+        data:
+          $ref: '#/components/schemas/model.Upload'
+      type: object
+    apiv1.GetDocumentRequest:
+      properties:
+        authentic_source:
+          type: string
+        document_id:
+          type: string
+        document_type:
+          type: string
+      type: object
+    apiv1.IDMappingReply:
+      example:
+        data:
+          authentic_source_person_id: authentic_source_person_id
+      properties:
+        data:
+          $ref: '#/components/schemas/apiv1_IDMappingReply_data'
+      type: object
+    apiv1.NotificationReply:
+      example:
+        data:
+          base64_image: base64_image
+          deep_link: deep_link
+      properties:
+        data:
+          $ref: '#/components/schemas/model.QR'
+      type: object
+    apiv1.NotificationRequest:
+      properties:
+        authentic_source:
+          type: string
+        document_id:
+          type: string
+        document_type:
+          type: string
+      type: object
+    apiv1.PDFGetSignedReply:
+      example:
+        data:
+          document:
+            transaction_id: transaction_id
+            base64_data: base64_data
+            reason: reason
+            modify_ts: 6
+            revoked_ts: 1
+            create_ts: 0
+            name: name
+            location: location
+            contact_info: contact_info
+            error: error
+            message: message
+          message: message
+      properties:
+        data:
+          $ref: '#/components/schemas/apiv1_PDFGetSignedReply_data'
+      type: object
+    apiv1.PDFRevokeReply:
+      example:
+        data:
+          status: true
+      properties:
+        data:
+          $ref: '#/components/schemas/apiv1_PDFRevokeReply_data'
+      type: object
+    apiv1.PDFSignReply:
+      example:
+        data:
+          transaction_id: transaction_id
+      properties:
+        data:
+          $ref: '#/components/schemas/apiv1_PDFSignReply_data'
+      type: object
+    apiv1.PDFSignRequest:
+      properties:
+        pdf:
+          type: string
+      required:
+      - pdf
+      type: object
+    apiv1.PDFValidateReply:
+      example:
+        data:
+          transaction_id: transaction_id
+          valid_signature: true
+          is_revoked: true
+          error: error
+          message: message
+      properties:
+        data:
+          $ref: '#/components/schemas/types.Validation'
+      type: object
+    apiv1.PDFValidateRequest:
+      properties:
+        pdf:
+          type: string
+      type: object
+    apiv1.PortalReply:
+      example:
+        data:
+        - qr:
+            base64_image: base64_image
+            deep_link: deep_link
+          attestation:
+            description_short: description_short
+            description_long: description_long
+            type: type
+            version: 0
+          document_data: "{}"
+          identity:
+            given_name_at_birth: given_name_at_birth
+            resident_street: resident_street
+            birth_city: birth_city
+            gender: gender
+            age_over_18: age_over_18
+            birth_date: birth_date
+            birth_place: birth_place
+            age_in_years: age_in_years
+            given_name: given_name
+            birth_state: birth_state
+            resident_postal_code: resident_postal_code
+            version: version
+            birth_country: birth_country
+            resident_house_number: resident_house_number
+            uid: uid
+            nationality: nationality
+            age_birth_year: age_birth_year
+            resident_address: resident_address
+            resident_state: resident_state
+            age_over_nn: age_over_nn
+            resident_country: resident_country
+            family_name: family_name
+            family_name_at_birth: family_name_at_birth
+            resident_city: resident_city
+          meta:
+            collect_id: collect_id
+            date_of_birth: date_of_birth
+            created_at: created_at
+            last_name: last_name
+            valid_from: valid_from
+            document_id: document_id
+            document_version: 1
+            uid: uid
+            authentic_source: authentic_source
+            authentic_source_person_id: authentic_source_person_id
+            member_state: member_state
+            revocation_id: revocation_id
+            valid_to: valid_to
+            first_name: first_name
+            document_type: PDA1
+        - qr:
+            base64_image: base64_image
+            deep_link: deep_link
+          attestation:
+            description_short: description_short
+            description_long: description_long
+            type: type
+            version: 0
+          document_data: "{}"
+          identity:
+            given_name_at_birth: given_name_at_birth
+            resident_street: resident_street
+            birth_city: birth_city
+            gender: gender
+            age_over_18: age_over_18
+            birth_date: birth_date
+            birth_place: birth_place
+            age_in_years: age_in_years
+            given_name: given_name
+            birth_state: birth_state
+            resident_postal_code: resident_postal_code
+            version: version
+            birth_country: birth_country
+            resident_house_number: resident_house_number
+            uid: uid
+            nationality: nationality
+            age_birth_year: age_birth_year
+            resident_address: resident_address
+            resident_state: resident_state
+            age_over_nn: age_over_nn
+            resident_country: resident_country
+            family_name: family_name
+            family_name_at_birth: family_name_at_birth
+            resident_city: resident_city
+          meta:
+            collect_id: collect_id
+            date_of_birth: date_of_birth
+            created_at: created_at
+            last_name: last_name
+            valid_from: valid_from
+            document_id: document_id
+            document_version: 1
+            uid: uid
+            authentic_source: authentic_source
+            authentic_source_person_id: authentic_source_person_id
+            member_state: member_state
+            revocation_id: revocation_id
+            valid_to: valid_to
+            first_name: first_name
+            document_type: PDA1
+      properties:
+        data:
+          items:
+            $ref: '#/components/schemas/model.Upload'
+          type: array
+      type: object
+    apiv1.PortalRequest:
+      properties:
+        authentic_source:
+          type: string
+        authentic_source_person_id:
+          type: string
+        validity_from:
+          type: string
+        validity_to:
+          type: string
+      required:
+      - authentic_source
+      - authentic_source_person_id
+      type: object
+    apiv1.RevokeReply:
+      example:
+        data:
+          status: true
+      properties:
+        data:
+          $ref: '#/components/schemas/apiv1_PDFRevokeReply_data'
+      type: object
+    apiv1.RevokeRequest:
+      properties:
+        authentic_source:
+          type: string
+        document_id:
+          type: string
+        document_type:
+          type: string
+        revocation_id:
+          type: string
+      type: object
+    apiv1.UploadReply:
+      example:
+        data:
+          status: status
+      properties:
+        data:
+          $ref: '#/components/schemas/apiv1_UploadReply_data'
+      type: object
+    helpers.Error:
+      example:
+        details: "{}"
+        title: title
+      properties:
+        details:
+          type: object
+        title:
+          type: string
+      type: object
+    helpers.ErrorResponse:
+      example:
+        error:
+          details: "{}"
+          title: title
+      properties:
+        error:
+          $ref: '#/components/schemas/helpers.Error'
+      type: object
+    model.Attestation:
+      example:
+        description_short: description_short
+        description_long: description_long
+        type: type
+        version: 0
+      properties:
+        description_long:
+          description: |-
+            TODO(masv): change TextLong to DescriptionLong
+            required: true
+            example: European Health Insurance Card
+          type: string
+        description_short:
+          description: |-
+            TODO(masv): ShortText to DescriptionShort, more descriptive, pun intended
+            required: true
+            example: EHIC
+          type: string
+        type:
+          description: |-
+            required: true
+            example: secure
+          type: string
+        version:
+          description: |-
+            TODO(masv): change AttestationDataVersion to AttestationVersion, data seems redundant
+            required: true
+            example: 1.0.0
+          type: integer
+      required:
+      - description_long
+      - description_short
+      - type
+      - version
+      type: object
+    model.Identity:
+      example:
+        given_name_at_birth: given_name_at_birth
+        resident_street: resident_street
+        birth_city: birth_city
+        gender: gender
+        age_over_18: age_over_18
+        birth_date: birth_date
+        birth_place: birth_place
+        age_in_years: age_in_years
+        given_name: given_name
+        birth_state: birth_state
+        resident_postal_code: resident_postal_code
+        version: version
+        birth_country: birth_country
+        resident_house_number: resident_house_number
+        uid: uid
+        nationality: nationality
+        age_birth_year: age_birth_year
+        resident_address: resident_address
+        resident_state: resident_state
+        age_over_nn: age_over_nn
+        resident_country: resident_country
+        family_name: family_name
+        family_name_at_birth: family_name_at_birth
+        resident_city: resident_city
+      properties:
+        age_birth_year:
+          description: |-
+            TODO(masv): int instead of string?
+            required: false
+            example: 1970
+          type: string
+        age_in_years:
+          description: |-
+            TODO(masv): int instead of string?
+            required: false
+            example: 19
+          type: string
+        age_over_18:
+          description: |-
+            TODO(masv): int instead of string?
+            required: false
+            example: 19
+          type: string
+        age_over_nn:
+          description: |-
+            TODO(masv): int instead of string? How is supposed to work, query NN?
+            required: false
+            example: 19
+          type: string
+        birth_city:
+          description: |-
+            required: false
+            example: Stockholm
+          type: string
+        birth_country:
+          description: |-
+            TODO(masv): full name or just country code?
+            required: false
+            example: sweden
+          type: string
+        birth_date:
+          description: |-
+            required: true
+            example: 1970-01-01
+          type: string
+        birth_place:
+          description: |-
+            required: false
+            example: Stockholm
+          type: string
+        birth_state:
+          description: |-
+            required: false
+            example: Stockholm
+          type: string
+        family_name:
+          description: |-
+            required: true
+            example: Svensson
+          type: string
+        family_name_at_birth:
+          description: |-
+            required: false
+            example: Karlsson
+          type: string
+        gender:
+          description: |-
+            required: false
+            example: male
+          type: string
+        given_name:
+          description: |-
+            required: true
+            example: Magnus
+          type: string
+        given_name_at_birth:
+          description: |-
+            required: false
+            example: Magnus
+          type: string
+        nationality:
+          description: |-
+            required: false
+            example: swedish
+          type: string
+        resident_address:
+          description: |-
+            required: false
+            example: 221b baker street
+          type: string
+        resident_city:
+          description: |-
+            required: false
+            example: london
+          type: string
+        resident_country:
+          description: |-
+            required: false
+            example: england
+          type: string
+        resident_house_number:
+          description: |-
+            required: false
+            example: 221b
+          type: string
+        resident_postal_code:
+          description: |-
+            required: false
+            example: W1U 6SG
+          type: string
+        resident_state:
+          description: |-
+            required: false
+            example: england
+          type: string
+        resident_street:
+          description: |-
+            required: false
+            example: baker street
+          type: string
+        uid:
+          description: |-
+            required: true
+            example: 85f90d4c-c03f-11ee-9386-ef1b105c4f3e
+          type: string
+        version:
+          description: |-
+            required: true
+            example: 1.0.0
+          type: string
+      required:
+      - birth_date
+      - family_name
+      - given_name
+      - uid
+      - version
+      type: object
+    model.MetaData:
+      example:
+        collect_id: collect_id
+        date_of_birth: date_of_birth
+        created_at: created_at
+        last_name: last_name
+        valid_from: valid_from
+        document_id: document_id
+        document_version: 1
+        uid: uid
+        authentic_source: authentic_source
+        authentic_source_person_id: authentic_source_person_id
+        member_state: member_state
+        revocation_id: revocation_id
+        valid_to: valid_to
+        first_name: first_name
+        document_type: PDA1
+      properties:
+        authentic_source:
+          description: |-
+            required: true
+            example: SUNET
+          type: string
+        authentic_source_person_id:
+          description: |-
+            required: true
+            example: 65636cbc-c03f-11ee-8dc4-67135cc9bd8a
+          type: string
+        collect_id:
+          description: |-
+            required: false
+            example: 98fe67fc-c03f-11ee-bbee-4345224d414f
+          type: string
+        created_at:
+          description: |-
+            required: false
+            example: 2024-03-15T10:00:00Z+01:00
+          type: string
+        date_of_birth:
+          description: |-
+            required: true
+            example: 1970-01-01
+          type: string
+        document_id:
+          description: |-
+            required: true
+            example: 5e7a981c-c03f-11ee-b116-9b12c59362b9
+          type: string
+        document_type:
+          description: |-
+            required: true
+            example: PDA1
+          enum:
+          - PDA1
+          - EHIC
+          type: string
+        document_version:
+          description: |-
+            required: true
+            example: 1
+          minimum: 1
+          type: integer
+        first_name:
+          description: |-
+            required: true
+            example: John
+          type: string
+        last_name:
+          description: |-
+            required: true
+            example: Doe
+          type: string
+        member_state:
+          description: |-
+            required: true
+            example: "DE"
+          type: string
+        revocation_id:
+          description: |-
+            required: false
+            example: 8dbd2680-c03f-11ee-a21b-034aafe41222
+          type: string
+        uid:
+          description: |-
+            required: true
+            example: 85f90d4c-c03f-11ee-9386-ef1b105c4f3e
+          type: string
+        valid_from:
+          description: |-
+            TODO(masv): ISO8601?
+            required: true
+            example: 2024-01-01
+          type: string
+        valid_to:
+          description: |-
+            TODO(masv): ISO8601?
+            required: true
+            example: 2024-12-31
+          type: string
+      required:
+      - authentic_source
+      - authentic_source_person_id
+      - collect_id
+      - date_of_birth
+      - document_id
+      - document_type
+      - document_version
+      - first_name
+      - last_name
+      - member_state
+      - revocation_id
+      - uid
+      - valid_from
+      - valid_to
+      type: object
+    model.QR:
+      example:
+        base64_image: base64_image
+        deep_link: deep_link
+      properties:
+        base64_image:
+          type: string
+        deep_link:
+          type: string
+      required:
+      - base64_image
+      - deep_link
+      type: object
+    model.Upload:
+      example:
+        qr:
+          base64_image: base64_image
+          deep_link: deep_link
+        attestation:
+          description_short: description_short
+          description_long: description_long
+          type: type
+          version: 0
+        document_data: "{}"
+        identity:
+          given_name_at_birth: given_name_at_birth
+          resident_street: resident_street
+          birth_city: birth_city
+          gender: gender
+          age_over_18: age_over_18
+          birth_date: birth_date
+          birth_place: birth_place
+          age_in_years: age_in_years
+          given_name: given_name
+          birth_state: birth_state
+          resident_postal_code: resident_postal_code
+          version: version
+          birth_country: birth_country
+          resident_house_number: resident_house_number
+          uid: uid
+          nationality: nationality
+          age_birth_year: age_birth_year
+          resident_address: resident_address
+          resident_state: resident_state
+          age_over_nn: age_over_nn
+          resident_country: resident_country
+          family_name: family_name
+          family_name_at_birth: family_name_at_birth
+          resident_city: resident_city
+        meta:
+          collect_id: collect_id
+          date_of_birth: date_of_birth
+          created_at: created_at
+          last_name: last_name
+          valid_from: valid_from
+          document_id: document_id
+          document_version: 1
+          uid: uid
+          authentic_source: authentic_source
+          authentic_source_person_id: authentic_source_person_id
+          member_state: member_state
+          revocation_id: revocation_id
+          valid_to: valid_to
+          first_name: first_name
+          document_type: PDA1
+      properties:
+        attestation:
+          $ref: '#/components/schemas/model.Attestation'
+        document_data:
+          type: object
+        identity:
+          $ref: '#/components/schemas/model.Identity'
+        meta:
+          $ref: '#/components/schemas/model.MetaData'
+        qr:
+          $ref: '#/components/schemas/model.QR'
+      required:
+      - attestation
+      - document_data
+      - identity
+      - meta
+      type: object
+    types.Document:
+      example:
+        transaction_id: transaction_id
+        base64_data: base64_data
+        reason: reason
+        modify_ts: 6
+        revoked_ts: 1
+        create_ts: 0
+        name: name
+        location: location
+        contact_info: contact_info
+        error: error
+        message: message
+      properties:
+        base64_data:
+          type: string
+        contact_info:
+          type: string
+        create_ts:
+          type: integer
+        error:
+          type: string
+        location:
+          type: string
+        message:
+          type: string
+        modify_ts:
+          type: integer
+        name:
+          type: string
+        reason:
+          type: string
+        revoked_ts:
+          type: integer
+        transaction_id:
+          type: string
+      type: object
+    types.Validation:
+      example:
+        transaction_id: transaction_id
+        valid_signature: true
+        is_revoked: true
+        error: error
+        message: message
+      properties:
+        error:
+          type: string
+        is_revoked:
+          type: boolean
+        message:
+          type: string
+        transaction_id:
+          type: string
+        valid_signature:
+          type: boolean
+      type: object
+    apiv1_IDMappingReply_data:
+      example:
+        authentic_source_person_id: authentic_source_person_id
+      properties:
+        authentic_source_person_id:
+          type: string
+      type: object
+    apiv1_PDFGetSignedReply_data:
+      example:
+        document:
+          transaction_id: transaction_id
+          base64_data: base64_data
+          reason: reason
+          modify_ts: 6
+          revoked_ts: 1
+          create_ts: 0
+          name: name
+          location: location
+          contact_info: contact_info
+          error: error
+          message: message
+        message: message
+      properties:
+        document:
+          $ref: '#/components/schemas/types.Document'
+        message:
+          type: string
+      type: object
+    apiv1_PDFRevokeReply_data:
+      example:
+        status: true
+      properties:
+        status:
+          type: boolean
+      type: object
+    apiv1_PDFSignReply_data:
+      example:
+        transaction_id: transaction_id
+      properties:
+        transaction_id:
+          type: string
+      required:
+      - transaction_id
+      type: object
+    apiv1_UploadReply_data:
+      example:
+        status: status
+      properties:
+        status:
+          type: string
+      type: object
+x-original-swagger-version: "2.0"

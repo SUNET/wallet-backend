@@ -10,10 +10,6 @@ import (
 	"vc/pkg/trace"
 )
 
-var (
-	BuildVarGitCommit string
-)
-
 //	@title		Datastore API
 //	@version	0.1.0
 //	@BasePath	/api/v1

@@ -1,5 +1,18 @@
 basePath: /api/v1
 definitions:
+  apiv1.DeleteDocumentRequest:
+    properties:
+      authentic_source:
+        description: |-
+          required: true
+          example: skatteverket
+        type: string
+      document_id:
+        description: |-
+          required: true
+          example: 5e7a981c-c03f-11ee-b116-9b12c59362b9
+        type: string
+    type: object
   apiv1.GetDocumentReply:
     properties:
       data:
@@ -22,18 +35,18 @@ definitions:
             type: string
         type: object
     type: object
-  apiv1.ListMetadataReply:
+  apiv1.NotificationReply:
     properties:
       data:
-        items:
-          $ref: '#/definitions/model.MetaData'
-        type: array
+        $ref: '#/definitions/model.QR'
     type: object
-  apiv1.ListMetadataRequest:
+  apiv1.NotificationRequest:
     properties:
       authentic_source:
         type: string
-      authentic_source_person_id:
+      document_id:
+        type: string
+      document_type:
         type: string
     type: object
   apiv1.PDFGetSignedReply:
@@ -85,7 +98,7 @@ definitions:
     properties:
       data:
         items:
-          $ref: '#/definitions/model.MetaData'
+          $ref: '#/definitions/model.Upload'
         type: array
     type: object
   apiv1.PortalRequest:
@@ -94,6 +107,13 @@ definitions:
         type: string
       authentic_source_person_id:
         type: string
+      validity_from:
+        type: string
+      validity_to:
+        type: string
+    required:
+    - authentic_source
+    - authentic_source_person_id
     type: object
   apiv1.RevokeReply:
     properties:
@@ -133,12 +153,177 @@ definitions:
       error:
         $ref: '#/definitions/helpers.Error'
     type: object
+  model.Attestation:
+    properties:
+      description_long:
+        description: |-
+          TODO(masv): change TextLong to DescriptionLong
+          required: true
+          example: European Health Insurance Card
+        type: string
+      description_short:
+        description: |-
+          TODO(masv): ShortText to DescriptionShort, more descriptive, pun intended
+          required: true
+          example: EHIC
+        type: string
+      type:
+        description: |-
+          required: true
+          example: secure
+        type: string
+      version:
+        description: |-
+          TODO(masv): change AttestationDataVersion to AttestationVersion, data seems redundant
+          required: true
+          example: 1.0.0
+        type: integer
+    required:
+    - description_long
+    - description_short
+    - type
+    - version
+    type: object
+  model.Identity:
+    properties:
+      age_birth_year:
+        description: |-
+          TODO(masv): int instead of string?
+          required: false
+          example: 1970
+        type: string
+      age_in_years:
+        description: |-
+          TODO(masv): int instead of string?
+          required: false
+          example: 19
+        type: string
+      age_over_18:
+        description: |-
+          TODO(masv): int instead of string?
+          required: false
+          example: 19
+        type: string
+      age_over_nn:
+        description: |-
+          TODO(masv): int instead of string? How is supposed to work, query NN?
+          required: false
+          example: 19
+        type: string
+      birth_city:
+        description: |-
+          required: false
+          example: Stockholm
+        type: string
+      birth_country:
+        description: |-
+          TODO(masv): full name or just country code?
+          required: false
+          example: sweden
+        type: string
+      birth_date:
+        description: |-
+          required: true
+          example: 1970-01-01
+        type: string
+      birth_place:
+        description: |-
+          required: false
+          example: Stockholm
+        type: string
+      birth_state:
+        description: |-
+          required: false
+          example: Stockholm
+        type: string
+      family_name:
+        description: |-
+          required: true
+          example: Svensson
+        type: string
+      family_name_at_birth:
+        description: |-
+          required: false
+          example: Karlsson
+        type: string
+      gender:
+        description: |-
+          required: false
+          example: male
+        type: string
+      given_name:
+        description: |-
+          required: true
+          example: Magnus
+        type: string
+      given_name_at_birth:
+        description: |-
+          required: false
+          example: Magnus
+        type: string
+      nationality:
+        description: |-
+          required: false
+          example: swedish
+        type: string
+      resident_address:
+        description: |-
+          required: false
+          example: 221b baker street
+        type: string
+      resident_city:
+        description: |-
+          required: false
+          example: london
+        type: string
+      resident_country:
+        description: |-
+          required: false
+          example: england
+        type: string
+      resident_house_number:
+        description: |-
+          required: false
+          example: 221b
+        type: string
+      resident_postal_code:
+        description: |-
+          required: false
+          example: W1U 6SG
+        type: string
+      resident_state:
+        description: |-
+          required: false
+          example: england
+        type: string
+      resident_street:
+        description: |-
+          required: false
+          example: baker street
+        type: string
+      uid:
+        description: |-
+          required: true
+          example: 85f90d4c-c03f-11ee-9386-ef1b105c4f3e
+        type: string
+      version:
+        description: |-
+          required: true
+          example: 1.0.0
+        type: string
+    required:
+    - birth_date
+    - family_name
+    - given_name
+    - uid
+    - version
+    type: object
   model.MetaData:
     properties:
       authentic_source:
         description: |-
           required: true
-          example: Sunet
+          example: SUNET
         type: string
       authentic_source_person_id:
         description: |-
@@ -147,8 +332,13 @@ definitions:
         type: string
       collect_id:
         description: |-
-          required: true
+          required: false
           example: 98fe67fc-c03f-11ee-bbee-4345224d414f
+        type: string
+      created_at:
+        description: |-
+          required: false
+          example: 2024-03-15T10:00:00Z+01:00
         type: string
       date_of_birth:
         description: |-
@@ -168,6 +358,12 @@ definitions:
         - PDA1
         - EHIC
         type: string
+      document_version:
+        description: |-
+          required: true
+          example: 1
+        minimum: 1
+        type: integer
       first_name:
         description: |-
           required: true
@@ -178,19 +374,32 @@ definitions:
           required: true
           example: Doe
         type: string
-      qr:
-        allOf:
-        - $ref: '#/definitions/model.QR'
-        description: 'required: false'
-      revocation_id:
+      member_state:
         description: |-
           required: true
+          example: "DE"
+        type: string
+      revocation_id:
+        description: |-
+          required: false
           example: 8dbd2680-c03f-11ee-a21b-034aafe41222
         type: string
       uid:
         description: |-
           required: true
           example: 85f90d4c-c03f-11ee-9386-ef1b105c4f3e
+        type: string
+      valid_from:
+        description: |-
+          TODO(masv): ISO8601?
+          required: true
+          example: 2024-01-01
+        type: string
+      valid_to:
+        description: |-
+          TODO(masv): ISO8601?
+          required: true
+          example: 2024-12-31
         type: string
     required:
     - authentic_source
@@ -199,24 +408,40 @@ definitions:
     - date_of_birth
     - document_id
     - document_type
+    - document_version
     - first_name
     - last_name
+    - member_state
     - revocation_id
     - uid
+    - valid_from
+    - valid_to
     type: object
   model.QR:
     properties:
       base64_image:
         type: string
+      deep_link:
+        type: string
     required:
     - base64_image
+    - deep_link
     type: object
   model.Upload:
     properties:
+      attestation:
+        $ref: '#/definitions/model.Attestation'
       document_data: {}
+      identity:
+        $ref: '#/definitions/model.Identity'
       meta:
         $ref: '#/definitions/model.MetaData'
+      qr:
+        $ref: '#/definitions/model.QR'
     required:
+    - attestation
+    - document_data
+    - identity
     - meta
     type: object
   types.Document:
@@ -263,6 +488,30 @@ info:
   version: 0.1.0
 paths:
   /document:
+    delete:
+      consumes:
+      - application/json
+      description: delete one document endpoint
+      operationId: delete-document
+      parameters:
+      - description: ' '
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/apiv1.DeleteDocumentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorResponse'
+      summary: DeleteDocument
+      tags:
+      - dc4eu
     post:
       consumes:
       - application/json
@@ -449,31 +698,31 @@ paths:
       summary: Validate pdf
       tags:
       - ladok
-  /metadata:
+  /notification:
     post:
       consumes:
       - application/json
-      description: List metadata endpoint
-      operationId: list-metadata
+      description: notification endpoint
+      operationId: generic-notification
       parameters:
       - description: ' '
         in: body
         name: req
         required: true
         schema:
-          $ref: '#/definitions/apiv1.ListMetadataRequest'
+          $ref: '#/definitions/apiv1.NotificationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Success
           schema:
-            $ref: '#/definitions/apiv1.ListMetadataReply'
+            $ref: '#/definitions/apiv1.NotificationReply'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/helpers.ErrorResponse'
-      summary: ListMetadata
+      summary: Notification
       tags:
       - dc4eu
   /portal:

@@ -22,15 +22,14 @@ func (c *Client) MockNext(ctx context.Context, inData *MockNextRequest) (*MockNe
 	// send to datastore
 	mockUpload, err := c.mockOne(ctx, inData.AuthenticSource, inData.DocumentType)
 	if err != nil {
+		c.log.Debug("mocknext", "mockone", err)
 		return nil, err
 	}
 
-	restReply, _, err := c.uploader(ctx, mockUpload)
+	_, _, err = c.uploader(ctx, mockUpload)
 	if err != nil {
+		c.log.Debug("uploader", "error", err)
 		return nil, err
-	}
-	if restReply.Data.Status != "OK" {
-		return nil, errors.New("upload failed")
 	}
 
 	reply := &MockNextReply{
@@ -67,12 +66,9 @@ func (c *Client) MockBulk(ctx context.Context, inData *MockBulkRequest) (*MockBu
 		}
 		documentIDS = append(documentIDS, mockUpload.Meta.DocumentID)
 
-		restReply, _, err := c.uploader(ctx, mockUpload)
+		_, _, err = c.uploader(ctx, mockUpload)
 		if err != nil {
 			return nil, err
-		}
-		if restReply.Data.Status != "OK" {
-			return nil, errors.New("upload failed")
 		}
 	}
 

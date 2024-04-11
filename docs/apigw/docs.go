@@ -54,6 +54,42 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "delete one document endpoint",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dc4eu"
+                ],
+                "summary": "DeleteDocument",
+                "operationId": "delete-document",
+                "parameters": [
+                    {
+                        "description": " ",
+                        "name": "req",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apiv1.DeleteDocumentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/document/collection_code": {
@@ -298,9 +334,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/metadata": {
+        "/notification": {
             "post": {
-                "description": "List metadata endpoint",
+                "description": "notification endpoint",
                 "consumes": [
                     "application/json"
                 ],
@@ -310,8 +346,8 @@ const docTemplate = `{
                 "tags": [
                     "dc4eu"
                 ],
-                "summary": "ListMetadata",
-                "operationId": "list-metadata",
+                "summary": "Notification",
+                "operationId": "generic-notification",
                 "parameters": [
                     {
                         "description": " ",
@@ -319,7 +355,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/apiv1.ListMetadataRequest"
+                            "$ref": "#/definitions/apiv1.NotificationRequest"
                         }
                     }
                 ],
@@ -327,7 +363,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/apiv1.ListMetadataReply"
+                            "$ref": "#/definitions/apiv1.NotificationReply"
                         }
                     },
                     "400": {
@@ -464,6 +500,19 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "apiv1.DeleteDocumentRequest": {
+            "type": "object",
+            "properties": {
+                "authentic_source": {
+                    "description": "required: true\nexample: skatteverket",
+                    "type": "string"
+                },
+                "document_id": {
+                    "description": "required: true\nexample: 5e7a981c-c03f-11ee-b116-9b12c59362b9",
+                    "type": "string"
+                }
+            }
+        },
         "apiv1.GetDocumentReply": {
             "type": "object",
             "properties": {
@@ -499,24 +548,24 @@ const docTemplate = `{
                 }
             }
         },
-        "apiv1.ListMetadataReply": {
+        "apiv1.NotificationReply": {
             "type": "object",
             "properties": {
                 "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.MetaData"
-                    }
+                    "$ref": "#/definitions/model.QR"
                 }
             }
         },
-        "apiv1.ListMetadataRequest": {
+        "apiv1.NotificationRequest": {
             "type": "object",
             "properties": {
                 "authentic_source": {
                     "type": "string"
                 },
-                "authentic_source_person_id": {
+                "document_id": {
+                    "type": "string"
+                },
+                "document_type": {
                     "type": "string"
                 }
             }
@@ -599,18 +648,28 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.MetaData"
+                        "$ref": "#/definitions/model.Upload"
                     }
                 }
             }
         },
         "apiv1.PortalRequest": {
             "type": "object",
+            "required": [
+                "authentic_source",
+                "authentic_source_person_id"
+            ],
             "properties": {
                 "authentic_source": {
                     "type": "string"
                 },
                 "authentic_source_person_id": {
+                    "type": "string"
+                },
+                "validity_from": {
+                    "type": "string"
+                },
+                "validity_to": {
                     "type": "string"
                 }
             }
@@ -675,6 +734,141 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Attestation": {
+            "type": "object",
+            "required": [
+                "description_long",
+                "description_short",
+                "type",
+                "version"
+            ],
+            "properties": {
+                "description_long": {
+                    "description": "TODO(masv): change TextLong to DescriptionLong\nrequired: true\nexample: European Health Insurance Card",
+                    "type": "string"
+                },
+                "description_short": {
+                    "description": "TODO(masv): ShortText to DescriptionShort, more descriptive, pun intended\nrequired: true\nexample: EHIC",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "required: true\nexample: secure",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "TODO(masv): change AttestationDataVersion to AttestationVersion, data seems redundant\nrequired: true\nexample: 1.0.0",
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Identity": {
+            "type": "object",
+            "required": [
+                "birth_date",
+                "family_name",
+                "given_name",
+                "uid",
+                "version"
+            ],
+            "properties": {
+                "age_birth_year": {
+                    "description": "TODO(masv): int instead of string?\nrequired: false\nexample: 1970",
+                    "type": "string"
+                },
+                "age_in_years": {
+                    "description": "TODO(masv): int instead of string?\nrequired: false\nexample: 19",
+                    "type": "string"
+                },
+                "age_over_18": {
+                    "description": "TODO(masv): int instead of string?\nrequired: false\nexample: 19",
+                    "type": "string"
+                },
+                "age_over_nn": {
+                    "description": "TODO(masv): int instead of string? How is supposed to work, query NN?\nrequired: false\nexample: 19",
+                    "type": "string"
+                },
+                "birth_city": {
+                    "description": "required: false\nexample: Stockholm",
+                    "type": "string"
+                },
+                "birth_country": {
+                    "description": "TODO(masv): full name or just country code?\nrequired: false\nexample: sweden",
+                    "type": "string"
+                },
+                "birth_date": {
+                    "description": "required: true\nexample: 1970-01-01",
+                    "type": "string"
+                },
+                "birth_place": {
+                    "description": "required: false\nexample: Stockholm",
+                    "type": "string"
+                },
+                "birth_state": {
+                    "description": "required: false\nexample: Stockholm",
+                    "type": "string"
+                },
+                "family_name": {
+                    "description": "required: true\nexample: Svensson",
+                    "type": "string"
+                },
+                "family_name_at_birth": {
+                    "description": "required: false\nexample: Karlsson",
+                    "type": "string"
+                },
+                "gender": {
+                    "description": "required: false\nexample: male",
+                    "type": "string"
+                },
+                "given_name": {
+                    "description": "required: true\nexample: Magnus",
+                    "type": "string"
+                },
+                "given_name_at_birth": {
+                    "description": "required: false\nexample: Magnus",
+                    "type": "string"
+                },
+                "nationality": {
+                    "description": "required: false\nexample: swedish",
+                    "type": "string"
+                },
+                "resident_address": {
+                    "description": "required: false\nexample: 221b baker street",
+                    "type": "string"
+                },
+                "resident_city": {
+                    "description": "required: false\nexample: london",
+                    "type": "string"
+                },
+                "resident_country": {
+                    "description": "required: false\nexample: england",
+                    "type": "string"
+                },
+                "resident_house_number": {
+                    "description": "required: false\nexample: 221b",
+                    "type": "string"
+                },
+                "resident_postal_code": {
+                    "description": "required: false\nexample: W1U 6SG",
+                    "type": "string"
+                },
+                "resident_state": {
+                    "description": "required: false\nexample: england",
+                    "type": "string"
+                },
+                "resident_street": {
+                    "description": "required: false\nexample: baker street",
+                    "type": "string"
+                },
+                "uid": {
+                    "description": "required: true\nexample: 85f90d4c-c03f-11ee-9386-ef1b105c4f3e",
+                    "type": "string"
+                },
+                "version": {
+                    "description": "required: true\nexample: 1.0.0",
+                    "type": "string"
+                }
+            }
+        },
         "model.MetaData": {
             "type": "object",
             "required": [
@@ -684,14 +878,18 @@ const docTemplate = `{
                 "date_of_birth",
                 "document_id",
                 "document_type",
+                "document_version",
                 "first_name",
                 "last_name",
+                "member_state",
                 "revocation_id",
-                "uid"
+                "uid",
+                "valid_from",
+                "valid_to"
             ],
             "properties": {
                 "authentic_source": {
-                    "description": "required: true\nexample: Sunet",
+                    "description": "required: true\nexample: SUNET",
                     "type": "string"
                 },
                 "authentic_source_person_id": {
@@ -699,7 +897,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "collect_id": {
-                    "description": "required: true\nexample: 98fe67fc-c03f-11ee-bbee-4345224d414f",
+                    "description": "required: false\nexample: 98fe67fc-c03f-11ee-bbee-4345224d414f",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "required: false\nexample: 2024-03-15T10:00:00Z+01:00",
                     "type": "string"
                 },
                 "date_of_birth": {
@@ -718,6 +920,11 @@ const docTemplate = `{
                         "EHIC"
                     ]
                 },
+                "document_version": {
+                    "description": "required: true\nexample: 1",
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "first_name": {
                     "description": "required: true\nexample: John",
                     "type": "string"
@@ -726,20 +933,24 @@ const docTemplate = `{
                     "description": "required: true\nexample: Doe",
                     "type": "string"
                 },
-                "qr": {
-                    "description": "required: false",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.QR"
-                        }
-                    ]
+                "member_state": {
+                    "description": "required: true\nexample: \"DE\"",
+                    "type": "string"
                 },
                 "revocation_id": {
-                    "description": "required: true\nexample: 8dbd2680-c03f-11ee-a21b-034aafe41222",
+                    "description": "required: false\nexample: 8dbd2680-c03f-11ee-a21b-034aafe41222",
                     "type": "string"
                 },
                 "uid": {
                     "description": "required: true\nexample: 85f90d4c-c03f-11ee-9386-ef1b105c4f3e",
+                    "type": "string"
+                },
+                "valid_from": {
+                    "description": "TODO(masv): ISO8601?\nrequired: true\nexample: 2024-01-01",
+                    "type": "string"
+                },
+                "valid_to": {
+                    "description": "TODO(masv): ISO8601?\nrequired: true\nexample: 2024-12-31",
                     "type": "string"
                 }
             }
@@ -747,10 +958,14 @@ const docTemplate = `{
         "model.QR": {
             "type": "object",
             "required": [
-                "base64_image"
+                "base64_image",
+                "deep_link"
             ],
             "properties": {
                 "base64_image": {
+                    "type": "string"
+                },
+                "deep_link": {
                     "type": "string"
                 }
             }
@@ -758,12 +973,24 @@ const docTemplate = `{
         "model.Upload": {
             "type": "object",
             "required": [
+                "attestation",
+                "document_data",
+                "identity",
                 "meta"
             ],
             "properties": {
+                "attestation": {
+                    "$ref": "#/definitions/model.Attestation"
+                },
                 "document_data": {},
+                "identity": {
+                    "$ref": "#/definitions/model.Identity"
+                },
                 "meta": {
                     "$ref": "#/definitions/model.MetaData"
+                },
+                "qr": {
+                    "$ref": "#/definitions/model.QR"
                 }
             }
         },

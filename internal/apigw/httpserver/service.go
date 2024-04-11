@@ -3,6 +3,8 @@ package httpserver
 import (
 	"context"
 	"crypto/tls"
+	"embed"
+	"io/fs"
 	"net/http"
 	"reflect"
 	"strings"
@@ -22,6 +24,9 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+//go:embed openapiv3
+var openAPIV3Folder embed.FS
 
 // Service is the service object for httpserver
 type Service struct {
@@ -87,8 +92,15 @@ func New(ctx context.Context, config *model.Cfg, api *apiv1.Client, tp *trace.Tr
 	rgRoot := s.gin.Group("/")
 	s.regEndpoint(ctx, rgRoot, http.MethodGet, "health", s.endpointHealth)
 
-	rgDocs := rgRoot.Group("/swagger")
+	rgDocs := rgRoot.Group("swagger")
 	rgDocs.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	rgOpenAPIV3 := rgRoot.Group("openapi/v3")
+	openAPIV3Files, err := fs.Sub(openAPIV3Folder, "openapiv3")
+	if err != nil {
+		return nil, err
+	}
+	rgOpenAPIV3.StaticFS("/", http.FS(openAPIV3Files))
 
 	rgAPIv1 := rgRoot.Group("api/v1")
 
@@ -113,15 +125,16 @@ func New(ctx context.Context, config *model.Cfg, api *apiv1.Client, tp *trace.Tr
 	// Run http server
 	go func() {
 		if s.config.APIGW.APIServer.TLS.Enabled {
+			s.logger.Debug("TLS enabled")
 			s.applyTLSConfig(ctx)
 
-			err := s.server.ListenAndServeTLS(s.config.APIGW.APIServer.TLS.CertFilePath, s.config.APIGW.APIServer.TLS.KeyFilePath)
-			if err != nil {
+			if err := s.server.ListenAndServeTLS(s.config.APIGW.APIServer.TLS.CertFilePath, s.config.APIGW.APIServer.TLS.KeyFilePath); err != nil {
 				s.logger.Error(err, "listen_and_server_tls")
 			}
+
 		} else {
-			err = s.server.ListenAndServe()
-			if err != nil {
+			s.logger.Debug("TLS disabled")
+			if err := s.server.ListenAndServe(); err != nil {
 				s.logger.Error(err, "listen_and_server")
 			}
 		}
@@ -132,19 +145,27 @@ func New(ctx context.Context, config *model.Cfg, api *apiv1.Client, tp *trace.Tr
 	return s, nil
 }
 
-func (s *Service) regEndpoint(ctx context.Context, rg *gin.RouterGroup, method, path string, handler func(context.Context, *gin.Context) (interface{}, error)) {
+func (s *Service) regEndpoint(ctx context.Context, rg *gin.RouterGroup, method, path string, handler func(context.Context, *gin.Context) (any, error)) {
+	// Should not have tracing since it will keep the span open for each endpoint, it will just make it harder to find the current trace in jaeger.
 	rg.Handle(method, path, func(c *gin.Context) {
+		ctx, span := s.tp.Start(ctx, "httpserver:regEndpoint")
+		defer span.End()
+		span.SetName(c.Request.URL.String())
+
 		res, err := handler(ctx, c)
 		if err != nil {
-			renderContent(c, 400, gin.H{"error": helpers.NewErrorFromError(err)})
+			s.renderContent(ctx, c, 400, gin.H{"error": helpers.NewErrorFromError(err)})
 			return
 		}
 
-		renderContent(c, 200, res)
+		s.renderContent(ctx, c, 200, res)
 	})
 }
 
-func renderContent(c *gin.Context, code int, data interface{}) {
+func (s *Service) renderContent(ctx context.Context, c *gin.Context, code int, data interface{}) {
+	ctx, span := s.tp.Start(ctx, "httpserver:renderContent")
+	defer span.End()
+
 	switch c.NegotiateFormat(gin.MIMEJSON, "*/*") {
 	case gin.MIMEJSON:
 		c.JSON(code, data)
@@ -158,5 +179,6 @@ func renderContent(c *gin.Context, code int, data interface{}) {
 // Close closing httpserver
 func (s *Service) Close(ctx context.Context) error {
 	s.logger.Info("Quit")
+	ctx.Done()
 	return nil
 }
