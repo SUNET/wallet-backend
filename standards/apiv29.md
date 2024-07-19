@@ -11,7 +11,7 @@ The business specification is currently in version 2.8.
     This document corresponds to the implementation of the API in Version 0.3.3 - revision 1.
     In relation to the last version, schema definitions for PDA1 and EHIC have been added.
 
-## Endpoint summery
+## Endpoint summary
 
 | method | endpoint | description |
 |---|---|---|
@@ -87,7 +87,7 @@ Please note that currently the configuration is present as json, but could also 
 
 The Process starts with the authentic source which is uploading all relevant data to the `datastore`. All steps regarding the general application of an attestation are out of scope and reside to the internal processes of the authentic source.
 
-The data upload consist of four objects used as input for the call. These are `meta`, `identity`, `attestation` and `document_data`.
+The data upload consists of four objects used as input for the call. These are `meta`, `identity`, `attestation` and `document_data`.
 
 First, the meta object consists of the `authentic_source_id`, document type and document ID. These act as the main identifier in the `datastore`. One document ID is valid and unique per document type and authentic source ID. Another required input is the institutional identifier of the person to ensure flexibility in identification and reduce susceptibility to errors. Again, this may also be valid and unique only in the domain of the authentic source. Therefore, in order to match an institutional person ID (authentic_source_person_id) a filter by authentic source ID needs to be applied before a selection operation is done. Finally, the meta object has defined revocation and collect ID as optional parameters. They may be set by the authentic source for special use cases and preferences. If not defined by the upload they shall be set equal to the document ID by the `datastore` System.
 
@@ -158,7 +158,7 @@ After the QR code and link are received the authentic source may follow existing
 | ------------------ | ---------------- | -------------------- | ----------------- |
 | string             | authentic_source | r | globally unambiguous name of the issuing entity (agency or institution) |
 | string             | document_type    | r | Type of Document, initially only “EHIC” or “PDA1” |
-| string             | document_id      | r | uniq identifier within authentic_source and document_type namespace |
+| string             | document_id      | r | unique identifier within authentic_source and document_type namespace |
 
 #### Output / Response
 
@@ -190,7 +190,7 @@ It is possible that more than one person is authorized to collect a credential. 
 | ---------- | ---------------- | -------------------- | ------------------ |
 | string   | authentic_source         | r | globally unambiguous name of the issuing entity (agency or institution) |
 | string   | document_type            | r | Type of Document, initially only “EHIC” or “PDA1” |
-| string   | document_id              | r | uniq identifier within authentic_source and document_type namespace |
+| string   | document_id              | r | unique identifier within authentic_source and document_type namespace |
 | object   | [identity {}](#identity) | r | Object containing all data for later identity mapping – as defined in the upload endpoint |
 
 ### Output / Response
@@ -215,11 +215,11 @@ If an identity is no longer authorized to retrieve a credential or if it is an i
 
 #### Input / Request
 
-| Type   | Attribute                  | (r)eq. / (o)pt. | Attibute Description |
+| Type   | Attribute                  | (r)eq. / (o)pt. | Attribute Description |
 | ------- | -------------------------- | -------------------- | ----------------------------------------------- |
 | string | authentic_source           | r | globally unambiguous name of the issuing entity (agency or institution) |
 | string | document_type              | r | Type of Document, initially only “EHIC” or “PDA1” |
-| string | document_id                | r | uniq identifier within authentic_source and document_type namespace |
+| string | document_id                | r | unique identifier within authentic_source and document_type namespace |
 | string | authentic_source_person_id | r | unique identifier within authentic_source namespace AND globally unique within Authentic Source. |
 
 ### Output / Response
@@ -244,7 +244,7 @@ Another important endpoint for the upload API shall be used to delete uploaded d
 
 #### Input / Request
 
-| Type | Attribute        | (r)eq. / (o)pt. | Attibute Description |
+| Type | Attribute        | (r)eq. / (o)pt. | Attribute Description |
 |-------|----------------|--------------------|--|
 | string | authentic_source | r | globally unambiguous name of the issuing entity (agency or institution) |
 | string | document_type    | r | Type of Document, initially only “EHIC” or “PDA1”                       |
@@ -311,16 +311,16 @@ Note: depending on the architecture, the issuer system will determine the endpoi
 
 #### Input / Request
 
-| Type | Attribute | (r)eq. / (o)pt. | Attibute Description  |
+| Type | Attribute | (r)eq. / (o)pt. | Attribute Description  |
 | ----- | --------- | -------------------- | ---------------- |
 | string | authentic_source           | r | globally unambiguous name of the issuing entity (agency or institution) |
 | object | [identity {}](#identity)   | r | Object containing all data for later identity mapping – as defined in upload endpoint |
 
 #### Output / Response
 
-| Type | Attribute | (r)eq. / (o)pt. | Attibute Description  |
+| Type | Attribute | (r)eq. / (o)pt. | Attribute Description  |
 | ----- | --------- | -------------------- | ---------------- |
-| string | authentic_source_person_id | r | uniq identifier within authentic_source namespace AND globally uniq within Authentic Source. |
+| string | authentic_source_person_id | r | unique identifier within authentic_source namespace AND globally unique within Authentic Source. |
 
 http OK 200, else 400 and error body
 
@@ -350,7 +350,7 @@ In the response are expected relevant `meta`-data per attestation such as `docum
 
 #### Input / Request
 
-| Type  | Attribute              | (r)eq. / (o)pt. | Attibute Description |
+| Type  | Attribute              | (r)eq. / (o)pt. | Attribute Description |
 | ------ | -------------------------| -------------------- | ------------ |
 | string | authentic_source         | o | globally unambiguous name of the issuing entity (agency or institution) |
 | object | [identity {}](#identity) | r | as defined in upload |
@@ -360,7 +360,7 @@ In the response are expected relevant `meta`-data per attestation such as `docum
 
 #### Output / Response
 
-| Type  | Attribute | (r)eq. / (o)pt. | Attibute Description |
+| Type  | Attribute | (r)eq. / (o)pt. | Attribute Description |
 | ------| ---------------------- | -------------------- | --- |
 | array | [documentlist](#document_list) | | |
 
@@ -386,15 +386,15 @@ Note: depending on the architecture, the issuer system will determine the endpoi
 
 #### Input / Request
 
-| Type    | Attribute        | (r)eq. / (o)pt. | Attibute Description |
+| Type    | Attribute        | (r)eq. / (o)pt. | Attribute Description |
 | ------- | ---------------- | -------------------- | ---------------- |
 | string | authentic_source | r | globally unambiguous name of the issuing entity (agency or institution) |
 | string | document_type    | r | Type of Document, initially only “EHIC” or “PDA1”                       |
-| string | document_id      | r | uniq identifier within authentic_source and document_type namespace     |
+| string | document_id      | r | unique identifier within authentic_source and document_type namespace     |
 
 #### Output / Response
 
-| Type   | Attribute        | (r)eq. / (o)pt. | Attibute Description |
+| Type   | Attribute        | (r)eq. / (o)pt. | Attribute Description |
 | ------- | ---------------- | -------------------- | ---------------- |
 | object | document_data    | r | JSON electronic document |
 | object | [meta {}](#meta) | r | Technical metadata object as defined in upload endpoint |
@@ -424,7 +424,7 @@ The endpoint can also be used if an agreement has been revised. Calling the endp
 | Type          | Attribute                  | (r)eq. / (o)pt. | Attribute Description |
 | -------- | -------------------------- | -------------------- | ---------------------- |
 | string  | authentic_source           | r | globally unambiguous name of the issuing entity (agency or institution) |
-| string  | authentic_source_person_id | r | uniq identifier within authentic_source namespace AND globally uniq within Authentic Source |
+| string  | authentic_source_person_id | r | unique identifier within authentic_source namespace AND globally unique within Authentic Source |
 | string  | consent_to                 | o | String representing the specific consent. |
 | string  | session_id                 | o | Session identifying information for further reference and allocability |
 
@@ -450,14 +450,14 @@ If the POST /consent defined above is used, the following endpoint can be used t
 
 #### Input / Request
 
-| Type   | Attribute                  | (r)eq. / (o)pt. | Attibute Description |
+| Type   | Attribute                  | (r)eq. / (o)pt. | Attribute Description |
 | ------ | -------------------------- | -------------------- | --- |
 | string | authentic_source           | r | globally unambiguous name of the issuing entity (agency or institution) |
-| string | authentic_source_person_id | r | uniq identifier within authentic_source namespace AND globally uniq within Authentic Source |
+| string | authentic_source_person_id | r | unique identifier within authentic_source namespace AND globally unique within Authentic Source |
 
 #### Output / Response
 
-| Type     | Attribute   | (r)eq. / (o)pt. | Attibute Description|
+| Type     | Attribute   | (r)eq. / (o)pt. | Attribute Description|
 | ---------| ----------- | -------------------- | --------------- |
 | string   | consent_to  | r | String representing the specific consent.|
 | string   | session_id  | r | Session identifying information for further reference and allocability|
@@ -493,7 +493,7 @@ The endpoint responds with a simple status code with information about the opera
 
 #### Input / Request
 
-| Type    | Attribute        | (r)eq. / (o)pt. | Attibute Description |
+| Type    | Attribute        | (r)eq. / (o)pt. | Attribute Description |
 | ------- | ---------------- | -------------------- | --------------- |
 | string  | authentic_source             | r | globally unambiguous name of the issuing entity (agency or institution) |
 | string  | document_type                | r | Type of Document, initially only “EHIC” or “PDA1” |
@@ -592,7 +592,7 @@ The currents schema definitions are defined =here= and can be used for testing. 
 
 this is just a type to make presentation easier, it will not affect anything in the client API.
 
-| Type  | Attribute              | (r)eq. / (o)pt. | Attibute Description |
+| Type  | Attribute              | (r)eq. / (o)pt. | Attribute Description |
 | ------| ---------------------- | -------------------- | ------------------------- |
 | object | [meta {}](#meta)                         | r | Technical metadata object - content as defined in the upload|
 | object | [document_display {}](#document_display) | o | Generic Object which includes all information to display via portal API|
@@ -600,7 +600,7 @@ this is just a type to make presentation easier, it will not affect anything in 
 
 ### qr{}
 
-| Type  | Attribute              | (r)eq. / (o)pt. | Attibute Description |
+| Type  | Attribute              | (r)eq. / (o)pt. | Attribute Description |
 | ------| ---------------------- | -------------------- | ------------------------- |
 | string | base64_image | r | |
 | string | deep_link | r | |
@@ -852,7 +852,7 @@ this is just a type to make presentation easier, it will not affect anything in 
         "status_confirmation_code": {
             "type": "string",
             "pattern": "^(01|02|03|04|05|06|07|08|09|10|11|12){1}$",
-            "description": "Mapped from EESSI articleRegulationECNo8832004 A009 01->01, 02->03; 01 - Posted employed person, 02 - Employed working in 2 or more states, 03 - Posted self employed person, 04 - Selfemployed working in 2 or more states, 05 - Civil Servant, 06 - Contract staff, 07 - Mariner, 08 - Working as a employed person and as a selfemployed person in different states, 09 - Working as a civil servant in one State and as an employed / self-employed person in one or more other States, 10 - Flight or cabin crew member, 11 - Exception, 12 - Working as an employed / self-employed person in the State inwhich the legeslation applies"
+            "description": "Mapped from EESSI articleRegulationECNo8832004 A009 01->01, 02->03; 01 - Posted employed person, 02 - Employed working in 2 or more states, 03 - Posted self employed person, 04 - Selfemployed working in 2 or more states, 05 - Civil Servant, 06 - Contract staff, 07 - Mariner, 08 - Working as a employed person and as a selfemployed person in different states, 09 - Working as a civil servant in one State and as an employed / self-employed person in one or more other States, 10 - Flight or cabin crew member, 11 - Exception, 12 - Working as an employed / self-employed person in the State in which the legislation applies"
         },
         "document_identifier": {
             "type": "string",
