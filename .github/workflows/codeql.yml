@@ -22,7 +22,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze
+    name: AnalyzeVC
     runs-on: ubuntu-latest
     permissions:
       actions: write
