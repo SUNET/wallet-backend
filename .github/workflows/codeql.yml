@@ -40,6 +40,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Install APT packages
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: protobuf-compiler
+        version: 1.0
+
     - name: Install Go
       uses: actions/setup-go@v5
       with:
@@ -47,11 +53,9 @@ jobs:
 
     - name: Install go packages
       run: |
-        make install-tools
-      # go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-      #  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-      #  export PATH="$PATH:$(go env GOPATH)/bin"
-      #  go install github.com/swaggo/swag/cmd/swag@latest   
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+        go install github.com/swaggo/swag/cmd/swag@latest
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
