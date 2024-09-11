@@ -1,8 +1,10 @@
-.PHONY : docker-build docker-push release
+.PHONY: default docker-build docker-push release
 
 NAME 					:= vc
 LDFLAGS                 := -ldflags "-w -s --extldflags '-static'"
 LDFLAGS_DYNAMIC			:= -ldflags "-w -s"
+
+build: proto build-verifier build-datastore build-registry build-persistent build-mockas build-apigw build-ui
 
 test: test-verifier test-datastore
 
@@ -50,8 +52,6 @@ DOCKER_TAG_MOCKAS 		:= docker.sunet.se/dc4eu/mockas:$(VERSION)
 DOCKER_TAG_ISSUER 		:= docker.sunet.se/dc4eu/issuer:$(VERSION)
 DOCKER_TAG_UI 			:= docker.sunet.se/dc4eu/ui:$(VERSION)
 
-
-build: proto build-verifier build-datastore build-registry build-persistent build-mockas build-apigw build-ui
 
 build-verifier:
 	$(info Building verifier)
