@@ -93,7 +93,7 @@ func New(ctx context.Context, config *model.Cfg, api *apiv1.Client, tp *trace.Tr
 	s.regEndpoint(ctx, rgAPIv1, http.MethodPost, "/document/revoke", s.endpointRevokeDocument)
 	s.regEndpoint(ctx, rgAPIv1, http.MethodPost, "/id/mapping", s.endpointIDMapping)
 
-	s.regEndpoint(ctx, rgAPIv1, http.MethodGet, "/credential", s.endpointCredential)
+	s.regEndpoint(ctx, rgAPIv1, http.MethodPost, "/credential", s.endpointCredential)
 
 	// Run http server
 	go func() {

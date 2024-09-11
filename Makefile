@@ -1,8 +1,10 @@
-.PHONY : docker-build docker-push release
+.PHONY: default docker-build docker-push release
 
 NAME 					:= vc
 LDFLAGS                 := -ldflags "-w -s --extldflags '-static'"
 LDFLAGS_DYNAMIC			:= -ldflags "-w -s"
+
+build: build-verifier build-datastore build-registry build-persistent build-mockas build-apigw build-ui
 
 test: test-verifier test-datastore
 
@@ -50,8 +52,6 @@ DOCKER_TAG_MOCKAS 		:= docker.sunet.se/dc4eu/mockas:$(VERSION)
 DOCKER_TAG_ISSUER 		:= docker.sunet.se/dc4eu/issuer:$(VERSION)
 DOCKER_TAG_UI 			:= docker.sunet.se/dc4eu/ui:$(VERSION)
 
-
-build: proto build-verifier build-datastore build-registry build-persistent build-mockas build-apigw build-ui
 
 build-verifier:
 	$(info Building verifier)
@@ -236,7 +236,7 @@ ci_build: docker-build docker-push
 proto: proto-status proto-registry
 
 proto-registry:
-	protoc --proto_path=./proto/ --go-grpc_opt=module=vc --go-grpc_out=. --go_opt=module=vc --go_out=. ./proto/v1-status-model.proto ./proto/v1-registry.proto
+	protoc --proto_path=./proto/ --go-grpc_opt=module=vc --go-grpc_out=. --go_opt=module=vc --go_out=. ./proto/v1-registry.proto
 
 proto-status:
 	protoc --proto_path=./proto/ --go-grpc_opt=module=vc --go_opt=module=vc --go_out=. --go-grpc_out=. ./proto/v1-status-model.proto 

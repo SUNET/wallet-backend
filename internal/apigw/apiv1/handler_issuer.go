@@ -68,7 +68,7 @@ type RevokeReply struct {
 func (c *Client) Revoke(ctx context.Context, req *RevokeRequest) (*RevokeReply, error) {
 	optInsecure := grpc.WithTransportCredentials(insecure.NewCredentials())
 
-	conn, err := grpc.Dial(c.cfg.Registry.RPCServer.Addr, optInsecure)
+	conn, err := grpc.NewClient(c.cfg.Registry.RPCServer.Addr, optInsecure)
 	if err != nil {
 		return nil, err
 	}
