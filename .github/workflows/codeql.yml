@@ -46,6 +46,12 @@ jobs:
           packages: protobuf-compiler
           version: 1.0
 
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+         # cache: false
+
       - name: Install go packages
         run: |
           go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
@@ -58,11 +64,6 @@ jobs:
           which protoc-gen-go
           which protoc-gen-go-grpc
 
-      - name: Install Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: false
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
