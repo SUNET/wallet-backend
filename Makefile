@@ -4,7 +4,7 @@ NAME 					:= vc
 LDFLAGS                 := -ldflags "-w -s --extldflags '-static'"
 LDFLAGS_DYNAMIC			:= -ldflags "-w -s"
 
-build: proto build-verifier build-datastore build-registry build-persistent build-mockas build-apigw build-ui
+build: build-verifier build-datastore build-registry build-persistent build-mockas build-apigw build-ui
 
 test: test-verifier test-datastore
 
