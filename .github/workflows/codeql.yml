@@ -51,7 +51,12 @@ jobs:
           go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
           go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
           go install github.com/swaggo/swag/cmd/swag@latest
-          go install google.golang.org/protobuf@latest
+
+      - name: Which protoc
+        run: |
+          which protoc
+          which protoc-gen-go
+          which protoc-gen-go-grpc
 
       - name: Install Go
         uses: actions/setup-go@v5
