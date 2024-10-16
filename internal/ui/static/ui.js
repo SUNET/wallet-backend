@@ -405,7 +405,6 @@ const addUploadFormArticleToContainer = () => {
 };
 
 
-
 const addCredentialFormArticleToContainer = () => {
     const buildCredentialFormElements = () => {
 
@@ -414,6 +413,27 @@ const addCredentialFormArticleToContainer = () => {
         authenticSourcePersonIdElement.classList.add('input');
         authenticSourcePersonIdElement.type = 'text';
         authenticSourcePersonIdElement.placeholder = 'authentic source person id';
+
+        const familyNameElement = document.createElement('input');
+        familyNameElement.id = generateUUID();
+        familyNameElement.classList.add('input');
+        familyNameElement.type = 'text';
+        familyNameElement.placeholder = 'family name';
+        familyNameElement.disabled = true;
+
+        const givenNameElement = document.createElement('input');
+        givenNameElement.id = generateUUID();
+        givenNameElement.classList.add('input');
+        givenNameElement.type = 'text';
+        givenNameElement.placeholder = 'given name';
+        givenNameElement.disabled = true;
+
+        const birthdateElement = document.createElement('input');
+        birthdateElement.id = generateUUID();
+        birthdateElement.classList.add('input');
+        birthdateElement.type = 'text';
+        birthdateElement.placeholder = 'birth date';
+        birthdateElement.disabled = true;
 
         const schemaNameElement = document.createElement('input');
         schemaNameElement.id = generateUUID();
@@ -454,7 +474,7 @@ const addCredentialFormArticleToContainer = () => {
         createButton.classList.add('button', 'is-link');
         createButton.textContent = 'Create';
 
-        const doCredential = (authenticSourcePersonIdElement, schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton) => {
+        const doCredential = (authenticSourcePersonIdElement, familyNameElement, givenNameElement, birthdateElement, schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton) => {
             createButton.disabled = true;
 
             const credentialRequest = {
@@ -463,7 +483,10 @@ const addCredentialFormArticleToContainer = () => {
                     authentic_source_person_id: authenticSourcePersonIdElement.value, //required if EIDAS attributes is set (family_name, given_name and birth_date)
                     schema: {
                         name: schemaNameElement.value
-                    }
+                    },
+                    family_name: familyNameElement.value,
+                    given_name: givenNameElement.value,
+                    birth_date: birthdateElement.value,
                 },
                 document_type: documentTypeElement.value,
                 credential_type: credentialTypeElement.value,
@@ -471,6 +494,9 @@ const addCredentialFormArticleToContainer = () => {
             };
 
             authenticSourcePersonIdElement.disabled = true;
+            familyNameElement.disabled = true;
+            givenNameElement.disabled = true;
+            birthdateElement.disabled = true;
             schemaNameElement.disabled = true;
             documentTypeElement.disabled = true;
             credentialTypeElement.disabled = true;
@@ -479,13 +505,17 @@ const addCredentialFormArticleToContainer = () => {
 
             postAndDisplayInArticleContainerFor("/secure/apigw/credential", credentialRequest, "Credential result");
         };
-        createButton.onclick = () => doCredential(authenticSourcePersonIdElement, schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton);
+        createButton.onclick = () => doCredential(authenticSourcePersonIdElement, familyNameElement, givenNameElement, birthdateElement, schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton);
 
         const buttonControl = document.createElement('div');
         buttonControl.classList.add('control');
         buttonControl.appendChild(createButton);
 
-        return [authenticSourcePersonIdElement, collectIdElement, documentTypeElement, credentialTypeElement, authenticSourceElement, schemaNameElement, buttonControl];
+        const lineElement = document.createElement('hr');
+        const orTextElement = document.createElement('p');
+        orTextElement.textContent = 'OR';
+
+        return [authenticSourcePersonIdElement, orTextElement, familyNameElement, givenNameElement, birthdateElement, lineElement, collectIdElement, documentTypeElement, credentialTypeElement, authenticSourceElement, schemaNameElement, buttonControl];
     };
 
     const articleIdBasis = generateArticleIDBasis();
