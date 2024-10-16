@@ -18,6 +18,7 @@ type Apiv1 interface {
 	StatusAPIGW(ctx context.Context, request *apiv1_status.StatusRequest) (any, error)
 	DocumentList(ctx context.Context, req *apiv1.DocumentListRequest) (any, error)
 	Upload(ctx context.Context, req *apigw_apiv1.UploadRequest) (any, error)
+	Credential(ctx context.Context, request *apiv1.CredentialRequest) (any, error)
 
 	// mockas
 	MockNext(ctx context.Context, req *apiv1.MockNextRequest) (any, error)

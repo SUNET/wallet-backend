@@ -91,6 +91,7 @@ func New(ctx context.Context, cfg *model.Cfg, apiv1 *apiv1.Client, tracer *trace
 	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGW, http.MethodGet, "health", s.endpointAPIGWStatus)
 	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGW, http.MethodPost, "document/list", s.endpointDocumentList)
 	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGW, http.MethodPost, "upload", s.endpointUpload)
+	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGW, http.MethodPost, "credential", s.endpointCredential)
 
 	rgMockAS := rgSecure.Group("mockas")
 	s.httpHelpers.Server.RegEndpoint(ctx, rgMockAS, http.MethodPost, "mock/next", s.endpointMockNext)

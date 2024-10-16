@@ -19,15 +19,11 @@
 <!-- TOP MENY START -->
 <div class="box">
     <nav id="nav-nav" class="navbar" role="navigation" aria-label="main navigation">
-
         <div id="navbar-brand-div" class="navbar-brand">
             <p class="navbar-item is-info"><b>VC UI</b></p>
         </div>
-
         <!-- TODO(mk): handle menyitems when window is made smaller (now some of them disappear) -->
-
         <div id="navbar-div" class="navbar-menu">
-
             <div id="navbar-start-div" class="navbar-start">
                 <a onclick="clearAllContentContainers()" class="navbar-item"> Clear
                 </a>
@@ -55,13 +51,18 @@
                            class="navbar-item">
                             Current User
                         </a>
-                        <a id="display-upload-form-btn" onclick="addUploadFormArticleToContainer('/secure/upload','Upload')"
+                        <a id="display-upload-form-btn"
+                           onclick="addUploadFormArticleToContainer('/secure/upload','Upload')"
                            class="navbar-item">
                             Upload
                         </a>
+                        <a id="display-credential-form-btn"
+                           onclick="addCredentialFormArticleToContainer('/secure/credential','Credential')"
+                           class="navbar-item">
+                            Credential
+                        </a>
                     </div>
                 </div>
-
                 <div id="navbar-demo-div" class="navbar-item field has-addons box">
                     <div class="control">
                         <input id="authentic_source_person_id-input"
@@ -90,9 +91,7 @@
                         </button>
                     </div>
                 </div>
-
             </div>
-
             <div id="navbar-end-div" class="navbar-end">
                 <div class="navbar-item">
                     <div class="buttons">
@@ -106,7 +105,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </nav>
 </div>

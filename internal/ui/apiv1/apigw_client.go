@@ -40,3 +40,11 @@ func (c *APIGWClient) Upload(req *apiv1_apigw.UploadRequest) (any, error) {
 	}
 	return reply, nil
 }
+
+func (c *APIGWClient) Credential(req *CredentialRequest) (any, error) {
+	reply, err := c.DoPostJSON("/api/v1/credential", req)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}

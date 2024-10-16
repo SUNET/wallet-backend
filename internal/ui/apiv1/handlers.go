@@ -77,6 +77,22 @@ func (c *Client) Upload(ctx context.Context, req *apiv1_apigw.UploadRequest) (an
 	return reply, nil
 }
 
+type CredentialRequest struct {
+	AuthenticSource string          `json:"authentic_source" validate:"required"`
+	Identity        *model.Identity `json:"identity" validate:"required"`
+	DocumentType    string          `json:"document_type" validate:"required"`
+	CredentialType  string          `json:"credential_type" validate:"required"`
+	CollectID       string          `json:"collect_id" validate:"required"`
+}
+
+func (c *Client) Credential(ctx context.Context, req *CredentialRequest) (any, error) {
+	reply, err := c.apigwClient.Credential(req)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
 type MockNextRequest struct {
 	PortalRequest
 }

@@ -126,6 +126,20 @@ func (s *Service) endpointUpload(ctx context.Context, c *gin.Context) (any, erro
 	return reply, nil
 }
 
+func (s *Service) endpointCredential(ctx context.Context, c *gin.Context) (any, error) {
+	request := &apiv1.CredentialRequest{}
+	//TODO(mk): use pkg bind.go after it has been fixed instead of context.go
+	if err := c.ShouldBindJSON(&request); err != nil {
+		return nil, err
+	}
+	reply, err := s.apiv1.Credential(ctx, request)
+
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
 func (s *Service) endpointMockNext(ctx context.Context, c *gin.Context) (any, error) {
 	request := &apiv1.MockNextRequest{}
 	//TODO(mk): use pkg bind.go after it has been fixed instead of context.go

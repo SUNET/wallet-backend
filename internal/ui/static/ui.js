@@ -208,7 +208,7 @@ function doPostForDemo(path, articleHeaderText) {
 
     if (!(validateHasValueAndNotEmpty(documentTypeElement) && validateHasValueAndNotEmpty(authenticSourceElement) && validateHasValueAndNotEmpty(authenticSourcePersonIdElement))) {
         //TODO(mk): show an error message for input params
-        return
+        return;
     }
 
     const postBody = {
@@ -403,6 +403,90 @@ const addUploadFormArticleToContainer = () => {
     articleContainer.prepend(articleDiv);
 
     getElementById("upload-textarea").focus();
+};
+
+
+const addCredentialFormArticleToContainer = () => {
+    const buildCredentialFormElements = () => {
+
+        const schemaNameElement = document.createElement('input');
+        schemaNameElement.id = generateUUID();
+        schemaNameElement.value = 'SE';
+        schemaNameElement.classList.add('input');
+        schemaNameElement.type = 'text';
+        schemaNameElement.placeholder = 'schema name';
+
+        const documentTypeElement = document.createElement('input');
+        documentTypeElement.id = generateUUID();
+        documentTypeElement.value = 'EHIC';
+        documentTypeElement.classList.add('input');
+        documentTypeElement.type = 'text';
+        documentTypeElement.placeholder = 'document type (EHIC/PDA1)';
+
+        const credentialTypeElement = document.createElement('input');
+        credentialTypeElement.id = generateUUID();
+        credentialTypeElement.value = 'SD-JWT';
+        credentialTypeElement.classList.add('input');
+        credentialTypeElement.type = 'text';
+        credentialTypeElement.placeholder = 'credential type';
+
+        const authenticSourceElement = document.createElement('input');
+        authenticSourceElement.id = generateUUID();
+        authenticSourceElement.value = 'SUNET';
+        authenticSourceElement.classList.add('input');
+        authenticSourceElement.type = 'text';
+        authenticSourceElement.placeholder = 'authentic source';
+
+        const collectIdElement = document.createElement('input');
+        collectIdElement.id = generateUUID();
+        collectIdElement.classList.add('input');
+        collectIdElement.type = 'text';
+        collectIdElement.placeholder = 'collect id';
+
+        const createButton = document.createElement('button');
+        createButton.id = generateUUID();
+        createButton.classList.add('button', 'is-link');
+        createButton.textContent = 'Create';
+
+        const doCredential = (schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton) => {
+            createButton.disabled = true;
+
+            const credentialRequest = {
+                authentic_source: authenticSourceElement.value,
+                identity: {
+                    schema: {
+                        name: schemaNameElement.value,
+                        version: "1.0.0"
+                    }
+                },
+                document_type: documentTypeElement.value,
+                credential_type: credentialTypeElement.value,
+                collect_id: collectIdElement.value,
+            };
+
+            schemaNameElement.disabled = true;
+            documentTypeElement.disabled = true;
+            credentialTypeElement.disabled = true;
+            authenticSourceElement.disabled = true;
+            collectIdElement.disabled = true;
+
+            postAndDisplayInArticleContainerFor("/secure/apigw/credential", credentialRequest, "Credential result");
+        };
+        createButton.onclick = () => doCredential(schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton);
+
+        const buttonControl = document.createElement('div');
+        buttonControl.classList.add('control');
+        buttonControl.appendChild(createButton);
+
+        return [collectIdElement, documentTypeElement, credentialTypeElement, authenticSourceElement, schemaNameElement, buttonControl];
+    };
+
+    const articleIdBasis = generateArticleIDBasis();
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Credential", buildCredentialFormElements());
+    const articleContainer = getElementById('article-container');
+    articleContainer.prepend(articleDiv);
+
+    authenticSourcePersonIdElement.focus();
 };
 
 const addLoginArticleToContainer = () => {
