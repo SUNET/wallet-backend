@@ -246,8 +246,7 @@ const postDocumentList = () => {
         identity: {
             authentic_source_person_id: authenticSourcePersonIdElement.value,
             schema: {
-                name: "SE",
-                version: "1.0.0"
+                name: "SE"
             }
         },
         document_type: documentTypeElement.value
@@ -406,8 +405,15 @@ const addUploadFormArticleToContainer = () => {
 };
 
 
+
 const addCredentialFormArticleToContainer = () => {
     const buildCredentialFormElements = () => {
+
+        const authenticSourcePersonIdElement = document.createElement('input');
+        authenticSourcePersonIdElement.id = generateUUID();
+        authenticSourcePersonIdElement.classList.add('input');
+        authenticSourcePersonIdElement.type = 'text';
+        authenticSourcePersonIdElement.placeholder = 'authentic source person id';
 
         const schemaNameElement = document.createElement('input');
         schemaNameElement.id = generateUUID();
@@ -448,15 +454,15 @@ const addCredentialFormArticleToContainer = () => {
         createButton.classList.add('button', 'is-link');
         createButton.textContent = 'Create';
 
-        const doCredential = (schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton) => {
+        const doCredential = (authenticSourcePersonIdElement, schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton) => {
             createButton.disabled = true;
 
             const credentialRequest = {
                 authentic_source: authenticSourceElement.value,
                 identity: {
+                    authentic_source_person_id: authenticSourcePersonIdElement.value, //required if EIDAS attributes is set (family_name, given_name and birth_date)
                     schema: {
-                        name: schemaNameElement.value,
-                        version: "1.0.0"
+                        name: schemaNameElement.value
                     }
                 },
                 document_type: documentTypeElement.value,
@@ -464,6 +470,7 @@ const addCredentialFormArticleToContainer = () => {
                 collect_id: collectIdElement.value,
             };
 
+            authenticSourcePersonIdElement.disabled = true;
             schemaNameElement.disabled = true;
             documentTypeElement.disabled = true;
             credentialTypeElement.disabled = true;
@@ -472,13 +479,13 @@ const addCredentialFormArticleToContainer = () => {
 
             postAndDisplayInArticleContainerFor("/secure/apigw/credential", credentialRequest, "Credential result");
         };
-        createButton.onclick = () => doCredential(schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton);
+        createButton.onclick = () => doCredential(authenticSourcePersonIdElement, schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton);
 
         const buttonControl = document.createElement('div');
         buttonControl.classList.add('control');
         buttonControl.appendChild(createButton);
 
-        return [collectIdElement, documentTypeElement, credentialTypeElement, authenticSourceElement, schemaNameElement, buttonControl];
+        return [authenticSourcePersonIdElement, collectIdElement, documentTypeElement, credentialTypeElement, authenticSourceElement, schemaNameElement, buttonControl];
     };
 
     const articleIdBasis = generateArticleIDBasis();
