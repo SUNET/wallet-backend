@@ -87,6 +87,20 @@ func (c *Client) Credential(ctx context.Context, req *CredentialRequest) (any, e
 	return reply, nil
 }
 
+type GetDocumentRequest struct {
+	AuthenticSource string `json:"authentic_source" validate:"required"`
+	DocumentType    string `json:"document_type" validate:"required"`
+	DocumentID      string `json:"document_id" validate:"required"`
+}
+
+func (c *Client) GetDocument(ctx context.Context, req *GetDocumentRequest) (any, error) {
+	reply, err := c.apigwClient.GetDocument(req)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
 type MockNextRequest struct {
 	DocumentType            string `json:"document_type" binding:"required"`
 	AuthenticSource         string `json:"authentic_source" binding:"required"`

@@ -211,14 +211,6 @@ const createMock = () => {
     const authenticSourcePersonIdElement = getElementById("authentic_source_person_id-input");
     const identitySchemaNameElement = getElementById("identity-schema-name");
 
-    // if (!(validateHasValueAndNotEmpty(documentTypeElement)
-    //     && validateHasValueAndNotEmpty(authenticSourceElement)
-    //     && validateHasValueAndNotEmpty(authenticSourcePersonIdElement)
-    //     && validateHasValueAndNotEmpty(identitySchemaNameElement))) {
-    //     //TODO(mk): show an error message for input params
-    //     return;
-    // }
-
     const postBody = {
         document_type: documentTypeElement.value,
         authentic_source: authenticSourceElement.value,
@@ -238,11 +230,6 @@ const postDocumentList = () => {
     const authenticSourceElement = getElementById("authentic-source-input");
     const authenticSourcePersonIdElement = getElementById("authentic_source_person_id-input");
     const identitySchemaName = getElementById("identity-schema-name");
-
-    // if (!(validateHasValueAndNotEmpty(documentTypeElement) && validateHasValueAndNotEmpty(authenticSourceElement) && validateHasValueAndNotEmpty(authenticSourcePersonIdElement) && validateHasValueAndNotEmpty(identitySchemaName))) {
-    //     //TODO(mk): show an error message for input params
-    //     return;
-    // }
 
     const documentListRequest = {
         authentic_source: authenticSourceElement.value,
@@ -407,24 +394,60 @@ const addUploadFormArticleToContainer = () => {
     getElementById("upload-textarea").focus();
 };
 
+const createInputElement = (placeholder, value = '', type = 'text', disabled = false) => {
+    const input = document.createElement('input');
+    input.id = generateUUID();
+    input.classList.add('input');
+    input.type = type;
+    input.placeholder = placeholder;
+    input.value = value;
+    input.disabled = disabled;
+    return input;
+};
+
+const disableElements = (elements) => {
+    elements.forEach(el => el.disabled = true);
+};
+
+const addViewDocumentFormArticleToContainer = () => {
+    const buildCredentialFormElements = () => {
+
+        const documentIDElement = createInputElement('document id');
+        const documentTypeElement = createInputElement('document type (EHIC/PDA1)', 'EHIC');
+        const authenticSourceElement = createInputElement('authentic source', 'SUNET');
+
+        const viewButton = document.createElement('button');
+        viewButton.id = generateUUID();
+        viewButton.classList.add('button', 'is-link');
+        viewButton.textContent = 'View';
+        viewButton.onclick = () => {
+            viewButton.disabled = true;
+
+            const credentialRequest = {
+                document_id: documentIDElement.value,
+                authentic_source: authenticSourceElement.value,
+                document_type: documentTypeElement.value,
+            };
+
+            disableElements([
+                documentIDElement, documentTypeElement, authenticSourceElement
+            ]);
+
+            postAndDisplayInArticleContainerFor("/secure/apigw/document", credentialRequest, "Document");
+        };
+
+        return [documentIDElement, documentTypeElement, authenticSourceElement, viewButton];
+    };
+
+    const articleIdBasis = generateArticleIDBasis();
+    const articleDiv = buildArticle(articleIdBasis.articleID, "View document", buildCredentialFormElements());
+    const articleContainer = document.getElementById('article-container');
+    articleContainer.prepend(articleDiv);
+
+    document.getElementById(articleIdBasis.articleID).querySelector('input').focus();
+};
 
 const addCredentialFormArticleToContainer = () => {
-
-    const createInputElement = (placeholder, value = '', type = 'text', disabled = false) => {
-        const input = document.createElement('input');
-        input.id = generateUUID();
-        input.classList.add('input');
-        input.type = type;
-        input.placeholder = placeholder;
-        input.value = value;
-        input.disabled = disabled;
-        return input;
-    };
-
-    const disableElements = (elements) => {
-        elements.forEach(el => el.disabled = true);
-    };
-
     const buildCredentialFormElements = () => {
 
         const authenticSourcePersonIdElement = createInputElement('authentic source person id');
@@ -441,8 +464,7 @@ const addCredentialFormArticleToContainer = () => {
         createButton.id = generateUUID();
         createButton.classList.add('button', 'is-link');
         createButton.textContent = 'Create';
-
-        const doCredential = () => {
+        createButton.onclick = () => {
             createButton.disabled = true;
 
             const credentialRequest = {
@@ -469,8 +491,6 @@ const addCredentialFormArticleToContainer = () => {
 
             postAndDisplayInArticleContainerFor("/secure/apigw/credential", credentialRequest, "Credential");
         };
-
-        createButton.onclick = doCredential;
 
         const lineElement = document.createElement('hr');
         const orTextElement = document.createElement('p');
