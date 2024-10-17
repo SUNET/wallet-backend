@@ -55,12 +55,6 @@ type DocumentListRequest struct {
 	ValidTo         int64           `json:"valid_to"`
 }
 
-type PortalRequest struct {
-	DocumentType            string `json:"document_type" binding:"required"`
-	AuthenticSource         string `json:"authentic_source" binding:"required"`
-	AuthenticSourcePersonId string `json:"authentic_source_person_id" binding:"required"`
-}
-
 func (c *Client) DocumentList(ctx context.Context, req *DocumentListRequest) (any, error) {
 	reply, err := c.apigwClient.DocumentList(req)
 	if err != nil {
@@ -94,7 +88,10 @@ func (c *Client) Credential(ctx context.Context, req *CredentialRequest) (any, e
 }
 
 type MockNextRequest struct {
-	PortalRequest
+	DocumentType            string `json:"document_type" binding:"required"`
+	AuthenticSource         string `json:"authentic_source" binding:"required"`
+	AuthenticSourcePersonId string `json:"authentic_source_person_id" binding:"required"`
+	IdentitySchemaName      string `json:"identity_schema_name" binding:"required"`
 }
 
 func (c *Client) MockNext(ctx context.Context, req *MockNextRequest) (any, error) {

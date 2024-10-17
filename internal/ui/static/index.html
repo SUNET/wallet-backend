@@ -32,34 +32,34 @@
                         Dev/test support
                     </a>
                     <div class="navbar-dropdown">
-                        <a id="toggle-theme-btn"
-                           onclick="toogleThemeDarkLight()"
-                           class="navbar-item">
-                            Toogle theme (dark/light)
-                        </a>
-                        <a id="fetch-ui-health-btn"
-                           onclick="getAndDisplayInArticleContainerFor('/health','Health UI')"
-                           class="navbar-item">
-                            Health(UI)
-                        </a>
-                        <a id="fetch-apigw-health-btn"
-                           onclick="getAndDisplayInArticleContainerFor('/secure/apigw/health','Health APIGW')"
-                           class="navbar-item">
-                            Health(APIGW)
-                        </a>
-                        <a id="fetch-user-btn" onclick="getAndDisplayInArticleContainerFor('/secure/user','User')"
-                           class="navbar-item">
-                            Current User
-                        </a>
                         <a id="display-upload-form-btn"
                            onclick="addUploadFormArticleToContainer('/secure/upload','Upload')"
                            class="navbar-item">
-                            Upload
+                            Upload document
                         </a>
                         <a id="display-credential-form-btn"
                            onclick="addCredentialFormArticleToContainer('/secure/credential','Credential')"
                            class="navbar-item">
-                            Credential
+                            Create credential
+                        </a>
+                        <a id="fetch-ui-health-btn"
+                           onclick="getAndDisplayInArticleContainerFor('/health','Health UI')"
+                           class="navbar-item">
+                            Health UI
+                        </a>
+                        <a id="fetch-apigw-health-btn"
+                           onclick="getAndDisplayInArticleContainerFor('/secure/apigw/health','Health APIGW')"
+                           class="navbar-item">
+                            Health APIGW
+                        </a>
+                        <a id="fetch-user-btn" onclick="getAndDisplayInArticleContainerFor('/secure/user','User')"
+                           class="navbar-item">
+                            Current user
+                        </a>
+                        <a id="toggle-theme-btn"
+                           onclick="toogleThemeDarkLight()"
+                           class="navbar-item">
+                            Toogle theme (dark/light)
                         </a>
                     </div>
                 </div>
@@ -68,7 +68,7 @@
                         <input id="authentic_source_person_id-input"
                                onkeyup="updateUploadAndFetchButtons()"
                                class="input" type="text"
-                               placeholder="Authentic source person id">
+                               placeholder="authentic source person id">
                     </div>
                     <div class="select">
                         <select id="document-type-select">
@@ -78,7 +78,11 @@
                     </div>
                     <div class="control">
                         <input id="authentic-source-input"
-                               class="input" type="text" placeholder="Authentic source" value="SUNET" disabled>
+                               class="input" type="text" placeholder="authentic source" value="SUNET">
+                    </div>
+                    <div class="control">
+                        <input id="identity-schema-name"
+                               class="input" type="text" placeholder="identity schema name" value="SE">
                     </div>
                     <div class="control">
                         <button id="create-mock-btn" onclick="createMock()" class="button" disabled>
@@ -87,7 +91,7 @@
                     </div>
                     <div class="control">
                         <button id="post-document-list-btn" onclick="postDocumentList()" class="button" disabled>
-                            List
+                            List documents
                         </button>
                     </div>
                 </div>

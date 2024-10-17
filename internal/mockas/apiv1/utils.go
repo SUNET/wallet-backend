@@ -19,6 +19,7 @@ type MockInputData struct {
 	FamilyName              string `json:"family_name"`
 	BirthDate               string `json:"birth_date"`
 	CollectID               string `json:"collect_id"`
+	IdentitySchemaName      string `json:"identity_schema_name"`
 }
 
 type uploadMock struct {
@@ -52,8 +53,13 @@ func (c *Client) mockOne(ctx context.Context, data MockInputData) (*uploadMock, 
 	if data.CollectID == "" {
 		data.CollectID = gofakeit.UUID()
 	}
+
 	if data.DocumentID == "" {
 		data.DocumentID = gofakeit.UUID()
+	}
+
+	if data.IdentitySchemaName == "" {
+		data.IdentitySchemaName = "SE"
 	}
 
 	meta := &model.MetaData{
@@ -84,7 +90,7 @@ func (c *Client) mockOne(ctx context.Context, data MockInputData) (*uploadMock, 
 		{
 			AuthenticSourcePersonID: data.AuthenticSourcePersonID,
 			Schema: &model.IdentitySchema{
-				Name:    "SE",
+				Name:    data.IdentitySchemaName,
 				Version: "1.0.0",
 			},
 			FamilyName: data.FamilyName,

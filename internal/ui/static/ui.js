@@ -182,7 +182,6 @@ async function getAndDisplayInArticleContainerFor(path, articleHeaderText) {
     await doFetchAPICallAndHandleResult(url, options, elements);
 }
 
-
 async function postAndDisplayInArticleContainerFor(path, postBody, articleHeaderText) {
     const url = new URL(path, baseUrl);
     console.debug("Call to postAndDisplayInArticleContainerFor: " + url);
@@ -201,52 +200,56 @@ async function postAndDisplayInArticleContainerFor(path, postBody, articleHeader
     await doFetchAPICallAndHandleResult(url, options, elements);
 }
 
-function doPostForDemo(path, articleHeaderText) {
+
+const createMock = () => {
+    console.debug("createMock");
+    const path = "/secure/mockas/mock/next";
+    const articleHeaderText = "Upload new mock document result";
+
     const documentTypeElement = getElementById("document-type-select");
     const authenticSourceElement = getElementById("authentic-source-input");
     const authenticSourcePersonIdElement = getElementById("authentic_source_person_id-input");
+    const identitySchemaNameElement = getElementById("identity-schema-name");
 
-    if (!(validateHasValueAndNotEmpty(documentTypeElement) && validateHasValueAndNotEmpty(authenticSourceElement) && validateHasValueAndNotEmpty(authenticSourcePersonIdElement))) {
-        //TODO(mk): show an error message for input params
-        return;
-    }
+    // if (!(validateHasValueAndNotEmpty(documentTypeElement)
+    //     && validateHasValueAndNotEmpty(authenticSourceElement)
+    //     && validateHasValueAndNotEmpty(authenticSourcePersonIdElement)
+    //     && validateHasValueAndNotEmpty(identitySchemaNameElement))) {
+    //     //TODO(mk): show an error message for input params
+    //     return;
+    // }
 
     const postBody = {
         document_type: documentTypeElement.value,
         authentic_source: authenticSourceElement.value,
         authentic_source_person_id: authenticSourcePersonIdElement.value,
+        identity_schema_name: identitySchemaNameElement.value,
     };
 
     postAndDisplayInArticleContainerFor(path, postBody, articleHeaderText);
-}
-
-const createMock = () => {
-    console.debug("createMock");
-    const path = "/secure/mockas/mock/next";
-    const articleHeaderText = "Upload new mock";
-    doPostForDemo(path, articleHeaderText);
 };
 
 const postDocumentList = () => {
     console.debug("postDocumentList");
     const path = "/secure/apigw/document/list";
-    const articleHeaderText = "document/list";
+    const articleHeaderText = "List documents result";
 
     const documentTypeElement = getElementById("document-type-select");
     const authenticSourceElement = getElementById("authentic-source-input");
     const authenticSourcePersonIdElement = getElementById("authentic_source_person_id-input");
+    const identitySchemaName = getElementById("identity-schema-name");
 
-    if (!(validateHasValueAndNotEmpty(documentTypeElement) && validateHasValueAndNotEmpty(authenticSourceElement) && validateHasValueAndNotEmpty(authenticSourcePersonIdElement))) {
-        //TODO(mk): show an error message for input params
-        return;
-    }
+    // if (!(validateHasValueAndNotEmpty(documentTypeElement) && validateHasValueAndNotEmpty(authenticSourceElement) && validateHasValueAndNotEmpty(authenticSourcePersonIdElement) && validateHasValueAndNotEmpty(identitySchemaName))) {
+    //     //TODO(mk): show an error message for input params
+    //     return;
+    // }
 
     const documentListRequest = {
         authentic_source: authenticSourceElement.value,
         identity: {
             authentic_source_person_id: authenticSourcePersonIdElement.value,
             schema: {
-                name: "SE"
+                name: identitySchemaName.value
             }
         },
         document_type: documentTypeElement.value
@@ -278,23 +281,23 @@ const buildArticle = (articleID, articleHeaderText, bodyChildrenElementArray) =>
     const expandCollapseButton = document.createElement('button');
     expandCollapseButton.onclick = () => toggleExpandCollapseArticle(articleID);
     expandCollapseButton.classList.add("button", "is-dark");
-    expandCollapseButton.textContent = "Collapse/Expand"
-    expandCollapseButton.ariaLabel = "toggle collapse/expand"
+    expandCollapseButton.textContent = "Collapse/Expand";
+    expandCollapseButton.ariaLabel = "toggle collapse/expand";
 
     const removeButton = document.createElement('button');
     removeButton.onclick = () => removeElementById(articleID);
     removeButton.classList.add("delete", "is-medium");
-    removeButton.ariaLabel = "delete"
+    removeButton.ariaLabel = "delete";
 
     const pElement = document.createElement('p');
     pElement.textContent = articleHeaderText ? articleHeaderText : "";
 
     const divHeader = document.createElement('div');
-    divHeader.classList.add("message-header")
-    divHeader.prepend(pElement, expandCollapseButton, removeButton)
+    divHeader.classList.add("message-header");
+    divHeader.prepend(pElement, expandCollapseButton, removeButton);
 
     const divBody = document.createElement('div');
-    divBody.classList.add("message-body")
+    divBody.classList.add("message-body");
     if (bodyChildrenElementArray != null && bodyChildrenElementArray.length !== 0) {
         // Add to body in the same order as the elements in the array
         for (const bodyChildElement of bodyChildrenElementArray.reverse()) {
@@ -312,7 +315,7 @@ const buildArticle = (articleID, articleHeaderText, bodyChildrenElementArray) =>
 
 async function doLogin() {
     const url = new URL("/login", baseUrl);
-    console.debug("doLogin for url: " + url)
+    console.debug("doLogin for url: " + url);
 
     const doLoginButton = getElementById("do-login-btn");
     doLoginButton.disabled = true;
@@ -397,7 +400,7 @@ const addUploadFormArticleToContainer = () => {
     };
 
     const articleIdBasis = generateArticleIDBasis();
-    const articleDiv = buildArticle(articleIdBasis.articleID, "Upload", buildUploadFormElements());
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Upload document", buildUploadFormElements());
     const articleContainer = getElementById('article-container');
     articleContainer.prepend(articleDiv);
 
@@ -425,7 +428,7 @@ const addCredentialFormArticleToContainer = () => {
     const buildCredentialFormElements = () => {
 
         const authenticSourcePersonIdElement = createInputElement('authentic source person id');
-        const familyNameElement = createInputElement('family name', '', 'text' );
+        const familyNameElement = createInputElement('family name', '', 'text');
         const givenNameElement = createInputElement('given name', '', 'text');
         const birthdateElement = createInputElement('birth date', '', 'text');
         const schemaNameElement = createInputElement('identity schema name', 'SE');
@@ -464,7 +467,7 @@ const addCredentialFormArticleToContainer = () => {
                 credentialTypeElement, authenticSourceElement, collectIdElement
             ]);
 
-            postAndDisplayInArticleContainerFor("/secure/apigw/credential", credentialRequest, "Credential result");
+            postAndDisplayInArticleContainerFor("/secure/apigw/credential", credentialRequest, "Credential");
         };
 
         createButton.onclick = doCredential;
@@ -481,7 +484,7 @@ const addCredentialFormArticleToContainer = () => {
     };
 
     const articleIdBasis = generateArticleIDBasis();
-    const articleDiv = buildArticle(articleIdBasis.articleID, "Credential", buildCredentialFormElements());
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Create credential", buildCredentialFormElements());
     const articleContainer = document.getElementById('article-container');
     articleContainer.prepend(articleDiv);
 
