@@ -49,7 +49,7 @@ func New(ctx context.Context, cfg *model.Cfg, apiv1 *apiv1.Client, tracer *trace
 		server: &http.Server{},
 		sessionConfig: &sessionConfig{
 			name:                       "vc_ui_auth_session",
-			inactivityTimeoutInSeconds: 300,
+			inactivityTimeoutInSeconds: cfg.UI.SessionInactivityTimeoutInSeconds,
 			path:                       "/",
 			httpOnly:                   true,
 			secure:                     cfg.UI.APIServer.TLS.Enabled,

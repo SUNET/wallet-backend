@@ -406,81 +406,46 @@ const addUploadFormArticleToContainer = () => {
 
 
 const addCredentialFormArticleToContainer = () => {
+
+    const createInputElement = (placeholder, value = '', type = 'text', disabled = false) => {
+        const input = document.createElement('input');
+        input.id = generateUUID();
+        input.classList.add('input');
+        input.type = type;
+        input.placeholder = placeholder;
+        input.value = value;
+        input.disabled = disabled;
+        return input;
+    };
+
+    const disableElements = (elements) => {
+        elements.forEach(el => el.disabled = true);
+    };
+
     const buildCredentialFormElements = () => {
 
-        const authenticSourcePersonIdElement = document.createElement('input');
-        authenticSourcePersonIdElement.id = generateUUID();
-        authenticSourcePersonIdElement.classList.add('input');
-        authenticSourcePersonIdElement.type = 'text';
-        authenticSourcePersonIdElement.placeholder = 'authentic source person id';
-
-        const familyNameElement = document.createElement('input');
-        familyNameElement.id = generateUUID();
-        familyNameElement.classList.add('input');
-        familyNameElement.type = 'text';
-        familyNameElement.placeholder = 'family name';
-        familyNameElement.disabled = true;
-
-        const givenNameElement = document.createElement('input');
-        givenNameElement.id = generateUUID();
-        givenNameElement.classList.add('input');
-        givenNameElement.type = 'text';
-        givenNameElement.placeholder = 'given name';
-        givenNameElement.disabled = true;
-
-        const birthdateElement = document.createElement('input');
-        birthdateElement.id = generateUUID();
-        birthdateElement.classList.add('input');
-        birthdateElement.type = 'text';
-        birthdateElement.placeholder = 'birth date';
-        birthdateElement.disabled = true;
-
-        const schemaNameElement = document.createElement('input');
-        schemaNameElement.id = generateUUID();
-        schemaNameElement.value = 'SE';
-        schemaNameElement.classList.add('input');
-        schemaNameElement.type = 'text';
-        schemaNameElement.placeholder = 'schema name';
-
-        const documentTypeElement = document.createElement('input');
-        documentTypeElement.id = generateUUID();
-        documentTypeElement.value = 'EHIC';
-        documentTypeElement.classList.add('input');
-        documentTypeElement.type = 'text';
-        documentTypeElement.placeholder = 'document type (EHIC/PDA1)';
-
-        const credentialTypeElement = document.createElement('input');
-        credentialTypeElement.id = generateUUID();
-        credentialTypeElement.value = 'SD-JWT';
-        credentialTypeElement.classList.add('input');
-        credentialTypeElement.type = 'text';
-        credentialTypeElement.placeholder = 'credential type';
-
-        const authenticSourceElement = document.createElement('input');
-        authenticSourceElement.id = generateUUID();
-        authenticSourceElement.value = 'SUNET';
-        authenticSourceElement.classList.add('input');
-        authenticSourceElement.type = 'text';
-        authenticSourceElement.placeholder = 'authentic source';
-
-        const collectIdElement = document.createElement('input');
-        collectIdElement.id = generateUUID();
-        collectIdElement.classList.add('input');
-        collectIdElement.type = 'text';
-        collectIdElement.placeholder = 'collect id';
+        const authenticSourcePersonIdElement = createInputElement('authentic source person id');
+        const familyNameElement = createInputElement('family name', '', 'text' );
+        const givenNameElement = createInputElement('given name', '', 'text');
+        const birthdateElement = createInputElement('birth date', '', 'text');
+        const schemaNameElement = createInputElement('identity schema name', 'SE');
+        const documentTypeElement = createInputElement('document type (EHIC/PDA1)', 'EHIC');
+        const credentialTypeElement = createInputElement('credential type', 'SD-JWT');
+        const authenticSourceElement = createInputElement('authentic source', 'SUNET');
+        const collectIdElement = createInputElement('collect id');
 
         const createButton = document.createElement('button');
         createButton.id = generateUUID();
         createButton.classList.add('button', 'is-link');
         createButton.textContent = 'Create';
 
-        const doCredential = (authenticSourcePersonIdElement, familyNameElement, givenNameElement, birthdateElement, schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton) => {
+        const doCredential = () => {
             createButton.disabled = true;
 
             const credentialRequest = {
                 authentic_source: authenticSourceElement.value,
                 identity: {
-                    authentic_source_person_id: authenticSourcePersonIdElement.value, //required if EIDAS attributes is set (family_name, given_name and birth_date)
+                    authentic_source_person_id: authenticSourcePersonIdElement.value, //required if not EIDAS attributes is set (family_name, given_name and birth_date)
                     schema: {
                         name: schemaNameElement.value
                     },
@@ -493,37 +458,34 @@ const addCredentialFormArticleToContainer = () => {
                 collect_id: collectIdElement.value,
             };
 
-            authenticSourcePersonIdElement.disabled = true;
-            familyNameElement.disabled = true;
-            givenNameElement.disabled = true;
-            birthdateElement.disabled = true;
-            schemaNameElement.disabled = true;
-            documentTypeElement.disabled = true;
-            credentialTypeElement.disabled = true;
-            authenticSourceElement.disabled = true;
-            collectIdElement.disabled = true;
+            disableElements([
+                authenticSourcePersonIdElement, familyNameElement, givenNameElement,
+                birthdateElement, schemaNameElement, documentTypeElement,
+                credentialTypeElement, authenticSourceElement, collectIdElement
+            ]);
 
             postAndDisplayInArticleContainerFor("/secure/apigw/credential", credentialRequest, "Credential result");
         };
-        createButton.onclick = () => doCredential(authenticSourcePersonIdElement, familyNameElement, givenNameElement, birthdateElement, schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement, createButton);
 
-        const buttonControl = document.createElement('div');
-        buttonControl.classList.add('control');
-        buttonControl.appendChild(createButton);
+        createButton.onclick = doCredential;
 
         const lineElement = document.createElement('hr');
         const orTextElement = document.createElement('p');
-        orTextElement.textContent = 'OR';
+        orTextElement.textContent = 'or';
 
-        return [authenticSourcePersonIdElement, orTextElement, familyNameElement, givenNameElement, birthdateElement, lineElement, collectIdElement, documentTypeElement, credentialTypeElement, authenticSourceElement, schemaNameElement, buttonControl];
+        return [
+            authenticSourcePersonIdElement, orTextElement, familyNameElement, givenNameElement,
+            birthdateElement, lineElement, collectIdElement, schemaNameElement, documentTypeElement,
+            credentialTypeElement, authenticSourceElement, createButton
+        ];
     };
 
     const articleIdBasis = generateArticleIDBasis();
     const articleDiv = buildArticle(articleIdBasis.articleID, "Credential", buildCredentialFormElements());
-    const articleContainer = getElementById('article-container');
+    const articleContainer = document.getElementById('article-container');
     articleContainer.prepend(articleDiv);
 
-    authenticSourcePersonIdElement.focus();
+    document.getElementById(articleIdBasis.articleID).querySelector('input').focus();
 };
 
 const addLoginArticleToContainer = () => {

@@ -182,12 +182,13 @@ type OTEL struct {
 
 // UI holds the user-interface configuration
 type UI struct {
-	APIServer                      APIServer `yaml:"api_server" validate:"required"`
-	Username                       string    `yaml:"username" validate:"required"`
-	Password                       string    `yaml:"password" validate:"required"`
-	SessionCookieAuthenticationKey string    `yaml:"session_cookie_authentication_key" validate:"required"`
-	SessionStoreEncryptionKey      string    `yaml:"session_store_encryption_key" validate:"required"`
-	Services                       struct {
+	APIServer                         APIServer `yaml:"api_server" validate:"required"`
+	Username                          string    `yaml:"username" validate:"required"`
+	Password                          string    `yaml:"password" validate:"required"`
+	SessionCookieAuthenticationKey    string    `yaml:"session_cookie_authentication_key" validate:"required"`
+	SessionStoreEncryptionKey         string    `yaml:"session_store_encryption_key" validate:"required"`
+	SessionInactivityTimeoutInSeconds int       `yaml:"session_inactivity_timeout_in_seconds" validate:"required"`
+	Services                          struct {
 		APIGW struct {
 			BaseURL string `yaml:"base_url"`
 		} `yaml:"apigw"`

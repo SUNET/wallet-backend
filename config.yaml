@@ -110,6 +110,7 @@ ui:
   session_cookie_authentication_key: "PjanW5cOBIlWzjLK23Q8NIo4va53e1bsgWmcqMdznVzkW3uEozfotj7MZsD7HpBo"
   #The encryption key, must be either 16, 24, or 32 bytes to select AES-128, AES-192, or AES-256 modes.
   session_store_encryption_key: "SQxqb3LKw1YFyAiy4j7FaGGJKeEzr8Db"
+  session_inactivity_timeout_in_seconds: 600
   services:
     apigw:
       base_url: http://vc_dev_apigw:8080
