@@ -56,3 +56,11 @@ func (c *APIGWClient) GetDocument(req *GetDocumentRequest) (any, error) {
 	}
 	return reply, nil
 }
+
+func (c *APIGWClient) Notification(request *NotificationRequest) (any, error) {
+	reply, err := c.DoPostJSON("/api/v1/notification", request)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}

@@ -138,6 +138,17 @@ function handleErrorInArticle(err, elements) {
     updateTextContentInChildPreTagFor(elements.payloadDiv, "");
 }
 
+
+function openModalQR() {
+    const modal = document.getElementById("qrModal");
+    modal.classList.add("is-active");
+}
+
+function closeModalQR() {
+    const modal = document.getElementById("qrModal");
+    modal.classList.remove("is-active");
+}
+
 async function doFetchAPICallAndHandleResult(url, options, elements) {
     try {
         //TODO(mk): add timeout on clientside for fetch
@@ -158,6 +169,15 @@ async function doFetchAPICallAndHandleResult(url, options, elements) {
         updateTextContentInChildPreTagFor(elements.respMetaDiv, buildResponseMeta(response));
         updateTextContentInChildPreTagFor(elements.errorDiv, "");
         updateTextContentInChildPreTagFor(elements.payloadDiv, JSON.stringify(jsonBody, null, 2));
+
+        //TODO(mk): refactor this quick and dirty solution to display the QR code in a modal for /notification before the standard response article
+        if (url.href.includes("notification") && jsonBody && jsonBody.data && jsonBody.data.base64_image) {
+            const base64Image = jsonBody.data.base64_image;
+            const imgElement = document.getElementById("qrCodeImage");
+            imgElement.src = "data:image/png;base64," + base64Image;
+            openModalQR();
+        }
+
     } catch (err) {
         handleErrorInArticle(err, elements);
     }
@@ -182,7 +202,7 @@ async function getAndDisplayInArticleContainerFor(path, articleHeaderText) {
     await doFetchAPICallAndHandleResult(url, options, elements);
 }
 
-async function postAndDisplayInArticleContainerFor(path, postBody, articleHeaderText) {
+async function postAndDisplayInArticleContainerFor(path, requestBody, articleHeaderText) {
     const url = new URL(path, baseUrl);
     console.debug("Call to postAndDisplayInArticleContainerFor: " + url);
 
@@ -192,7 +212,7 @@ async function postAndDisplayInArticleContainerFor(path, postBody, articleHeader
         'Accept': 'application/json', 'Content-Type': 'application/json; charset=utf-8',
     };
     const options = {
-        method: `POST`, headers: headers, body: JSON.stringify(postBody),
+        method: `POST`, headers: headers, body: JSON.stringify(requestBody),
     };
 
     updateTextContentInChildPreTagFor(elements.reqMetaDiv, `${JSON.stringify(options, null, 2)}`)
@@ -410,7 +430,7 @@ const disableElements = (elements) => {
 };
 
 const addViewDocumentFormArticleToContainer = () => {
-    const buildCredentialFormElements = () => {
+    const buildFormElements = () => {
 
         const documentIDElement = createInputElement('document id');
         const documentTypeElement = createInputElement('document type (EHIC/PDA1)', 'EHIC');
@@ -423,7 +443,7 @@ const addViewDocumentFormArticleToContainer = () => {
         viewButton.onclick = () => {
             viewButton.disabled = true;
 
-            const credentialRequest = {
+            const requestBody = {
                 document_id: documentIDElement.value,
                 authentic_source: authenticSourceElement.value,
                 document_type: documentTypeElement.value,
@@ -433,14 +453,53 @@ const addViewDocumentFormArticleToContainer = () => {
                 documentIDElement, documentTypeElement, authenticSourceElement
             ]);
 
-            postAndDisplayInArticleContainerFor("/secure/apigw/document", credentialRequest, "Document");
+            postAndDisplayInArticleContainerFor("/secure/apigw/document", requestBody, "Document");
         };
 
         return [documentIDElement, documentTypeElement, authenticSourceElement, viewButton];
     };
 
     const articleIdBasis = generateArticleIDBasis();
-    const articleDiv = buildArticle(articleIdBasis.articleID, "View document", buildCredentialFormElements());
+    const articleDiv = buildArticle(articleIdBasis.articleID, "View document", buildFormElements());
+    const articleContainer = document.getElementById('article-container');
+    articleContainer.prepend(articleDiv);
+
+    document.getElementById(articleIdBasis.articleID).querySelector('input').focus();
+};
+
+
+const addViewNotificationFormArticleToContainer = () => {
+    const buildFormElements = () => {
+
+        const documentIDElement = createInputElement('document id');
+        const documentTypeElement = createInputElement('document type (EHIC/PDA1)', 'EHIC');
+        const authenticSourceElement = createInputElement('authentic source', 'SUNET');
+
+        const viewButton = document.createElement('button');
+        viewButton.id = generateUUID();
+        viewButton.classList.add('button', 'is-link');
+        viewButton.textContent = 'View';
+        viewButton.onclick = () => {
+            viewButton.disabled = true;
+
+            const requestBody = {
+                document_id: documentIDElement.value,
+                authentic_source: authenticSourceElement.value,
+                document_type: documentTypeElement.value,
+            };
+
+            disableElements([
+                documentIDElement, documentTypeElement, authenticSourceElement
+            ]);
+
+            postAndDisplayInArticleContainerFor("/secure/apigw/notification", requestBody, "Notification");
+        };
+
+        return [documentIDElement, documentTypeElement, authenticSourceElement, viewButton];
+    };
+
+    const articleIdBasis = generateArticleIDBasis();
+    const articleDiv = buildArticle(articleIdBasis.articleID, "View notification", buildFormElements());
     const articleContainer = document.getElementById('article-container');
     articleContainer.prepend(articleDiv);
 
@@ -448,7 +507,7 @@ const addViewDocumentFormArticleToContainer = () => {
 };
 
 const addCredentialFormArticleToContainer = () => {
-    const buildCredentialFormElements = () => {
+    const buildFormElements = () => {
 
         const authenticSourcePersonIdElement = createInputElement('authentic source person id');
         const familyNameElement = createInputElement('family name', '', 'text');
@@ -467,7 +526,7 @@ const addCredentialFormArticleToContainer = () => {
         createButton.onclick = () => {
             createButton.disabled = true;
 
-            const credentialRequest = {
+            const requestBody = {
                 authentic_source: authenticSourceElement.value,
                 identity: {
                     authentic_source_person_id: authenticSourcePersonIdElement.value, //required if not EIDAS attributes is set (family_name, given_name and birth_date)
@@ -489,7 +548,7 @@ const addCredentialFormArticleToContainer = () => {
                 credentialTypeElement, authenticSourceElement, collectIdElement
             ]);
 
-            postAndDisplayInArticleContainerFor("/secure/apigw/credential", credentialRequest, "Credential");
+            postAndDisplayInArticleContainerFor("/secure/apigw/credential", requestBody, "Credential");
         };
 
         const lineElement = document.createElement('hr');
@@ -504,7 +563,7 @@ const addCredentialFormArticleToContainer = () => {
     };
 
     const articleIdBasis = generateArticleIDBasis();
-    const articleDiv = buildArticle(articleIdBasis.articleID, "Create credential", buildCredentialFormElements());
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Create credential", buildFormElements());
     const articleContainer = document.getElementById('article-container');
     articleContainer.prepend(articleDiv);
 

@@ -101,6 +101,20 @@ func (c *Client) GetDocument(ctx context.Context, req *GetDocumentRequest) (any,
 	return reply, nil
 }
 
+type NotificationRequest struct {
+	AuthenticSource string `json:"authentic_source" validate:"required"`
+	DocumentType    string `json:"document_type" validate:"required"`
+	DocumentID      string `json:"document_id" validate:"required"`
+}
+
+func (c *Client) Notification(ctx context.Context, request *NotificationRequest) (any, error) {
+	reply, err := c.apigwClient.Notification(request)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
 type MockNextRequest struct {
 	DocumentType            string `json:"document_type" binding:"required"`
 	AuthenticSource         string `json:"authentic_source" binding:"required"`
