@@ -16,14 +16,14 @@ func (c *Client) Health(ctx context.Context, req *apiv1_status.StatusRequest) (*
 }
 
 type LoginRequest struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type LoggedinReply struct {
-	Username string `json:"username" binding:"required"`
+	Username string `json:"username" validate:"required"`
 	// LoggedInTime RFC3339
-	LoggedInTime time.Time `json:"logged_in_time" binding:"required"`
+	LoggedInTime time.Time `json:"logged_in_time" validate:"required"`
 }
 
 func (c *Client) Login(ctx context.Context, req *LoginRequest) (*LoggedinReply, error) {
@@ -116,10 +116,10 @@ func (c *Client) Notification(ctx context.Context, request *NotificationRequest)
 }
 
 type MockNextRequest struct {
-	DocumentType            string `json:"document_type" binding:"required"`
-	AuthenticSource         string `json:"authentic_source" binding:"required"`
-	AuthenticSourcePersonId string `json:"authentic_source_person_id" binding:"required"`
-	IdentitySchemaName      string `json:"identity_schema_name" binding:"required"`
+	DocumentType            string `json:"document_type" validate:"required"`
+	AuthenticSource         string `json:"authentic_source" validate:"required"`
+	AuthenticSourcePersonId string `json:"authentic_source_person_id" validate:"required"`
+	IdentitySchemaName      string `json:"identity_schema_name" validate:"required"`
 }
 
 func (c *Client) MockNext(ctx context.Context, req *MockNextRequest) (any, error) {
