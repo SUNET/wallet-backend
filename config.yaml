@@ -12,7 +12,7 @@ common:
     recovery_level: 2
     size: 256
   kafka:
-    enabled: false
+    enabled: true
     brokers:
       - "kafka0:9092"
       - "kafka1:9092"

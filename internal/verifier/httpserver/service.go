@@ -2,6 +2,8 @@ package httpserver
 
 import (
 	"context"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
 	"vc/internal/verifier/apiv1"
 	"vc/pkg/httphelpers"
@@ -46,6 +48,17 @@ func New(ctx context.Context, cfg *model.Cfg, apiv1 *apiv1.Client, tracer *trace
 	}
 
 	s.httpHelpers.Server.RegEndpoint(ctx, rgRoot, http.MethodGet, "health", s.endpointHealth)
+
+	rgDocs := rgRoot.Group("/swagger")
+	rgDocs.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	rgAPIv1 := rgRoot.Group("api/v1")
+
+	if s.cfg.APIGW.APIServer.BasicAuth.Enabled {
+		rgAPIv1.Use(s.httpHelpers.Middleware.BasicAuth(ctx, s.cfg.APIGW.APIServer.BasicAuth.Users))
+	}
+
+	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIv1, http.MethodPost, "verifycredential", s.endpointVerifyCredential)
 
 	// Run http server
 	go func() {
