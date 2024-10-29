@@ -2,18 +2,24 @@ package apiv1
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/golang-jwt/jwt/v5"
+	"math/big"
 	"strings"
 	"vc/internal/gen/status/apiv1_status"
 	"vc/pkg/model"
 )
 
-type JWTParts struct {
-	Header    string
-	Payload   string
-	Signature string
+// Status return status for each instance
+func (c *Client) Status(ctx context.Context, req *apiv1_status.StatusRequest) (*apiv1_status.StatusReply, error) {
+	probes := model.Probes{}
+	status := probes.Check("verifier")
+	return status, nil
 }
 
 type VerifyCredentialRequest struct {
@@ -21,15 +27,27 @@ type VerifyCredentialRequest struct {
 }
 
 type VerifyCredentialReply struct {
-	Valid  bool   `json:"valid" validate:"required"`
-	Reason string `json:"reason,omitempty"`
+	Valid   bool   `json:"valid" validate:"required"`
+	Message string `json:"message,omitempty"`
 }
 
-// Status return status for each ladok instance
-func (c *Client) Status(ctx context.Context, req *apiv1_status.StatusRequest) (*apiv1_status.StatusReply, error) {
-	probes := model.Probes{}
-	status := probes.Check("verifier")
-	return status, nil
+type JWTParts struct {
+	Header    string
+	Payload   string
+	Signature string
+}
+
+type JWK struct {
+	Crv string `json:"crv"`
+	Kty string `json:"kty"`
+	X   string `json:"x"`
+	Y   string `json:"y"`
+}
+
+type PayloadCnf struct {
+	Cnf struct {
+		Jwk JWK `json:"jwk"`
+	} `json:"cnf"`
 }
 
 func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredentialRequest) (*VerifyCredentialReply, error) {
@@ -37,7 +55,7 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 	if err != nil {
 		msg := "Invalid JWT structure, unable to split into header, payload and signature"
 		c.log.Debug(msg, "err", err)
-		return &VerifyCredentialReply{Valid: false, Reason: msg}, nil
+		return &VerifyCredentialReply{Valid: false, Message: msg}, nil
 	}
 
 	//c.log.Debug("jwt", "header", jwtParts.Header)
@@ -48,9 +66,62 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 	fmt.Println("Payload:", jwtParts.Payload)
 	fmt.Println("Signature:", jwtParts.Signature)
 
-	//TODO(mk): impl more logic to verify jwt and set reply values
+	var payloadCnf PayloadCnf
+	if err := json.Unmarshal([]byte(jwtParts.Payload), &payloadCnf); err != nil {
+		msg := "Failed to parse payload JSON"
+		c.log.Debug(msg, "err", err)
+		return &VerifyCredentialReply{Valid: false, Message: msg}, nil
+	}
 
-	return &VerifyCredentialReply{Valid: true}, nil
+	xStr := payloadCnf.Cnf.Jwk.X
+	yStr := payloadCnf.Cnf.Jwk.Y
+
+	fmt.Println("JWK x:", xStr)
+	fmt.Println("JWK y:", yStr)
+
+	xBytes, err := base64.RawURLEncoding.DecodeString(xStr)
+	if err != nil {
+		msg := "Error decoding x"
+		c.log.Debug(msg, "err", err)
+		return &VerifyCredentialReply{Valid: false, Message: msg}, nil
+	}
+	yBytes, err := base64.RawURLEncoding.DecodeString(yStr)
+	if err != nil {
+		msg := "Error decoding y"
+		c.log.Debug(msg, "err", err)
+		return &VerifyCredentialReply{Valid: false, Message: msg}, nil
+	}
+
+	pubKey := &ecdsa.PublicKey{
+		Curve: elliptic.P256(),
+		X:     new(big.Int).SetBytes(xBytes),
+		Y:     new(big.Int).SetBytes(yBytes),
+	}
+
+	token, err := jwt.Parse(request.Jwt, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodECDSA); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return pubKey, nil
+	})
+
+	if err != nil {
+		msg := "Error verifying token"
+		c.log.Debug(msg, "err", err)
+		return &VerifyCredentialReply{Valid: false, Message: msg}, nil
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		c.log.Debug("Token is valid. Claims:")
+		for key, val := range claims {
+			c.log.Debug("claim", "key", key, "val", val)
+		}
+		return &VerifyCredentialReply{Valid: true}, nil
+	}
+
+	msg := "Invalid token"
+	c.log.Debug(msg, "err", err)
+	return &VerifyCredentialReply{Valid: false, Message: msg}, nil
 }
 
 func splitJWT(jwt string) (*JWTParts, error) {
