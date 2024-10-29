@@ -58,13 +58,13 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 		return &VerifyCredentialReply{Valid: false, Message: msg}, nil
 	}
 
-	//c.log.Debug("jwt", "header", jwtParts.Header)
-	//c.log.Debug("jwt", "payload", jwtParts.Payload)
-	//c.log.Debug("jwt", "signature", jwtParts.Signature)
+	c.log.Debug("jwt", "header", jwtParts.Header)
+	c.log.Debug("jwt", "payload", jwtParts.Payload)
+	c.log.Debug("jwt", "signature", jwtParts.Signature)
 
-	fmt.Println("Header:", jwtParts.Header)
-	fmt.Println("Payload:", jwtParts.Payload)
-	fmt.Println("Signature:", jwtParts.Signature)
+	//fmt.Println("Header:", jwtParts.Header)
+	//fmt.Println("Payload:", jwtParts.Payload)
+	//fmt.Println("Signature:", jwtParts.Signature)
 
 	var payloadCnf PayloadCnf
 	if err := json.Unmarshal([]byte(jwtParts.Payload), &payloadCnf); err != nil {
@@ -76,8 +76,10 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 	xStr := payloadCnf.Cnf.Jwk.X
 	yStr := payloadCnf.Cnf.Jwk.Y
 
-	fmt.Println("JWK x:", xStr)
-	fmt.Println("JWK y:", yStr)
+	c.log.Debug("jwt", "x", xStr, "y", yStr)
+
+	//fmt.Println("JWK x:", xStr)
+	//fmt.Println("JWK y:", yStr)
 
 	xBytes, err := base64.RawURLEncoding.DecodeString(xStr)
 	if err != nil {
@@ -104,6 +106,8 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 		}
 		return pubKey, nil
 	})
+
+	c.log.Debug("jwt", "token", token)
 
 	if err != nil {
 		msg := "Error verifying token"
