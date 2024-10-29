@@ -11,6 +11,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"math/big"
 	"strings"
+	"time"
 	"vc/internal/gen/status/apiv1_status"
 	"vc/pkg/model"
 )
@@ -18,8 +19,7 @@ import (
 // Status return status for each instance
 func (c *Client) Status(ctx context.Context, req *apiv1_status.StatusRequest) (*apiv1_status.StatusReply, error) {
 	probes := model.Probes{}
-	status := probes.Check("verifier")
-	return status, nil
+	return probes.Check("verifier"), nil
 }
 
 type VerifyCredentialRequest struct {
@@ -98,7 +98,7 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 		Y:     new(big.Int).SetBytes(yBytes),
 	}
 
-	token, err := jwt.Parse(request.Jwt, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(request.Jwt, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodECDSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -112,6 +112,12 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if err := validateClaims(claims); err != nil {
+			msg := "Invalid claims"
+			c.log.Debug(msg, "err", err)
+			return &VerifyCredentialReply{Valid: false, Message: msg}, nil
+		}
+
 		c.log.Debug("Token is valid. Claims:")
 		for key, val := range claims {
 			c.log.Debug("claim", "key", key, "val", val)
@@ -147,6 +153,28 @@ func splitJWT(jwt string) (*JWTParts, error) {
 		Payload:   payload,
 		Signature: signature,
 	}, nil
+}
+
+func validateClaims(claims jwt.MapClaims) error {
+	if exp, ok := claims["exp"].(float64); ok {
+		if time.Now().Unix() > int64(exp) {
+			return errors.New("token has expired")
+		}
+	}
+
+	if nbf, ok := claims["nbf"].(float64); ok {
+		if time.Now().Unix() < int64(nbf) {
+			return errors.New("token is not valid yet")
+		}
+	}
+
+	//if iss, ok := claims["iss"].(string); ok {
+	//	if iss != "https://issuer.sunet.se" { //TODO: where do I find list of trusted issuers?
+	//		return fmt.Errorf("unexpected issuer: %s", iss)
+	//	}
+	//}
+
+	return nil
 }
 
 func decodeBase64URL(encoded string) (string, error) {
