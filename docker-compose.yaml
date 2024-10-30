@@ -112,20 +112,20 @@ services:
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
-  mockas2:
-    container_name: "vc_dev_mockas2"
-    image: docker.sunet.se/dc4eu/mockas:latest
-    restart: always
-    volumes:
-      - ./config.yaml:/config.yaml:ro
-    depends_on:
-      - kafka0
-      - kafka1
-    networks:
-      vc-dev-net:
-        ipv4_address: 172.16.50.23
-    environment:
-      - "VC_CONFIG_YAML=config.yaml"
+#  mockas2:
+#    container_name: "vc_dev_mockas2"
+#    image: docker.sunet.se/dc4eu/mockas:latest
+#    restart: always
+#    volumes:
+#      - ./config.yaml:/config.yaml:ro
+#    depends_on:
+#      - kafka0
+#      - kafka1
+#    networks:
+#      vc-dev-net:
+#        ipv4_address: 172.16.50.23
+#    environment:
+#      - "VC_CONFIG_YAML=config.yaml"
 
   mongo:
     image: mongo:4.0.10
@@ -152,93 +152,94 @@ services:
         ipv4_address: 172.16.50.22
     environment:
       - "COLLECTOR_OTLP_ENABLED=true"
-  kafka0:
-    container_name: "vc_dev_kafka0"
-    image: bitnami/kafka:latest
-    restart: always
-    environment:
-      - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      - KAFKA_CFG_NODE_ID=0
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka0:9093,1@kafka1:9093
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka0:9092
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
-      - KAFKA_KRAFT_CLUSTER_ID=550e8400-e29b-42d4-a716-446655440000
-      - KAFKA_CLUSTERS_0_NAME=vc_kafka_cluster
-      - KAFKA_CFG_NUM_PARTITIONS=2
-      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=2
-    ports:
-      - '9092:9092'
-      - '9093:9093'
-    volumes:
-      - ./kraft0-data:/bitnami/kafka
-    user: "0:0"
-    networks:
-      vc-dev-net:
-        ipv4_address: 172.16.50.60
-  #    healthcheck:
-  #      test: [ "CMD-SHELL", "nc -z localhost 9092 || exit 1" ]
-  #      interval: 10s
-  #      timeout: 5s
-  #      retries: 20
 
-  kafka1:
-    container_name: "vc_dev_kafka1"
-    image: bitnami/kafka:latest
-    restart: always
-    environment:
-      - KAFKA_CFG_PROCESS_ROLES=broker,controller
-      - KAFKA_CFG_NODE_ID=1
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka0:9093,1@kafka1:9093
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka1:9092
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
-      - KAFKA_KRAFT_CLUSTER_ID=550e8400-e29b-42d4-a716-446655440000
-      - KAFKA_CLUSTERS_0_NAME=vc_kafka_cluster
-      - KAFKA_CFG_NUM_PARTITIONS=2
-      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=2
-    ports:
-      - '9094:9092'
-      - '9095:9093'
-    volumes:
-      - ./kraft1-data:/bitnami/kafka
-    user: "0:0"
-    networks:
-      vc-dev-net:
-        ipv4_address: 172.16.50.61
-    #    healthcheck:
-    #      test: [ "CMD-SHELL", "nc -z localhost 9092 || exit 1" ]
-    #      interval: 10s
-    #      timeout: 5s
-    #      retries: 20
-
-  kafka-ui:
-    container_name: "vc_dev_kafka_ui"
-    image: provectuslabs/kafka-ui:latest
-    restart: always
-    ports:
-      - "8080:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: vc_kafka_cluster
-      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka0:9092,kafka1:9092
-      AUTH_TYPE: "LOGIN_FORM"
-      SPRING_SECURITY_USER_NAME: "admin"
-      SPRING_SECURITY_USER_PASSWORD: "admin123"
-      DYNAMIC_CONFIG_ENABLED: "true"
-      KAFKA_UI_MAX_RECORDS_PER_PAGE: 500
-      KAFKA_UI_DEFAULT_OFFSET_SEARCH_STRATEGY: "LATEST"
-    depends_on:
-      - kafka0
-      - kafka1
-    #      kafka0:
-    #        condition: service_healthy
-    #      kafka1:
-    #        condition: service_healthy
-    networks:
-      vc-dev-net:
-        ipv4_address: 172.16.50.70
+#  kafka0:
+#    container_name: "vc_dev_kafka0"
+#    image: bitnami/kafka:latest
+#    restart: always
+#    environment:
+#      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+#      - KAFKA_CFG_NODE_ID=0
+#      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka0:9093,1@kafka1:9093
+#      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+#      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka0:9092
+#      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+#      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+#      - KAFKA_KRAFT_CLUSTER_ID=550e8400-e29b-42d4-a716-446655440000
+#      - KAFKA_CLUSTERS_0_NAME=vc_kafka_cluster
+#      - KAFKA_CFG_NUM_PARTITIONS=2
+#      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=2
+#    ports:
+#      - '9092:9092'
+#      - '9093:9093'
+#    volumes:
+#      - ./kraft0-data:/bitnami/kafka
+#    user: "0:0"
+#    networks:
+#      vc-dev-net:
+#        ipv4_address: 172.16.50.60
+#  #    healthcheck:
+#  #      test: [ "CMD-SHELL", "nc -z localhost 9092 || exit 1" ]
+#  #      interval: 10s
+#  #      timeout: 5s
+#  #      retries: 20
+#
+#  kafka1:
+#    container_name: "vc_dev_kafka1"
+#    image: bitnami/kafka:latest
+#    restart: always
+#    environment:
+#      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+#      - KAFKA_CFG_NODE_ID=1
+#      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka0:9093,1@kafka1:9093
+#      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+#      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka1:9092
+#      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+#      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+#      - KAFKA_KRAFT_CLUSTER_ID=550e8400-e29b-42d4-a716-446655440000
+#      - KAFKA_CLUSTERS_0_NAME=vc_kafka_cluster
+#      - KAFKA_CFG_NUM_PARTITIONS=2
+#      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=2
+#    ports:
+#      - '9094:9092'
+#      - '9095:9093'
+#    volumes:
+#      - ./kraft1-data:/bitnami/kafka
+#    user: "0:0"
+#    networks:
+#      vc-dev-net:
+#        ipv4_address: 172.16.50.61
+#    #    healthcheck:
+#    #      test: [ "CMD-SHELL", "nc -z localhost 9092 || exit 1" ]
+#    #      interval: 10s
+#    #      timeout: 5s
+#    #      retries: 20
+#
+#  kafka-ui:
+#    container_name: "vc_dev_kafka_ui"
+#    image: provectuslabs/kafka-ui:latest
+#    restart: always
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      KAFKA_CLUSTERS_0_NAME: vc_kafka_cluster
+#      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: kafka0:9092,kafka1:9092
+#      AUTH_TYPE: "LOGIN_FORM"
+#      SPRING_SECURITY_USER_NAME: "admin"
+#      SPRING_SECURITY_USER_PASSWORD: "admin123"
+#      DYNAMIC_CONFIG_ENABLED: "true"
+#      KAFKA_UI_MAX_RECORDS_PER_PAGE: 500
+#      KAFKA_UI_DEFAULT_OFFSET_SEARCH_STRATEGY: "LATEST"
+#    depends_on:
+#      - kafka0
+#      - kafka1
+#    #      kafka0:
+#    #        condition: service_healthy
+#    #      kafka1:
+#    #        condition: service_healthy
+#    networks:
+#      vc-dev-net:
+#        ipv4_address: 172.16.50.70
 
 networks:
   vc-dev-net:
@@ -251,7 +252,7 @@ networks:
         - subnet: 172.16.50.0/24
 volumes:
   mongo_data:
-  kraft0-data:
-    driver: local
-  kraft1-data:
-    driver: local
+#  kraft0-data:
+#    driver: local
+#  kraft1-data:
+#    driver: local
