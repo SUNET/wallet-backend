@@ -11,24 +11,24 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"math/big"
 	"strings"
-	"time"
 	"vc/internal/gen/status/apiv1_status"
 	"vc/pkg/model"
 )
 
 const (
-	ErrInvalidJWTStructure = "invalid JWT structure, expected header.payload.signature"
+	ErrNotAJWT             = "not a jwt"
+	ErrOnlySDJWTSupported  = "only typ sd-jwt or sd-jwt-vc is currently supported"
+	ErrOnlyES256Supported  = "only alg ES256 is currently supported"
+	ErrInvalidJWTStructure = "invalid JWT structure: expected format is header.payload.signature with optional ~disclosure~ segments (e.g., ~disclosure1~disclosure2~)."
 	ErrInvalidPayloadJSON  = "failed to parse payload JSON"
 	ErrInvalidJWKField     = "missing or invalid JWK field"
 	ErrTokenVerification   = "error verifying token"
 	ErrInvalidToken        = "invalid token"
-	ErrInvalidClaims       = "invalid claims"
-	ErrExpiredToken        = "token has expired"
-	ErrNotYetValidToken    = "token is not valid yet"
 )
 
 type VerifyCredentialRequest struct {
-	Credential string `json:"credential" validate:"required"`
+	// min 20 is the ~ teoretical minimum for a non signed jwt encoded in base64
+	Credential string `json:"credential" validate:"required,min=20"`
 }
 
 type VerifyCredentialReply struct {
@@ -57,14 +57,26 @@ func (c *Client) Status(ctx context.Context, req *apiv1_status.StatusRequest) (*
 	return probes.Check("verifier"), nil
 }
 
-// VerifyCredential verifies a credential (sd-jwt currently supported)
+// VerifyCredential verifies a credential (only sd-jwt or sd-jwt-vc signed with ES256 is currently supported)
 func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredentialRequest) (*VerifyCredentialReply, error) {
-	//TODO(mk): ev. avgör snabbt om det är en sd-jwt eller någon annan typ av credential?
+	jwtHeader, err := parseJWTHeader(request.Credential)
+	if err != nil {
+		return c.createInvalidReply(ErrNotAJWT, errors.New("Not a JWT"))
+	}
 
-	sdjwtParts, err := splitCredential(request.Credential)
+	if !isTypSupported(jwtHeader) {
+		return c.createInvalidReply(ErrOnlySDJWTSupported, errors.New("Typ not supported"))
+	}
+
+	if !isAlgSupported(jwtHeader) {
+		return c.createInvalidReply(ErrOnlyES256Supported, errors.New("Alg not supported"))
+	}
+
+	sdjwtParts, err := splitSDJWT(request.Credential)
 	if err != nil {
 		return c.createInvalidReply(ErrInvalidJWTStructure, err)
 	}
+
 	c.log.Debug("credential", "parts", sdjwtParts)
 
 	jwk, err := extractJWK(sdjwtParts.Payload)
@@ -86,15 +98,44 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 	c.log.Debug("token", "data", token)
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if err := validateClaims(claims); err != nil {
-			return c.createInvalidReply(ErrInvalidClaims, err)
-		}
-		c.logClaims(claims)
-		//TODO(mk): validate disclosures in any way?
+		c.debugLogClaims(claims)
+		//TODO(mk): Verify that this verifier trusts the public key etc - as of now, the jwk-data used to create the pubkey is extracted from the jwt's payload.cnf.*, ie verify key binding/more info taken from the jwt.header etc!!!
 		return &VerifyCredentialReply{Valid: true}, nil
 	}
 
 	return c.createInvalidReply(ErrInvalidToken, err)
+}
+
+type jwtHeader struct {
+	Alg string `json:"alg" validate:"required,alg"`
+	Typ string `json:"typ" validate:"required,typ"`
+}
+
+func parseJWTHeader(credential string) (*jwtHeader, error) {
+	parts := strings.Split(credential, ".")
+	if len(parts) < 3 {
+		return nil, fmt.Errorf("invalid JWT format")
+	}
+
+	headerBytes, err := base64.RawURLEncoding.DecodeString(parts[0])
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode JWT header: %w", err)
+	}
+
+	var header jwtHeader
+	if err := json.Unmarshal(headerBytes, &header); err != nil {
+		return nil, fmt.Errorf("failed to parse JWT header: %w", err)
+	}
+
+	return &header, nil
+}
+
+func isTypSupported(header *jwtHeader) bool {
+	return header.Typ == "sd-jwt" || header.Typ == "sd-jwt-vc"
+}
+
+func isAlgSupported(header *jwtHeader) bool {
+	return header.Alg == "ES256"
 }
 
 func (c *Client) createInvalidReply(message string, err error) (*VerifyCredentialReply, error) {
@@ -102,14 +143,14 @@ func (c *Client) createInvalidReply(message string, err error) (*VerifyCredentia
 	return &VerifyCredentialReply{Valid: false, Message: message}, nil
 }
 
-func (c *Client) logClaims(claims jwt.MapClaims) {
+func (c *Client) debugLogClaims(claims jwt.MapClaims) {
 	c.log.Debug("Token is valid. Claims:")
 	for key, val := range claims {
 		c.log.Debug("claim", "key", key, "val", val)
 	}
 }
 
-func splitCredential(credential string) (*SDJWTParts, error) {
+func splitSDJWT(credential string) (*SDJWTParts, error) {
 	parts := strings.Split(credential, "~")
 	jwtParts := strings.Split(parts[0], ".")
 	if len(jwtParts) != 3 {
@@ -206,23 +247,6 @@ func parseJWT(completeJWT string, pubKey *ecdsa.PublicKey) (*jwt.Token, error) {
 		}
 		return pubKey, nil
 	})
-}
-
-func validateClaims(claims jwt.MapClaims) error {
-	if exp, ok := claims["exp"].(float64); ok {
-		if time.Now().Unix() > int64(exp) {
-			return errors.New(ErrExpiredToken)
-		}
-	}
-
-	if nbf, ok := claims["nbf"].(float64); ok {
-		if time.Now().Unix() < int64(nbf) {
-			return errors.New(ErrNotYetValidToken)
-		}
-	}
-
-	//TODO(mk): validate more claims here ...
-	return nil
 }
 
 func decodeBase64URL(encoded string) (string, error) {
