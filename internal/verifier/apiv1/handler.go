@@ -79,12 +79,16 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 
 	c.log.Debug("credential", "parts", sdjwtParts)
 
+	//disclosuresDecoded, err := decodeDisclosures(sdjwtParts)
+	//fmt.Println("Disclusures decoded:", disclosuresDecoded)
+
 	jwk, err := extractJWK(sdjwtParts.Payload)
 	if err != nil {
 		return c.createInvalidReply(ErrInvalidJWKField, err)
 	}
 	c.log.Debug("jwk", "data", jwk)
 
+	//TODO(mk): Verify that this verifier trusts the public key etc - as of now, the jwk-data used to create the pubkey is extracted from the jwt's payload.cnf.*, ie verify key binding/more info taken from the jwt.header etc!!!
 	pubKey, err := createPubKey(jwk)
 	if err != nil {
 		return c.createInvalidReply(ErrInvalidJWKField, err)
@@ -99,7 +103,6 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		c.debugLogClaims(claims)
-		//TODO(mk): Verify that this verifier trusts the public key etc - as of now, the jwk-data used to create the pubkey is extracted from the jwt's payload.cnf.*, ie verify key binding/more info taken from the jwt.header etc!!!
 		return &VerifyCredentialReply{Valid: true}, nil
 	}
 
@@ -131,10 +134,12 @@ func parseJWTHeader(credential string) (*jwtHeader, error) {
 }
 
 func isTypSupported(header *jwtHeader) bool {
+	//TODO(mk): sd-jwt+vc instead of sd-jwt-vc?
 	return header.Typ == "sd-jwt" || header.Typ == "sd-jwt-vc"
 }
 
 func isAlgSupported(header *jwtHeader) bool {
+	//TODO(mk): add support for more algorithms?
 	return header.Alg == "ES256"
 }
 
@@ -156,6 +161,8 @@ func splitSDJWT(credential string) (*SDJWTParts, error) {
 	if len(jwtParts) != 3 {
 		return nil, errors.New(ErrInvalidJWTStructure)
 	}
+
+	//TODO(mk): verify that it is a SD-JWT and not just a JWT, ie has at least one ~ after signature, ie header.payload.signature~ (even if there are no disclosures)
 
 	header, err := decodeBase64URL(jwtParts[0])
 	if err != nil {
@@ -241,6 +248,7 @@ func createPubKey(jwk *JWK) (*ecdsa.PublicKey, error) {
 }
 
 func parseJWT(completeJWT string, pubKey *ecdsa.PublicKey) (*jwt.Token, error) {
+	//TODO(mk): config what claims to check, ie use ParseWithClaims
 	return jwt.Parse(completeJWT, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodECDSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -255,4 +263,18 @@ func decodeBase64URL(encoded string) (string, error) {
 		return "", err
 	}
 	return string(decodedBytes), nil
+}
+
+func decodeDisclosures(s *SDJWTParts) ([]string, error) {
+	decodedDisclosures := make([]string, len(s.Disclosures))
+
+	for i, disclosure := range s.Disclosures {
+		decoded, err := decodeBase64URL(disclosure)
+		if err != nil {
+			return nil, fmt.Errorf("error decoding disclosure %d: %v", i, err)
+		}
+		decodedDisclosures[i] = decoded
+	}
+
+	return decodedDisclosures, nil
 }
