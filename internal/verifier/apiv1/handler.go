@@ -248,7 +248,7 @@ func createPubKey(jwk *JWK) (*ecdsa.PublicKey, error) {
 }
 
 func parseJWT(completeJWT string, pubKey *ecdsa.PublicKey) (*jwt.Token, error) {
-	//TODO(mk): config what claims to check, ie use ParseWithClaims
+	//TODO(mk): config what claims to check, ie use ParseWithClaims. Now only exp and nbf is checked if they exist
 	return jwt.Parse(completeJWT, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodECDSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
