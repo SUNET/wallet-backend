@@ -11,7 +11,7 @@ const validateHasValueAndNotEmpty = (element) => {
 };
 
 const clearContainer = (id) => {
-    console.debug(`Clearing element : ${id}`);
+    //console.debug(`Clearing element : ${id}`);
     const element = getElementById(id);
     if (element) {
         element.innerHTML = "";
@@ -81,10 +81,10 @@ const generateArticleIDBasis = () => {
 function isLoggedIn() {
     const cookie = document.cookie;
     if (cookie && cookie.match(/vc_ui_auth_session=(.*?)(;|$)/)[1]) {
-        console.debug("User is logged in");
+        console.debug("User is authenticated");
         return true;
     }
-    console.debug("User is not logged in");
+    console.debug("User is not authenticated");
     //Note: Expire time for cookie is handled by the browser and is removed from document.cookie when expired
 
     return false;
@@ -154,7 +154,7 @@ async function doFetchAPICallAndHandleResult(url, options, elements) {
         //TODO(mk): add timeout on clientside for fetch
         const response = await fetch(url, options);
         const jsonBody = await response.json();
-        console.debug(jsonBody);
+        //console.debug(jsonBody);
 
         if (!response.ok) {
             if (response.status === 401) {
@@ -185,7 +185,7 @@ async function doFetchAPICallAndHandleResult(url, options, elements) {
 
 async function getAndDisplayInArticleContainerFor(path, articleHeaderText) {
     const url = new URL(path, baseUrl);
-    console.debug("Call to getAndDisplayInArticleContainerFor: " + url);
+    //console.debug("Call to getAndDisplayInArticleContainerFor: " + url);
 
     const elements = addNewRequestResponseArticleToContainer(articleHeaderText);
 
@@ -204,7 +204,7 @@ async function getAndDisplayInArticleContainerFor(path, articleHeaderText) {
 
 async function postAndDisplayInArticleContainerFor(path, requestBody, articleHeaderText) {
     const url = new URL(path, baseUrl);
-    console.debug("Call to postAndDisplayInArticleContainerFor: " + url);
+    //console.debug("Call to postAndDisplayInArticleContainerFor: " + url);
 
     const elements = addNewRequestResponseArticleToContainer(articleHeaderText);
 
@@ -222,7 +222,7 @@ async function postAndDisplayInArticleContainerFor(path, requestBody, articleHea
 
 
 const createMock = () => {
-    console.debug("createMock");
+    //console.debug("createMock");
     const path = "/secure/mockas/mock/next";
     const articleHeaderText = "Upload new mock document result";
 
@@ -242,7 +242,7 @@ const createMock = () => {
 };
 
 const postDocumentList = () => {
-    console.debug("postDocumentList");
+    //console.debug("postDocumentList");
     const path = "/secure/apigw/document/list";
     const articleHeaderText = "List documents result";
 
@@ -265,8 +265,7 @@ const postDocumentList = () => {
     postAndDisplayInArticleContainerFor(path, documentListRequest, articleHeaderText);
 };
 
-
-const updateUploadAndFetchButtons = () => {
+const updateMockAndListButtons = () => {
     const input = getElementById('authentic_source_person_id-input');
     const mockBtn = getElementById('create-mock-btn');
     const documentListBtn = getElementById('post-document-list-btn');
@@ -322,7 +321,7 @@ const buildArticle = (articleID, articleHeaderText, bodyChildrenElementArray) =>
 
 async function doLogin() {
     const url = new URL("/login", baseUrl);
-    console.debug("doLogin for url: " + url);
+    //console.debug("doLogin for url: " + url);
 
     const doLoginButton = getElementById("do-login-btn");
     doLoginButton.disabled = true;
@@ -364,7 +363,7 @@ async function doLogin() {
     if (authOK) {
         clearContainer("login-container");
         displaySecureMenyItems();
-        //TODO(mk): show logged in user?
+        //TODO(mk): display current logged in user in UI?
     } else {
         usernameInput.disabled = false;
         passwordInput.disabled = false;
@@ -374,30 +373,27 @@ async function doLogin() {
 }
 
 const addUploadFormArticleToContainer = () => {
-    const buildUploadFormElements = () => {
-        //TODO:(mk) Only one form is handled in Browser simultaneous since element id's is static
-
+    const textareaId = generateUUID();
+    const buildUploadFormElements = (textareaId) => {
         const textarea = document.createElement("textarea");
-        textarea.id = 'upload-textarea';
+        textarea.id = textareaId;
         textarea.classList.add("textarea");
-        textarea.rows = 10;
+        textarea.rows = 15;
+        textarea.placeholder = "Document as json";
 
         const submitButton = document.createElement('button');
-        submitButton.id = 'do-upload-btn';
+        submitButton.id = generateUUID();
         submitButton.classList.add('button', 'is-link');
         submitButton.textContent = 'Upload';
 
-        const doUpload = () => {
-            getElementById("do-upload-btn").disabled = true;
-
-            const textarea = getElementById("upload-textarea");
+        const doUpload = (textarea, submitButton) => {
+            submitButton.disabled = true;
             const text = textarea.value;
             textarea.disabled = true;
-
             const jsonObj = JSON.parse(text);
             postAndDisplayInArticleContainerFor("/secure/apigw/upload", jsonObj, "Upload result");
         };
-        submitButton.onclick = () => doUpload();
+        submitButton.onclick = () => doUpload(textarea, submitButton);
 
         const buttonControl = document.createElement('div');
         buttonControl.classList.add('control');
@@ -407,11 +403,53 @@ const addUploadFormArticleToContainer = () => {
     };
 
     const articleIdBasis = generateArticleIDBasis();
-    const articleDiv = buildArticle(articleIdBasis.articleID, "Upload document", buildUploadFormElements());
+    let bodyChildrenElementArray = buildUploadFormElements(textareaId);
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Upload document", bodyChildrenElementArray);
     const articleContainer = getElementById('article-container');
     articleContainer.prepend(articleDiv);
 
-    getElementById("upload-textarea").focus();
+    getElementById(textareaId).focus();
+};
+
+const addVerifyFormArticleToContainer = () => {
+    const textareaId = generateUUID();
+    const buildUploadFormElements = (textareaId) => {
+        const textarea = document.createElement("textarea");
+        textarea.id = textareaId;
+        textarea.classList.add("textarea");
+        textarea.rows = 10;
+        textarea.placeholder = "Base64 encoded vc+sd-jwt string";
+
+        const submitButton = document.createElement('button');
+        submitButton.id = generateUUID();
+        submitButton.classList.add('button', 'is-link');
+        submitButton.textContent = 'Verify';
+
+        const doVerify = (textarea, submitButton) => {
+            submitButton.disabled = true;
+            const text = textarea.value;
+            textarea.disabled = true;
+            const requestBody = {
+                "credential": text
+            };
+            postAndDisplayInArticleContainerFor("/verifier/verify", requestBody, "Verify result");
+        };
+        submitButton.onclick = () => doVerify(textarea, submitButton);
+
+        const buttonControl = document.createElement('div');
+        buttonControl.classList.add('control');
+        buttonControl.appendChild(submitButton);
+
+        return [textarea, buttonControl];
+    };
+
+    const articleIdBasis = generateArticleIDBasis();
+    let bodyChildrenElementArray = buildUploadFormElements(textareaId);
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Verify credential", bodyChildrenElementArray);
+    const articleContainer = getElementById('article-container');
+    articleContainer.prepend(articleDiv);
+
+    getElementById(textareaId).focus();
 };
 
 const createInputElement = (placeholder, value = '', type = 'text', disabled = false) => {
@@ -646,7 +684,7 @@ const addLoginArticleToContainer = () => {
 
 async function doLogout() {
     const url = new URL("/secure/logout", baseUrl);
-    console.debug("doLogout for url: " + url);
+    //console.debug("doLogout for url: " + url);
 
     const headers = {
         'Accept': 'application/json', 'Content-Type': 'application/json'

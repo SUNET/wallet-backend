@@ -16,14 +16,8 @@ import (
 )
 
 const (
-	ErrNotAJWT             = "not a jwt"
-	ErrOnlySDJWTSupported  = "only typ sd-jwt or sd-jwt-vc is currently supported"
-	ErrOnlyES256Supported  = "only alg ES256 is currently supported"
 	ErrInvalidJWTStructure = "invalid JWT structure: expected format is header.payload.signature with optional ~disclosure~ segments (e.g., ~disclosure1~disclosure2~)."
-	ErrInvalidPayloadJSON  = "failed to parse payload JSON"
 	ErrInvalidJWKField     = "missing or invalid JWK field"
-	ErrTokenVerification   = "error verifying token"
-	ErrInvalidToken        = "invalid token"
 )
 
 type VerifyCredentialRequest struct {
@@ -52,7 +46,7 @@ type JWK struct {
 }
 
 // Status returns the status for each instance.
-func (c *Client) Status(ctx context.Context, req *apiv1_status.StatusRequest) (*apiv1_status.StatusReply, error) {
+func (c *Client) Health(ctx context.Context, req *apiv1_status.StatusRequest) (*apiv1_status.StatusReply, error) {
 	probes := model.Probes{}
 	return probes.Check("verifier"), nil
 }
@@ -61,15 +55,19 @@ func (c *Client) Status(ctx context.Context, req *apiv1_status.StatusRequest) (*
 func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredentialRequest) (*VerifyCredentialReply, error) {
 	jwtHeader, err := parseJWTHeader(request.Credential)
 	if err != nil {
-		return c.createInvalidReply(ErrNotAJWT, errors.New("Not a JWT"))
+		return c.createInvalidReply("not a jwt", err)
 	}
 
-	if !isTypSupported(jwtHeader) {
-		return c.createInvalidReply(ErrOnlySDJWTSupported, errors.New("Typ not supported"))
+	//TODO(mk): remove sd-jwt?
+	allowedTyp := []string{"sd-jwt", "vc+sd-jwt"}
+	if !isTypSupported(jwtHeader, allowedTyp) {
+		return c.createInvalidReply("supported jwt header.typ are: "+strings.Join(allowedTyp, ", "), errors.New("Typ not supported"))
 	}
 
-	if !isAlgSupported(jwtHeader) {
-		return c.createInvalidReply(ErrOnlyES256Supported, errors.New("Alg not supported"))
+	//TODO(mk): add support for more algorithms?
+	allowedAlg := []string{"ES256"}
+	if !isAlgSupported(jwtHeader, allowedAlg) {
+		return c.createInvalidReply("supported jwt header.alg are: "+strings.Join(allowedAlg, ", "), errors.New("Alg not supported"))
 	}
 
 	sdjwtParts, err := splitSDJWT(request.Credential)
@@ -97,7 +95,7 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 
 	token, err := parseJWT(sdjwtParts.CompleteJWT, pubKey)
 	if err != nil {
-		return c.createInvalidReply(ErrTokenVerification, err)
+		return c.createInvalidReply("error verifying token", err)
 	}
 	c.log.Debug("token", "data", token)
 
@@ -106,7 +104,7 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 		return &VerifyCredentialReply{Valid: true}, nil
 	}
 
-	return c.createInvalidReply(ErrInvalidToken, err)
+	return c.createInvalidReply("invalid token", err)
 }
 
 type jwtHeader struct {
@@ -133,14 +131,22 @@ func parseJWTHeader(credential string) (*jwtHeader, error) {
 	return &header, nil
 }
 
-func isTypSupported(header *jwtHeader) bool {
-	//TODO(mk): sd-jwt+vc instead of sd-jwt-vc?
-	return header.Typ == "sd-jwt" || header.Typ == "sd-jwt-vc"
+func isTypSupported(header *jwtHeader, allowedTyp []string) bool {
+	for _, typ := range allowedTyp {
+		if header.Typ == typ {
+			return true
+		}
+	}
+	return false
 }
 
-func isAlgSupported(header *jwtHeader) bool {
-	//TODO(mk): add support for more algorithms?
-	return header.Alg == "ES256"
+func isAlgSupported(header *jwtHeader, allowedAlg []string) bool {
+	for _, alg := range allowedAlg {
+		if header.Alg == alg {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Client) createInvalidReply(message string, err error) (*VerifyCredentialReply, error) {
@@ -162,7 +168,7 @@ func splitSDJWT(credential string) (*SDJWTParts, error) {
 		return nil, errors.New(ErrInvalidJWTStructure)
 	}
 
-	//TODO(mk): verify that it is a SD-JWT and not just a JWT, ie has at least one ~ after signature, ie header.payload.signature~ (even if there are no disclosures)
+	//TODO(mk): verify that it is a SD-JWT and not just a JWT after fix in issuer, ie has at least one ~ after signature, ie header.payload.signature~ (even if there are no disclosures)
 
 	header, err := decodeBase64URL(jwtParts[0])
 	if err != nil {
@@ -186,7 +192,7 @@ func splitSDJWT(credential string) (*SDJWTParts, error) {
 func extractJWK(payload string) (*JWK, error) {
 	var payloadMap map[string]interface{}
 	if err := json.Unmarshal([]byte(payload), &payloadMap); err != nil {
-		return nil, errors.New(ErrInvalidPayloadJSON)
+		return nil, errors.New("failed to parse payload JSON")
 	}
 
 	cnf, ok := payloadMap["cnf"].(map[string]interface{})

@@ -6,6 +6,7 @@ import (
 	"time"
 	apiv1_apigw "vc/internal/apigw/apiv1"
 	"vc/internal/gen/status/apiv1_status"
+	apiv1_verifier "vc/internal/verifier/apiv1"
 	"vc/pkg/model"
 )
 
@@ -118,8 +119,8 @@ type NotificationRequest struct {
 	DocumentID      string `json:"document_id" validate:"required"`
 }
 
-func (c *Client) Notification(ctx context.Context, request *NotificationRequest) (any, error) {
-	reply, err := c.apigwClient.Notification(request)
+func (c *Client) Notification(ctx context.Context, req *NotificationRequest) (any, error) {
+	reply, err := c.apigwClient.Notification(req)
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +149,32 @@ func (c *Client) MockNext(ctx context.Context, req *MockNextRequest) (any, error
 	return reply, nil
 }
 
-func (c *Client) StatusAPIGW(ctx context.Context, req *apiv1_status.StatusRequest) (any, error) {
-	reply, err := c.apigwClient.Status()
+func (c *Client) Verify(ctx context.Context, req *apiv1_verifier.VerifyCredentialRequest) (any, error) {
+	reply, err := c.verifierClient.Verify(req)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func (c *Client) HealthAPIGW(ctx context.Context, req *apiv1_status.StatusRequest) (any, error) {
+	reply, err := c.apigwClient.Health()
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func (c *Client) HealthVerifier(ctx context.Context, req *apiv1_status.StatusRequest) (any, error) {
+	reply, err := c.verifierClient.Health()
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func (c *Client) HealthMockAS(ctx context.Context, req *apiv1_status.StatusRequest) (any, error) {
+	reply, err := c.mockasClient.Health()
 	if err != nil {
 		return nil, err
 	}

@@ -29,7 +29,7 @@ func (c *APIGWClient) DocumentList(req *DocumentListRequest) (any, error) {
 }
 
 // Status sends GET to apigw /health
-func (c *APIGWClient) Status() (any, error) {
+func (c *APIGWClient) Health() (any, error) {
 	reply, err := c.DoGetJSON("/health")
 	if err != nil {
 		return nil, err

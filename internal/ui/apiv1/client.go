@@ -14,6 +14,7 @@ type Client struct {
 	log            *logger.Log
 	apigwClient    *APIGWClient
 	mockasClient   *MockASClient
+	verifierClient *VerifierClient
 	eventPublisher EventPublisher
 }
 
@@ -25,6 +26,7 @@ func New(ctx context.Context, cfg *model.Cfg, tracer *trace.Tracer, eventPublish
 		log:            log.New("apiv1"),
 		apigwClient:    NewAPIGWClient(cfg, tracer, log.New("apiwg_client")),
 		mockasClient:   NewMockASClient(cfg, tracer, log.New("mockas_client")),
+		verifierClient: NewVerifierClient(cfg, tracer, log.New("verifier_client")),
 		eventPublisher: eventPublisher,
 	}
 

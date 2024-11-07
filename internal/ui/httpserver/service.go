@@ -83,20 +83,30 @@ func New(ctx context.Context, cfg *model.Cfg, apiv1 *apiv1.Client, tracer *trace
 	s.httpHelpers.Server.RegEndpoint(ctx, rgRoot, http.MethodPost, "login", s.endpointLogin)
 	s.httpHelpers.Server.RegEndpoint(ctx, rgRoot, http.MethodGet, "health", s.endpointHealth)
 
+	rgAPIGW := rgRoot.Group("apigw")
+	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGW, http.MethodGet, "health", s.endpointHealthAPIGW)
+
+	rgVerifier := rgRoot.Group("verifier")
+	s.httpHelpers.Server.RegEndpoint(ctx, rgVerifier, http.MethodGet, "health", s.endpointHealthVerifier)
+	// No auth is needed to verify a credential
+	s.httpHelpers.Server.RegEndpoint(ctx, rgVerifier, http.MethodPost, "verify", s.endpointVerifyCredential)
+
+	rgMockAS := rgRoot.Group("mockas")
+	s.httpHelpers.Server.RegEndpoint(ctx, rgMockAS, http.MethodGet, "health", s.endpointHealthMockAS)
+
 	rgSecure := rgRoot.Group("secure", s.middlewareAuthRequired(ctx))
 	s.httpHelpers.Server.RegEndpoint(ctx, rgSecure, http.MethodDelete, "logout", s.endpointLogout)
 	s.httpHelpers.Server.RegEndpoint(ctx, rgSecure, http.MethodGet, "user", s.endpointUser)
 
-	rgAPIGW := rgSecure.Group("apigw")
-	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGW, http.MethodGet, "health", s.endpointAPIGWStatus)
-	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGW, http.MethodPost, "document/list", s.endpointDocumentList)
-	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGW, http.MethodPost, "upload", s.endpointUpload)
-	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGW, http.MethodPost, "credential", s.endpointCredential)
-	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGW, http.MethodPost, "document", s.endpointGetDocument)
-	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGW, http.MethodPost, "notification", s.endpointNotification)
+	rgMockASSecure := rgSecure.Group("mockas")
+	s.httpHelpers.Server.RegEndpoint(ctx, rgMockASSecure, http.MethodPost, "mock/next", s.endpointMockNext)
 
-	rgMockAS := rgSecure.Group("mockas")
-	s.httpHelpers.Server.RegEndpoint(ctx, rgMockAS, http.MethodPost, "mock/next", s.endpointMockNext)
+	rgAPIGWSecure := rgSecure.Group("apigw")
+	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "document/list", s.endpointDocumentList)
+	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "upload", s.endpointUpload)
+	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "credential", s.endpointCredential)
+	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "document", s.endpointGetDocument)
+	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "notification", s.endpointNotification)
 
 	// Run http server
 	go func() {

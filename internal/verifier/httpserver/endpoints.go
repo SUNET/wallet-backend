@@ -11,9 +11,8 @@ import (
 )
 
 func (s *Service) endpointHealth(ctx context.Context, c *gin.Context) (any, error) {
-	//TODO:(mk): fix endpointHealth
 	request := &apiv1_status.StatusRequest{}
-	reply, err := s.apiv1.Status(ctx, request)
+	reply, err := s.apiv1.Health(ctx, request)
 	if err != nil {
 		return nil, err
 	}

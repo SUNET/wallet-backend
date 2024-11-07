@@ -12,8 +12,16 @@ type MockASClient struct {
 
 func NewMockASClient(cfg *model.Cfg, tracer *trace.Tracer, logger *logger.Log) *MockASClient {
 	return &MockASClient{
-		VCBaseClient: NewClient("APIGW", cfg.UI.Services.MockAS.BaseURL, tracer, logger),
+		VCBaseClient: NewClient("MOCKAS", cfg.UI.Services.MockAS.BaseURL, tracer, logger),
 	}
+}
+
+func (c *MockASClient) Health() (any, error) {
+	reply, err := c.DoGetJSON("/health")
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
 }
 
 func (c *MockASClient) MockNext(req *MockNextRequest) (any, error) {

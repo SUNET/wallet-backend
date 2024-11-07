@@ -30,6 +30,7 @@ services:
       #        condition: service_healthy
       - apigw
       - mockas
+      - verifier
       #- kafka0
       #- kafka1
     networks:
@@ -112,20 +113,20 @@ services:
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
-#  mockas2:
-#    container_name: "vc_dev_mockas2"
-#    image: docker.sunet.se/dc4eu/mockas:latest
-#    restart: always
-#    volumes:
-#      - ./config.yaml:/config.yaml:ro
-#    depends_on:
-#      - kafka0
-#      - kafka1
-#    networks:
-#      vc-dev-net:
-#        ipv4_address: 172.16.50.23
-#    environment:
-#      - "VC_CONFIG_YAML=config.yaml"
+  #  mockas2:
+  #    container_name: "vc_dev_mockas2"
+  #    image: docker.sunet.se/dc4eu/mockas:latest
+  #    restart: always
+  #    volumes:
+  #      - ./config.yaml:/config.yaml:ro
+  #    depends_on:
+  #      - kafka0
+  #      - kafka1
+  #    networks:
+  #      vc-dev-net:
+  #        ipv4_address: 172.16.50.23
+  #    environment:
+  #      - "VC_CONFIG_YAML=config.yaml"
 
   mongo:
     image: mongo:4.0.10
