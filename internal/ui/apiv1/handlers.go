@@ -180,3 +180,11 @@ func (c *Client) HealthMockAS(ctx context.Context, req *apiv1_status.StatusReque
 	}
 	return reply, nil
 }
+
+func (c *Client) DecodeCredential(ctx context.Context, req *apiv1_verifier.DecodeCredentialRequest) (any, error) {
+	reply, err := c.verifierClient.Decode(req)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}

@@ -8,6 +8,6 @@ import (
 
 type Apiv1 interface {
 	Health(ctx context.Context, req *apiv1_status.StatusRequest) (*apiv1_status.StatusReply, error)
-
-	VerifyCredential(ctx context.Context, request *apiv1.VerifyCredentialRequest) (*apiv1.VerifyCredentialReply, error)
+	VerifyCredential(ctx context.Context, request *apiv1.Credential) (*apiv1.VerifyCredentialReply, error)
+	DecodeCredential(ctx context.Context, request *apiv1.Credential) (*apiv1.DecodedCredential, error)
 }

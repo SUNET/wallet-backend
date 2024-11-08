@@ -88,8 +88,9 @@ func New(ctx context.Context, cfg *model.Cfg, apiv1 *apiv1.Client, tracer *trace
 
 	rgVerifier := rgRoot.Group("verifier")
 	s.httpHelpers.Server.RegEndpoint(ctx, rgVerifier, http.MethodGet, "health", s.endpointHealthVerifier)
-	// No auth is needed to verify a credential
+	// No auth is needed to verify or decode a credential
 	s.httpHelpers.Server.RegEndpoint(ctx, rgVerifier, http.MethodPost, "verify", s.endpointVerifyCredential)
+	s.httpHelpers.Server.RegEndpoint(ctx, rgVerifier, http.MethodPost, "decode", s.endpointDecodeCredential)
 
 	rgMockAS := rgRoot.Group("mockas")
 	s.httpHelpers.Server.RegEndpoint(ctx, rgMockAS, http.MethodGet, "health", s.endpointHealthMockAS)

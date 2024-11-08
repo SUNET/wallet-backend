@@ -391,7 +391,7 @@ const addUploadFormArticleToContainer = () => {
             const text = textarea.value;
             textarea.disabled = true;
             const jsonObj = JSON.parse(text);
-            postAndDisplayInArticleContainerFor("/secure/apigw/upload", jsonObj, "Upload result");
+            postAndDisplayInArticleContainerFor("/secure/apigw/upload", jsonObj, "Upload document result");
         };
         submitButton.onclick = () => doUpload(textarea, submitButton);
 
@@ -403,8 +403,7 @@ const addUploadFormArticleToContainer = () => {
     };
 
     const articleIdBasis = generateArticleIDBasis();
-    let bodyChildrenElementArray = buildUploadFormElements(textareaId);
-    const articleDiv = buildArticle(articleIdBasis.articleID, "Upload document", bodyChildrenElementArray);
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Upload document", buildUploadFormElements(textareaId));
     const articleContainer = getElementById('article-container');
     articleContainer.prepend(articleDiv);
 
@@ -413,7 +412,7 @@ const addUploadFormArticleToContainer = () => {
 
 const addVerifyFormArticleToContainer = () => {
     const textareaId = generateUUID();
-    const buildUploadFormElements = (textareaId) => {
+    const buildVerifyCredentialFormElements = (textareaId) => {
         const textarea = document.createElement("textarea");
         textarea.id = textareaId;
         textarea.classList.add("textarea");
@@ -432,7 +431,7 @@ const addVerifyFormArticleToContainer = () => {
             const requestBody = {
                 "credential": text
             };
-            postAndDisplayInArticleContainerFor("/verifier/verify", requestBody, "Verify result");
+            postAndDisplayInArticleContainerFor("/verifier/verify", requestBody, "Verify credential result");
         };
         submitButton.onclick = () => doVerify(textarea, submitButton);
 
@@ -444,13 +443,54 @@ const addVerifyFormArticleToContainer = () => {
     };
 
     const articleIdBasis = generateArticleIDBasis();
-    let bodyChildrenElementArray = buildUploadFormElements(textareaId);
-    const articleDiv = buildArticle(articleIdBasis.articleID, "Verify credential", bodyChildrenElementArray);
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Verify credential", buildVerifyCredentialFormElements(textareaId));
     const articleContainer = getElementById('article-container');
     articleContainer.prepend(articleDiv);
 
     getElementById(textareaId).focus();
 };
+
+const addDecodeCredentialFormArticleToContainer = () => {
+    const textareaId = generateUUID();
+    const buildDecodeCredentialFormElements = (textareaId) => {
+        const textarea = document.createElement("textarea");
+        textarea.id = textareaId;
+        textarea.classList.add("textarea");
+        textarea.rows = 10;
+        textarea.placeholder = "Base64 encoded vc+sd-jwt string";
+
+        const submitButton = document.createElement('button');
+        submitButton.id = generateUUID();
+        submitButton.classList.add('button', 'is-link');
+        submitButton.textContent = 'Decode';
+
+        const doDecode = (textarea, submitButton) => {
+            submitButton.disabled = true;
+            const text = textarea.value;
+            textarea.disabled = true;
+            const requestBody = {
+                "credential": text
+            };
+            postAndDisplayInArticleContainerFor("/verifier/decode", requestBody, "Decode credential result");
+        };
+        submitButton.onclick = () => doDecode(textarea, submitButton);
+
+        const buttonControl = document.createElement('div');
+        buttonControl.classList.add('control');
+        buttonControl.appendChild(submitButton);
+
+        return [textarea, buttonControl];
+    };
+
+    const articleIdBasis = generateArticleIDBasis();
+    let bodyChildrenElementArray = buildDecodeCredentialFormElements(textareaId);
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Decode credential", bodyChildrenElementArray);
+    const articleContainer = getElementById('article-container');
+    articleContainer.prepend(articleDiv);
+
+    getElementById(textareaId).focus();
+};
+
 
 const createInputElement = (placeholder, value = '', type = 'text', disabled = false) => {
     const input = document.createElement('input');

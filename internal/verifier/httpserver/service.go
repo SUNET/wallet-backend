@@ -49,6 +49,7 @@ func New(ctx context.Context, cfg *model.Cfg, apiv1 *apiv1.Client, tracer *trace
 
 	s.httpHelpers.Server.RegEndpoint(ctx, rgRoot, http.MethodGet, "health", s.endpointHealth)
 	s.httpHelpers.Server.RegEndpoint(ctx, rgRoot, http.MethodPost, "verify", s.endpointVerifyCredential)
+	s.httpHelpers.Server.RegEndpoint(ctx, rgRoot, http.MethodPost, "decode", s.endpointDecodeCredential)
 
 	rgDocs := rgRoot.Group("/swagger")
 	rgDocs.GET("/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

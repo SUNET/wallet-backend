@@ -20,9 +20,20 @@ const (
 	ErrInvalidJWKField     = "missing or invalid JWK field"
 )
 
-type VerifyCredentialRequest struct {
+type Credential struct {
 	// min 20 is the ~ teoretical minimum for a non signed jwt encoded in base64
 	Credential string `json:"credential" validate:"required,min=20"`
+}
+
+type VerifyCredentialRequest struct {
+	Credential
+}
+
+type DecodeCredentialRequest struct {
+	Credential
+}
+
+type DecodedCredential struct {
 }
 
 type VerifyCredentialReply struct {
@@ -31,11 +42,11 @@ type VerifyCredentialReply struct {
 }
 
 type SDJWTParts struct {
-	CompleteJWT string
-	Header      string
-	Payload     string
-	Signature   string
-	Disclosures []string
+	JWTEncoded         string   `json:"jwt_encoded,omitempty"`
+	HeaderDecoded      string   `json:"jwt_header_decoded,omitempty"`
+	PayloadDecoded     string   `json:"jwt_payload_decoded,omitempty"`
+	SignatureDecoded   string   `json:"jwt_signature_decoded,omitempty"`
+	DisclosuresDecoded []string `json:"disclosures_decoded,omitempty"`
 }
 
 type JWK struct {
@@ -51,8 +62,19 @@ func (c *Client) Health(ctx context.Context, req *apiv1_status.StatusRequest) (*
 	return probes.Check("verifier"), nil
 }
 
+func (c *Client) DecodeCredential(ctx context.Context, request *Credential) (*DecodedCredential, error) {
+	//TODO(mk): impl DecodeCredential for raw but readable presentation
+	return nil, errors.New("To be implemented!")
+}
+
+/*
+	disclosureData := [salt, key, value]
+	sha256(base64(disclosureData)) <- claim i JWT:n
+	base64(disclosureData) i <jwt>~disclosure
+*/
+
 // VerifyCredential verifies a credential (only sd-jwt or sd-jwt-vc signed with ES256 is currently supported)
-func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredentialRequest) (*VerifyCredentialReply, error) {
+func (c *Client) VerifyCredential(ctx context.Context, request *Credential) (*VerifyCredentialReply, error) {
 	jwtHeader, err := parseJWTHeader(request.Credential)
 	if err != nil {
 		return c.createInvalidReply("not a jwt", err)
@@ -70,7 +92,7 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 		return c.createInvalidReply("supported jwt header.alg are: "+strings.Join(allowedAlg, ", "), errors.New("Alg not supported"))
 	}
 
-	sdjwtParts, err := splitSDJWT(request.Credential)
+	sdjwtParts, err := splitAndDecodeSDJWT(request.Credential)
 	if err != nil {
 		return c.createInvalidReply(ErrInvalidJWTStructure, err)
 	}
@@ -80,7 +102,7 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 	//disclosuresDecoded, err := decodeDisclosures(sdjwtParts)
 	//fmt.Println("Disclusures decoded:", disclosuresDecoded)
 
-	jwk, err := extractJWK(sdjwtParts.Payload)
+	jwk, err := extractJWK(sdjwtParts.PayloadDecoded)
 	if err != nil {
 		return c.createInvalidReply(ErrInvalidJWKField, err)
 	}
@@ -93,7 +115,7 @@ func (c *Client) VerifyCredential(ctx context.Context, request *VerifyCredential
 	}
 	c.log.Debug("pubkey", "data", pubKey)
 
-	token, err := parseJWT(sdjwtParts.CompleteJWT, pubKey)
+	token, err := parseJWT(sdjwtParts.JWTEncoded, pubKey)
 	if err != nil {
 		return c.createInvalidReply("error verifying token", err)
 	}
@@ -161,31 +183,42 @@ func (c *Client) debugLogClaims(claims jwt.MapClaims) {
 	}
 }
 
-func splitSDJWT(credential string) (*SDJWTParts, error) {
+func splitAndDecodeSDJWT(credential string) (*SDJWTParts, error) {
 	parts := strings.Split(credential, "~")
 	jwtParts := strings.Split(parts[0], ".")
 	if len(jwtParts) != 3 {
 		return nil, errors.New(ErrInvalidJWTStructure)
 	}
 
-	//TODO(mk): verify that it is a SD-JWT and not just a JWT after fix in issuer, ie has at least one ~ after signature, ie header.payload.signature~ (even if there are no disclosures)
+	//TODO(mk): verify that it is a SD-JWT and not just a JWT after fix in issuer, ie has at least one ~ after signatureDecoded, ie headerDecoded.payloadDecoded.signatureDecoded~ (even if there are no disclosures)
 
-	header, err := decodeBase64URL(jwtParts[0])
+	headerDecoded, err := decodeBase64URL(jwtParts[0])
 	if err != nil {
 		return nil, err
 	}
 
-	payload, err := decodeBase64URL(jwtParts[1])
+	payloadDecoded, err := decodeBase64URL(jwtParts[1])
 	if err != nil {
 		return nil, err
+	}
+
+	signatureDecoded, err := decodeBase64URL(jwtParts[2])
+
+	var disclosuresDecoded []string
+	for _, disclosure := range parts[1:] {
+		disclosureDecoded, err := decodeBase64URL(disclosure)
+		if err != nil {
+			return nil, err
+		}
+		disclosuresDecoded = append(disclosuresDecoded, disclosureDecoded)
 	}
 
 	return &SDJWTParts{
-		CompleteJWT: parts[0],
-		Header:      header,
-		Payload:     payload,
-		Signature:   jwtParts[2],
-		Disclosures: parts[1:],
+		JWTEncoded:         parts[0],
+		HeaderDecoded:      headerDecoded,
+		PayloadDecoded:     payloadDecoded,
+		SignatureDecoded:   signatureDecoded,
+		DisclosuresDecoded: disclosuresDecoded,
 	}, nil
 }
 
@@ -272,9 +305,9 @@ func decodeBase64URL(encoded string) (string, error) {
 }
 
 func decodeDisclosures(s *SDJWTParts) ([]string, error) {
-	decodedDisclosures := make([]string, len(s.Disclosures))
+	decodedDisclosures := make([]string, len(s.DisclosuresDecoded))
 
-	for i, disclosure := range s.Disclosures {
+	for i, disclosure := range s.DisclosuresDecoded {
 		decoded, err := decodeBase64URL(disclosure)
 		if err != nil {
 			return nil, fmt.Errorf("error decoding disclosure %d: %v", i, err)

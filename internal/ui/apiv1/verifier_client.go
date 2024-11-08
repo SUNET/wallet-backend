@@ -32,3 +32,11 @@ func (c *VerifierClient) Verify(req *apiv1_verifier.VerifyCredentialRequest) (an
 	}
 	return reply, nil
 }
+
+func (c *VerifierClient) Decode(req *apiv1_verifier.DecodeCredentialRequest) (any, error) {
+	reply, err := c.DoPostJSON("/decode", req)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
