@@ -21,7 +21,7 @@ const (
 )
 
 type Credential struct {
-	// min 20 is the ~ teoretical minimum for a non signed jwt encoded in base64
+	// min 20 is the ~ teoretical minimum for a non-signed jwt encoded in base64
 	Credential string `json:"credential" validate:"required,min=20"`
 }
 
@@ -37,7 +37,8 @@ type DecodedCredential struct {
 }
 
 type VerifyCredentialReply struct {
-	Valid   bool   `json:"valid" validate:"required"`
+	Valid bool `json:"valid" validate:"required"`
+	// Message a high-level explanation for the public (i.e., the calling client) on why the credential is invalid.
 	Message string `json:"message,omitempty"`
 }
 
@@ -62,6 +63,7 @@ func (c *Client) Health(ctx context.Context, req *apiv1_status.StatusRequest) (*
 	return probes.Check("verifier"), nil
 }
 
+// DecodeCredential for raw but human-readable viewing (ie, jwt: header, payload and signature and also all selective disclosures)
 func (c *Client) DecodeCredential(ctx context.Context, request *Credential) (*DecodedCredential, error) {
 	//TODO(mk): impl DecodeCredential for raw but readable presentation
 	return nil, errors.New("To be implemented!")
@@ -75,20 +77,20 @@ func (c *Client) DecodeCredential(ctx context.Context, request *Credential) (*De
 
 // VerifyCredential verifies a credential (only sd-jwt or sd-jwt-vc signed with ES256 is currently supported)
 func (c *Client) VerifyCredential(ctx context.Context, request *Credential) (*VerifyCredentialReply, error) {
-	jwtHeader, err := parseJWTHeader(request.Credential)
+	jwtHeader, err := extractAndDecodeJWTHeader(request.Credential)
 	if err != nil {
 		return c.createInvalidReply("not a jwt", err)
 	}
 
-	//TODO(mk): remove sd-jwt?
+	//TODO(mk): remove sd-jwt and just keep vc+sd-jwt?
 	allowedTyp := []string{"sd-jwt", "vc+sd-jwt"}
-	if !isTypSupported(jwtHeader, allowedTyp) {
+	if !isHeaderTypSupported(jwtHeader, allowedTyp) {
 		return c.createInvalidReply("supported jwt header.typ are: "+strings.Join(allowedTyp, ", "), errors.New("Typ not supported"))
 	}
 
 	//TODO(mk): add support for more algorithms?
 	allowedAlg := []string{"ES256"}
-	if !isAlgSupported(jwtHeader, allowedAlg) {
+	if !isHeaderAlgSupported(jwtHeader, allowedAlg) {
 		return c.createInvalidReply("supported jwt header.alg are: "+strings.Join(allowedAlg, ", "), errors.New("Alg not supported"))
 	}
 
@@ -134,7 +136,7 @@ type jwtHeader struct {
 	Typ string `json:"typ" validate:"required,typ"`
 }
 
-func parseJWTHeader(credential string) (*jwtHeader, error) {
+func extractAndDecodeJWTHeader(credential string) (*jwtHeader, error) {
 	parts := strings.Split(credential, ".")
 	if len(parts) < 3 {
 		return nil, fmt.Errorf("invalid JWT format")
@@ -153,7 +155,7 @@ func parseJWTHeader(credential string) (*jwtHeader, error) {
 	return &header, nil
 }
 
-func isTypSupported(header *jwtHeader, allowedTyp []string) bool {
+func isHeaderTypSupported(header *jwtHeader, allowedTyp []string) bool {
 	for _, typ := range allowedTyp {
 		if header.Typ == typ {
 			return true
@@ -162,7 +164,7 @@ func isTypSupported(header *jwtHeader, allowedTyp []string) bool {
 	return false
 }
 
-func isAlgSupported(header *jwtHeader, allowedAlg []string) bool {
+func isHeaderAlgSupported(header *jwtHeader, allowedAlg []string) bool {
 	for _, alg := range allowedAlg {
 		if header.Alg == alg {
 			return true
