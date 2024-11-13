@@ -16,11 +16,12 @@ import (
 )
 
 const (
-	MsgNotAJwt             = "not a JWT"
-	MsgInvalidJwtStructure = "invalid JWT structure: expected format is header.payload.signature with optional ~disclosure~ segments (e.g., ~disclosure1~disclosure2~)."
-	MsgInvalidJwk          = "missing or invalid JWK"
-	MsgUnableToParseToken  = "invalid JWT: unable to parse token or verify its signature. Check the token format, signing and algorithm."
-	MsgInvalidToken        = "invalid JWT: token is expired, has invalid claims, or is not valid. Check its content and validity."
+	MsgNoCredentialProvided = "no credential provided for verification"
+	MsgNotAJwt              = "not a JWT"
+	MsgInvalidJwtStructure  = "invalid SD-JWT structure: expected format is header.payload.signature with optional ~disclosure~ segments (e.g., ~disclosure1~disclosure2~)."
+	MsgInvalidJwk           = "missing or invalid JWK"
+	MsgUnableToParseToken   = "invalid JWT: unable to parse token or verify its signature. Check the token format, signing and algorithm."
+	MsgInvalidToken         = "invalid JWT: token is expired, has invalid claims, or is not valid. Check its content and validity."
 )
 
 type Credential struct {
@@ -80,6 +81,10 @@ func (c *Client) DecodeCredential(ctx context.Context, request *Credential) (*De
 
 // VerifyCredential verifies a credential (only sd-jwt or sd-jwt-vc signed with ES256 is currently supported)
 func (c *Client) VerifyCredential(ctx context.Context, request *Credential) (*VerifyCredentialReply, error) {
+	if request == nil || strings.TrimSpace(request.Credential) == "" {
+		return c.createInvalidReply(MsgNoCredentialProvided, errors.New(MsgNoCredentialProvided))
+	}
+
 	jwtHeader, err := extractAndDecodeJWTHeader(request.Credential)
 	if err != nil {
 		return c.createInvalidReply(MsgNotAJwt, err)
@@ -126,13 +131,25 @@ func (c *Client) VerifyCredential(ctx context.Context, request *Credential) (*Ve
 	}
 	//c.log.Debug("token", "data", token)
 
+	if !token.Valid {
+		return c.createInvalidReply(MsgInvalidToken, errors.New("invalid token"))
+	}
+
 	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		//c.debugLogClaims(claims)
 		c.log.Debug(" ### CREDENTIAL IS VALID ###")
 		return &VerifyCredentialReply{Valid: true}, nil
 	}
 
-	return c.createInvalidReply(MsgInvalidToken, err)
+	//TODO(mk): if exist: verify that each passed disclosure match a claim hash found in jwt.payload
+
+	//c.debugLogClaims(token.Claims.(jwt.MapClaims))
+
+	//TODO(mk): if vp+sd-jwt: verify holderProof?
+
+	c.log.Debug(" ### CREDENTIAL IS VALID ###")
+	return &VerifyCredentialReply{Valid: true}, nil
+
 }
 
 type jwtHeader struct {

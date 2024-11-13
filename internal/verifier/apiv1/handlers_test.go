@@ -42,13 +42,14 @@ func TestClient_VerifyCredential(t *testing.T) {
 		want     *VerifyCredentialReply
 		errorExp bool
 	}{
-		newVerifyTestCase("Not a jwt 1", "", false, MsgNotAJwt, false),
-		newVerifyTestCase("Not a jwt 2", " ", false, MsgNotAJwt, false),
-		newVerifyTestCase("Not a jwt 3", "               .                         .                          ~", false, MsgNotAJwt, false),
-		newVerifyTestCase("Not a jwt 4", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", false, MsgNotAJwt, false),
-		newVerifyTestCase("Not a jwt 5", "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx", false, MsgNotAJwt, false),
-		newVerifyTestCase("Not a jwt 6", "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx", false, MsgNotAJwt, false),
-		newVerifyTestCase("Not a jwt 7", "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx_xxxxxxxxxxxxxxxxxxxxxxxx", false, MsgNotAJwt, false),
+		newVerifyTestCase("Not credential provided 1", "", false, MsgNoCredentialProvided, false),
+		newVerifyTestCase("Not credential provided 2", " ", false, MsgNoCredentialProvided, false),
+
+		newVerifyTestCase("Not a jwt 1", "               .                         .                          ~", false, MsgNotAJwt, false),
+		newVerifyTestCase("Not a jwt 2", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", false, MsgNotAJwt, false),
+		newVerifyTestCase("Not a jwt 3", "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx", false, MsgNotAJwt, false),
+		newVerifyTestCase("Not a jwt 4", "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx", false, MsgNotAJwt, false),
+		newVerifyTestCase("Not a jwt 5", "xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx_xxxxxxxxxxxxxxxxxxxxxxxx", false, MsgNotAJwt, false),
 
 		newVerifyTestCase("Header typ does not contains sd-jwt", "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.xxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxx~", false, "supported jwt header.typ are: sd-jwt, vc+sd-jwt", false),
 
