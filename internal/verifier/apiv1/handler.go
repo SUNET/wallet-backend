@@ -16,8 +16,11 @@ import (
 )
 
 const (
-	ErrInvalidJWTStructure = "invalid JWT structure: expected format is header.payload.signature with optional ~disclosure~ segments (e.g., ~disclosure1~disclosure2~)."
-	ErrInvalidJWKField     = "missing or invalid JWK field"
+	MsgNotAJwt             = "not a JWT"
+	MsgInvalidJwtStructure = "invalid JWT structure: expected format is header.payload.signature with optional ~disclosure~ segments (e.g., ~disclosure1~disclosure2~)."
+	MsgInvalidJwk          = "missing or invalid JWK"
+	MsgUnableToParseToken  = "invalid JWT: unable to parse token or verify its signature. Check the token format, signing and algorithm."
+	MsgInvalidToken        = "invalid JWT: token is expired, has invalid claims, or is not valid. Check its content and validity."
 )
 
 type Credential struct {
@@ -79,7 +82,7 @@ func (c *Client) DecodeCredential(ctx context.Context, request *Credential) (*De
 func (c *Client) VerifyCredential(ctx context.Context, request *Credential) (*VerifyCredentialReply, error) {
 	jwtHeader, err := extractAndDecodeJWTHeader(request.Credential)
 	if err != nil {
-		return c.createInvalidReply("not a jwt", err)
+		return c.createInvalidReply(MsgNotAJwt, err)
 	}
 
 	//TODO(mk): remove sd-jwt and just keep vc+sd-jwt?
@@ -96,39 +99,40 @@ func (c *Client) VerifyCredential(ctx context.Context, request *Credential) (*Ve
 
 	sdjwtParts, err := splitAndDecodeSDJWT(request.Credential)
 	if err != nil {
-		return c.createInvalidReply(ErrInvalidJWTStructure, err)
+		return c.createInvalidReply(MsgInvalidJwtStructure, err)
 	}
 
-	c.log.Debug("credential", "parts", sdjwtParts)
+	//c.log.Debug("credential", "parts", sdjwtParts)
 
 	//disclosuresDecoded, err := decodeDisclosures(sdjwtParts)
 	//fmt.Println("Disclusures decoded:", disclosuresDecoded)
 
 	jwk, err := extractJWK(sdjwtParts.PayloadDecoded)
 	if err != nil {
-		return c.createInvalidReply(ErrInvalidJWKField, err)
+		return c.createInvalidReply(MsgInvalidJwk, err)
 	}
-	c.log.Debug("jwk", "data", jwk)
+	//c.log.Debug("jwk", "data", jwk)
 
 	//TODO(mk): Verify that this verifier trusts the public key etc - as of now, the jwk-data used to create the pubkey is extracted from the jwt's payload.cnf.*, ie verify key binding/more info taken from the jwt.header etc!!!
 	pubKey, err := createPubKey(jwk)
 	if err != nil {
-		return c.createInvalidReply(ErrInvalidJWKField, err)
+		return c.createInvalidReply(MsgInvalidJwk, err)
 	}
-	c.log.Debug("pubkey", "data", pubKey)
+	//c.log.Debug("pubkey", "data", pubKey)
 
 	token, err := parseJWT(sdjwtParts.JWTEncoded, pubKey)
 	if err != nil {
-		return c.createInvalidReply("error verifying token", err)
+		return c.createInvalidReply(MsgUnableToParseToken, err)
 	}
-	c.log.Debug("token", "data", token)
+	//c.log.Debug("token", "data", token)
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		c.debugLogClaims(claims)
+	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		//c.debugLogClaims(claims)
+		c.log.Debug(" ### CREDENTIAL IS VALID ###")
 		return &VerifyCredentialReply{Valid: true}, nil
 	}
 
-	return c.createInvalidReply("invalid token", err)
+	return c.createInvalidReply(MsgInvalidToken, err)
 }
 
 type jwtHeader struct {
@@ -174,7 +178,7 @@ func isHeaderAlgSupported(header *jwtHeader, allowedAlg []string) bool {
 }
 
 func (c *Client) createInvalidReply(message string, err error) (*VerifyCredentialReply, error) {
-	c.log.Debug(message, "err", err)
+	c.log.Debug(" ### INVALID CREDENTIAL ###", "message", message, "err", err)
 	return &VerifyCredentialReply{Valid: false, Message: message}, nil
 }
 
@@ -189,7 +193,7 @@ func splitAndDecodeSDJWT(credential string) (*SDJWTParts, error) {
 	parts := strings.Split(credential, "~")
 	jwtParts := strings.Split(parts[0], ".")
 	if len(jwtParts) != 3 {
-		return nil, errors.New(ErrInvalidJWTStructure)
+		return nil, errors.New(MsgInvalidJwtStructure)
 	}
 
 	//TODO(mk): verify that it is a SD-JWT and not just a JWT after fix in issuer, ie has at least one ~ after signatureDecoded, ie headerDecoded.payloadDecoded.signatureDecoded~ (even if there are no disclosures)
@@ -232,12 +236,12 @@ func extractJWK(payload string) (*JWK, error) {
 
 	cnf, ok := payloadMap["cnf"].(map[string]interface{})
 	if !ok {
-		return nil, errors.New(ErrInvalidJWKField)
+		return nil, errors.New(MsgInvalidJwk)
 	}
 
 	jwkMap, ok := cnf["jwk"].(map[string]interface{})
 	if !ok {
-		return nil, errors.New(ErrInvalidJWKField)
+		return nil, errors.New(MsgInvalidJwk)
 	}
 
 	jwk := &JWK{}
