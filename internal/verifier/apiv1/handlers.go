@@ -75,8 +75,13 @@ func (c *Client) DecodeCredential(ctx context.Context, request *Credential) (*De
 
 /*
 	disclosureData := [salt, key, value]
-	sha256(base64(disclosureData)) <- claim i JWT:n
-	base64(disclosureData) i <jwt>~disclosure
+	sha256(base64(disclosureData)) <- claim in JWT
+	base64(disclosureData) in <jwt>~disclosure
+
+	Note:
+	 a disclosure may be recursive
+	 _SD in jwt payload may contain decoy hashes
+	 if vp+sd-jwt: a second signature may exist as holderProof (if exists, its found in the last ~disclosure~ so check if its the last one is a disclosure or a holderProof)
 */
 
 // VerifyCredential verifies a credential (only sd-jwt or sd-jwt-vc signed with ES256 is currently supported)
