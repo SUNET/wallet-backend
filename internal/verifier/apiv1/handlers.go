@@ -69,7 +69,7 @@ func (c *Client) Health(ctx context.Context, req *apiv1_status.StatusRequest) (*
 
 // DecodeCredential for raw but human-readable viewing (ie, jwt: header, payload and signature and also all selective disclosures)
 func (c *Client) DecodeCredential(ctx context.Context, request *Credential) (*DecodedCredential, error) {
-	//TODO(mk): impl DecodeCredential for raw but readable presentation
+	//TODO(mk): impl DecodeCredential for raw but readable presentation in UI
 	return nil, errors.New("To be implemented!")
 }
 
