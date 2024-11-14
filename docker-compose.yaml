@@ -21,6 +21,7 @@ services:
     restart: always
     volumes:
       - ./config.yaml:/config.yaml:ro
+      - ./developer_tools/private_ec256.pem:/private_ec256.pem:ro
     depends_on:
       #      apigw:
       #        condition: service_started

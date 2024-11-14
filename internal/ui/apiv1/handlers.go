@@ -85,12 +85,31 @@ type CredentialRequest struct {
 // Credential sends POST to apigw /api/v1/credential
 func (c *Client) Credential(ctx context.Context, req *CredentialRequest) (any, error) {
 	req.JWK = map[string]any{
-		"kty": "EC",
-		"crv": "P-256",
-		"kid": "ejV4WXZMQnE4Sy1meGJRUGFvZ2NiZHltUGQ5SmdNNy1KS1hjYTNOZGdTMA",
-		"x":   "cyViIENmqo4D2CVOc2uGZbe5a8NheCyvN9CsF7ui3tk",
-		"y":   "XA0lVXgjgZzFTDwkndZEo-zVr9ieO2rY9HGiiaaASog",
+		"kty": c.jwkProto.Kty,
+		"crv": c.jwkProto.Crv,
+		"kid": c.jwkProto.Kid,
+		"x":   c.jwkProto.X,
+		"y":   c.jwkProto.Y,
 	}
+
+	//// mk public key
+	//{
+	//	"kty": "EC",
+	//	"crv": "P-256",
+	//	"kid": "eu919wsUwlYDgW-uCd0tmTorovyRIbIp2iasJRnJEjU",
+	//	"x":   "Cdj7z0qgkhiDqUcdQLPH4c3h3icT4bOP5aIjjU_hu-I",
+	//	"y":   "Fy_vz3wnc5t1oWIMXtaShexUddY-EynROdaiDRtdf60",
+	//}
+
+	//// masv public key
+	//{
+	//	"kty": "EC",
+	//	"crv": "P-256",
+	//	"kid": "ejV4WXZMQnE4Sy1meGJRUGFvZ2NiZHltUGQ5SmdNNy1KS1hjYTNOZGdTMA",
+	//	"x":   "cyViIENmqo4D2CVOc2uGZbe5a8NheCyvN9CsF7ui3tk",
+	//	"y":   "XA0lVXgjgZzFTDwkndZEo-zVr9ieO2rY9HGiiaaASog",
+	//}
+
 	reply, err := c.apigwClient.Credential(req)
 	if err != nil {
 		return nil, err
