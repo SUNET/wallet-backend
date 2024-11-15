@@ -378,7 +378,7 @@ const addUploadFormArticleToContainer = () => {
         const textarea = document.createElement("textarea");
         textarea.id = textareaId;
         textarea.classList.add("textarea");
-        textarea.rows = 15;
+        textarea.rows = 20;
         textarea.placeholder = "Document as json";
 
         const submitButton = document.createElement('button');
@@ -416,7 +416,7 @@ const addVerifyFormArticleToContainer = () => {
         const textarea = document.createElement("textarea");
         textarea.id = textareaId;
         textarea.classList.add("textarea");
-        textarea.rows = 10;
+        textarea.rows = 20;
         textarea.placeholder = "Base64 encoded vc+sd-jwt string";
 
         const submitButton = document.createElement('button');

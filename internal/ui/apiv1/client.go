@@ -27,9 +27,7 @@ type Client struct {
 
 	privateKey *ecdsa.PrivateKey
 	publicKey  *ecdsa.PublicKey
-	jwkBytes   []byte
-	jwkProto   *apiv1_issuer.Jwk
-	kid        string
+	jwk        *apiv1_issuer.Jwk
 }
 
 // New creates a new instance of user interface web page
@@ -42,7 +40,7 @@ func New(ctx context.Context, cfg *model.Cfg, tracer *trace.Tracer, eventPublish
 		mockasClient:   NewMockASClient(cfg, tracer, log.New("mockas_client")),
 		verifierClient: NewVerifierClient(cfg, tracer, log.New("verifier_client")),
 		eventPublisher: eventPublisher,
-		jwkProto:       &apiv1_issuer.Jwk{},
+		jwk:            &apiv1_issuer.Jwk{},
 	}
 
 	err := c.initKeys(ctx)
@@ -95,14 +93,13 @@ func (c *Client) createJWK(ctx context.Context) error {
 		key.Set("kid", c.cfg.Issuer.JWTAttribute.Kid)
 	}
 
-	c.kid = key.KeyID()
-
-	c.jwkBytes, err = json.MarshalIndent(key, "", "  ")
+	var jwkBytes []byte
+	jwkBytes, err = json.MarshalIndent(key, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal(c.jwkBytes, c.jwkProto); err != nil {
+	if err := json.Unmarshal(jwkBytes, c.jwk); err != nil {
 		return err
 	}
 
