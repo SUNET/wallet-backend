@@ -11,6 +11,8 @@ import (
 	"vc/pkg/model"
 	"vc/pkg/trace"
 
+	apiv1_mockas "vc/internal/mockas/apiv1"
+
 	"github.com/IBM/sarama"
 )
 
@@ -31,7 +33,7 @@ func New(ctx context.Context, cfg *model.Cfg, tracer *trace.Tracer, log *logger.
 }
 
 // MockNext publish a MockNext message to a Kafka topic
-func (s *kafkaMessageProducer) MockNext(mockNextRequest *apiv1.MockNextRequest) error {
+func (s *kafkaMessageProducer) MockNext(mockNextRequest *apiv1_mockas.MockNextRequest) error {
 	if mockNextRequest == nil {
 		return errors.New("param mockNextRequest is nil")
 	}
@@ -48,7 +50,8 @@ func (s *kafkaMessageProducer) MockNext(mockNextRequest *apiv1.MockNextRequest) 
 		{Key: []byte(kafka.TypeOfStructInMessageValue), Value: typeHeader},
 	}
 
-	return s.client.PublishMessage(kafka.TopicMockNext, mockNextRequest.AuthenticSourcePersonId, jsonMarshaled, headers)
+	//TODO(mk): use other key than mockNextRequest.AuthenticSourcePersonID to also support mock using eIDAS attributes
+	return s.client.PublishMessage(kafka.TopicMockNext, mockNextRequest.AuthenticSourcePersonID, jsonMarshaled, headers)
 }
 
 // Close closes all resources used/started by the publisher

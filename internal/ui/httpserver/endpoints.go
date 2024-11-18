@@ -6,6 +6,7 @@ import (
 	"time"
 	apiv1_apigw "vc/internal/apigw/apiv1"
 	"vc/internal/gen/status/apiv1_status"
+	apiv1_mockas "vc/internal/mockas/apiv1"
 	"vc/internal/ui/apiv1"
 	apiv1_verifier "vc/internal/verifier/apiv1"
 
@@ -178,7 +179,7 @@ func (s *Service) endpointNotification(ctx context.Context, c *gin.Context) (any
 }
 
 func (s *Service) endpointMockNext(ctx context.Context, c *gin.Context) (any, error) {
-	request := &apiv1.MockNextRequest{}
+	request := &apiv1_mockas.MockNextRequest{}
 	if err := s.httpHelpers.Binding.Request(ctx, c, request); err != nil {
 		return nil, err
 	}

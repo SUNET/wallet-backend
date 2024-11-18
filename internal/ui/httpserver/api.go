@@ -4,6 +4,7 @@ import (
 	"context"
 	apigw_apiv1 "vc/internal/apigw/apiv1"
 	"vc/internal/gen/status/apiv1_status"
+	apiv1_mockas "vc/internal/mockas/apiv1"
 	"vc/internal/ui/apiv1"
 	apiv1_verifier "vc/internal/verifier/apiv1"
 )
@@ -25,7 +26,7 @@ type Apiv1 interface {
 
 	// mockas
 	HealthMockAS(ctx context.Context, request *apiv1_status.StatusRequest) (any, error)
-	MockNext(ctx context.Context, request *apiv1.MockNextRequest) (any, error)
+	MockNext(ctx context.Context, request *apiv1_mockas.MockNextRequest) (any, error)
 
 	// verifier
 	HealthVerifier(ctx context.Context, request *apiv1_status.StatusRequest) (any, error)

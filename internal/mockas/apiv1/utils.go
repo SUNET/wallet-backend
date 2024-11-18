@@ -62,6 +62,10 @@ func (c *Client) mockOne(ctx context.Context, data MockInputData) (*uploadMock, 
 		data.IdentitySchemaName = "SE"
 	}
 
+	if data.AuthenticSource == "" {
+		data.AuthenticSource = gofakeit.Company()
+	}
+
 	meta := &model.MetaData{
 		AuthenticSource: data.AuthenticSource,
 		DocumentType:    data.DocumentType,

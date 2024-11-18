@@ -6,6 +6,7 @@ import (
 	"time"
 	apiv1_apigw "vc/internal/apigw/apiv1"
 	"vc/internal/gen/status/apiv1_status"
+	apiv1_mockas "vc/internal/mockas/apiv1"
 	apiv1_verifier "vc/internal/verifier/apiv1"
 	"vc/pkg/model"
 )
@@ -128,14 +129,14 @@ func (c *Client) Notification(ctx context.Context, req *NotificationRequest) (an
 	return reply, nil
 }
 
-type MockNextRequest struct {
-	DocumentType            string `json:"document_type" validate:"required"`
-	AuthenticSource         string `json:"authentic_source" validate:"required"`
-	AuthenticSourcePersonId string `json:"authentic_source_person_id" validate:"required"`
-	IdentitySchemaName      string `json:"identity_schema_name" validate:"required"`
-}
+//type MockNextRequest struct {
+//	DocumentType            string `json:"document_type" validate:"required"`
+//	AuthenticSource         string `json:"authentic_source" validate:"required"`
+//	AuthenticSourcePersonId string `json:"authentic_source_person_id" validate:"required"`
+//	IdentitySchemaName      string `json:"identity_schema_name" validate:"required"`
+//}
 
-func (c *Client) MockNext(ctx context.Context, req *MockNextRequest) (any, error) {
+func (c *Client) MockNext(ctx context.Context, req *apiv1_mockas.MockNextRequest) (any, error) {
 	if c.cfg.Common.Kafka.Enabled {
 		if err := c.eventPublisher.MockNext(req); err != nil {
 			return nil, err

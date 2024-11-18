@@ -138,7 +138,6 @@ function handleErrorInArticle(err, elements) {
     updateTextContentInChildPreTagFor(elements.payloadDiv, "");
 }
 
-
 function openModalQR() {
     const modal = document.getElementById("qrModal");
     modal.classList.add("is-active");
@@ -223,8 +222,6 @@ async function postAndDisplayInArticleContainerFor(path, requestBody, articleHea
 
 const createMock = () => {
     //console.debug("createMock");
-    const path = "/secure/mockas/mock/next";
-    const articleHeaderText = "Upload new mock document result";
 
     const documentTypeElement = getElementById("document-type-select");
     const authenticSourceElement = getElementById("authentic-source-input");
@@ -238,7 +235,7 @@ const createMock = () => {
         identity_schema_name: identitySchemaNameElement.value,
     };
 
-    postAndDisplayInArticleContainerFor(path, postBody, articleHeaderText);
+    postAndDisplayInArticleContainerFor("/secure/mockas/mock/next", postBody, "Upload new mock document result");
 };
 
 const postDocumentList = () => {
@@ -410,6 +407,64 @@ const addUploadFormArticleToContainer = () => {
     getElementById(textareaId).focus();
 };
 
+
+const addUploadNewMockUsingBasicEIDASattributesFormArticleToContainer = () => {
+    const buildFormElements = () => {
+
+        const familyNameElement = createInputElement('family name', '', 'text');
+        const givenNameElement = createInputElement('given name', '', 'text');
+        const birthdateElement = createInputElement('birth date (YYYY-MM-DD)', '', 'text');
+        const documentTypeSelectWithinDivElement =
+            createSelectElement([
+                {value: 'EHIC', label: 'EHIC'},
+                {value: 'PDA1', label: 'PDA1'}
+            ]);
+
+        const documentTypeDiv = documentTypeSelectWithinDivElement[0];
+        const documentTypeSelect = documentTypeSelectWithinDivElement[1];
+
+        const createButton = document.createElement('button');
+        createButton.id = generateUUID();
+        createButton.classList.add('button', 'is-link');
+        createButton.textContent = 'Upload business decision';
+        createButton.onclick = () => {
+            createButton.disabled = true;
+
+            const requestBody = {
+                family_name: familyNameElement.value,
+                given_name: givenNameElement.value,
+                birth_date: birthdateElement.value,
+                document_type: documentTypeSelect.value,
+            };
+
+            disableElements([
+                familyNameElement,
+                givenNameElement,
+                birthdateElement,
+                documentTypeSelect,
+            ]);
+
+            postAndDisplayInArticleContainerFor("/secure/mockas/mock/next", requestBody, "Uploaded business decision");
+        };
+
+        return [
+            familyNameElement,
+            givenNameElement,
+            birthdateElement,
+            documentTypeDiv,
+            document.createElement('br'),
+            createButton
+        ];
+    };
+
+    const articleIdBasis = generateArticleIDBasis();
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Upload new business decision", buildFormElements());
+    const articleContainer = document.getElementById('article-container');
+    articleContainer.prepend(articleDiv);
+
+    document.getElementById(articleIdBasis.articleID).querySelector('input').focus();
+};
+
 const addVerifyFormArticleToContainer = () => {
     const textareaId = generateUUID();
     const buildVerifyCredentialFormElements = (textareaId) => {
@@ -503,6 +558,28 @@ const createInputElement = (placeholder, value = '', type = 'text', disabled = f
     return input;
 };
 
+const createSelectElement = (options = [], disabled = false) => {
+    const div = document.createElement('div');
+    div.classList.add('select')
+
+    const select = document.createElement('select');
+    select.id = generateUUID();
+    //select.classList.add('select');
+    select.disabled = disabled;
+
+    options.forEach(({value, label}) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        select.appendChild(option);
+    });
+
+    div.appendChild(select);
+
+    return [div, select];
+};
+
+
 const disableElements = (elements) => {
     elements.forEach(el => el.disabled = true);
 };
@@ -593,7 +670,7 @@ const addCredentialFormArticleToContainer = () => {
         const birthdateElement = createInputElement('birth date', '', 'text');
         const schemaNameElement = createInputElement('identity schema name', 'SE');
         const documentTypeElement = createInputElement('document type (EHIC/PDA1)', 'EHIC');
-        const credentialTypeElement = createInputElement('credential type', 'SD-JWT');
+        const credentialTypeElement = createInputElement('credential type', 'vc+sd-jwt');
         const authenticSourceElement = createInputElement('authentic source', 'SUNET');
         const collectIdElement = createInputElement('collect id');
 

@@ -1,6 +1,7 @@
 package apiv1
 
 import (
+	apiv1_mockas "vc/internal/mockas/apiv1"
 	"vc/pkg/logger"
 	"vc/pkg/model"
 	"vc/pkg/trace"
@@ -24,7 +25,7 @@ func (c *MockASClient) Health() (any, error) {
 	return reply, nil
 }
 
-func (c *MockASClient) MockNext(req *MockNextRequest) (any, error) {
+func (c *MockASClient) MockNext(req *apiv1_mockas.MockNextRequest) (any, error) {
 	reply, err := c.DoPostJSON("/api/v1/mock/next", req)
 	if err != nil {
 		return nil, err
