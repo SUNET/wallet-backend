@@ -54,8 +54,7 @@ function displaySecureMenyItems() {
 const generateUUID = () => {
     //UUID v4
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0,
-            v = c === 'x' ? r : (r & 0x3 | 0x8);
+        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 };
@@ -249,14 +248,11 @@ const postDocumentList = () => {
     const identitySchemaName = getElementById("identity-schema-name");
 
     const documentListRequest = {
-        authentic_source: authenticSourceElement.value,
-        identity: {
-            authentic_source_person_id: authenticSourcePersonIdElement.value,
-            schema: {
+        authentic_source: authenticSourceElement.value, identity: {
+            authentic_source_person_id: authenticSourcePersonIdElement.value, schema: {
                 name: identitySchemaName.value
             }
-        },
-        document_type: documentTypeElement.value
+        }, document_type: documentTypeElement.value
     };
 
     postAndDisplayInArticleContainerFor(path, documentListRequest, articleHeaderText);
@@ -414,11 +410,10 @@ const addUploadNewMockUsingBasicEIDASattributesFormArticleToContainer = () => {
         const familyNameElement = createInputElement('family name', '', 'text');
         const givenNameElement = createInputElement('given name', '', 'text');
         const birthdateElement = createInputElement('birth date (YYYY-MM-DD)', '', 'text');
-        const documentTypeSelectWithinDivElement =
-            createSelectElement([
-                {value: 'EHIC', label: 'EHIC'},
-                {value: 'PDA1', label: 'PDA1'}
-            ]);
+        const documentTypeSelectWithinDivElement = createSelectElement([{value: 'EHIC', label: 'EHIC'}, {
+            value: 'PDA1',
+            label: 'PDA1'
+        }]);
 
         const documentTypeDiv = documentTypeSelectWithinDivElement[0];
         const documentTypeSelect = documentTypeSelectWithinDivElement[1];
@@ -437,24 +432,12 @@ const addUploadNewMockUsingBasicEIDASattributesFormArticleToContainer = () => {
                 document_type: documentTypeSelect.value,
             };
 
-            disableElements([
-                familyNameElement,
-                givenNameElement,
-                birthdateElement,
-                documentTypeSelect,
-            ]);
+            disableElements([familyNameElement, givenNameElement, birthdateElement, documentTypeSelect,]);
 
             postAndDisplayInArticleContainerFor("/secure/mockas/mock/next", requestBody, "Uploaded business decision");
         };
 
-        return [
-            familyNameElement,
-            givenNameElement,
-            birthdateElement,
-            documentTypeDiv,
-            document.createElement('br'),
-            createButton
-        ];
+        return [familyNameElement, givenNameElement, birthdateElement, documentTypeDiv, document.createElement('br'), createButton];
     };
 
     const articleIdBasis = generateArticleIDBasis();
@@ -584,6 +567,7 @@ const disableElements = (elements) => {
     elements.forEach(el => el.disabled = true);
 };
 
+
 const addViewDocumentFormArticleToContainer = () => {
     const buildFormElements = () => {
 
@@ -604,9 +588,7 @@ const addViewDocumentFormArticleToContainer = () => {
                 document_type: documentTypeElement.value,
             };
 
-            disableElements([
-                documentIDElement, documentTypeElement, authenticSourceElement
-            ]);
+            disableElements([documentIDElement, documentTypeElement, authenticSourceElement]);
 
             postAndDisplayInArticleContainerFor("/secure/apigw/document", requestBody, "Document");
         };
@@ -622,6 +604,50 @@ const addViewDocumentFormArticleToContainer = () => {
     document.getElementById(articleIdBasis.articleID).querySelector('input').focus();
 };
 
+const addSearchDocumentsFormArticleToContainer = () => {
+    const buildFormElements = () => {
+
+        // const documentIDElement = createInputElement('document id');
+        // const documentTypeElement = createInputElement('document type (EHIC/PDA1)', 'EHIC');
+        const authenticSourceElement = createInputElement('authentic source (optional)');
+
+        const searchButton = document.createElement('button');
+        searchButton.id = generateUUID();
+        searchButton.classList.add('button', 'is-link');
+        searchButton.textContent = 'Search';
+        searchButton.onclick = () => {
+            searchButton.disabled = true;
+
+            const requestBody = {
+                // document_id: documentIDElement.value,
+                // document_type: documentTypeElement.value,
+                authentic_source: authenticSourceElement.value,
+
+            };
+
+            disableElements([
+                // documentIDElement,
+                // documentTypeElement,
+                authenticSourceElement
+            ]);
+
+            postAndDisplayInArticleContainerFor("/secure/apigw/document/search", requestBody, "Documents");
+        };
+
+        return [
+            //documentIDElement,
+            // documentTypeElement,
+            authenticSourceElement,
+            searchButton];
+    };
+
+    const articleIdBasis = generateArticleIDBasis();
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Search documents", buildFormElements());
+    const articleContainer = document.getElementById('article-container');
+    articleContainer.prepend(articleDiv);
+
+    document.getElementById(articleIdBasis.articleID).querySelector('input').focus();
+};
 
 const addViewNotificationFormArticleToContainer = () => {
     const buildFormElements = () => {
@@ -643,9 +669,7 @@ const addViewNotificationFormArticleToContainer = () => {
                 document_type: documentTypeElement.value,
             };
 
-            disableElements([
-                documentIDElement, documentTypeElement, authenticSourceElement
-            ]);
+            disableElements([documentIDElement, documentTypeElement, authenticSourceElement]);
 
             postAndDisplayInArticleContainerFor("/secure/apigw/notification", requestBody, "Notification");
         };
@@ -697,11 +721,7 @@ const addCredentialFormArticleToContainer = () => {
                 collect_id: collectIdElement.value,
             };
 
-            disableElements([
-                authenticSourcePersonIdElement, familyNameElement, givenNameElement,
-                birthdateElement, schemaNameElement, documentTypeElement,
-                credentialTypeElement, authenticSourceElement, collectIdElement
-            ]);
+            disableElements([authenticSourcePersonIdElement, familyNameElement, givenNameElement, birthdateElement, schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, collectIdElement]);
 
             postAndDisplayInArticleContainerFor("/secure/apigw/credential", requestBody, "Credential");
         };
@@ -710,11 +730,7 @@ const addCredentialFormArticleToContainer = () => {
         const orTextElement = document.createElement('p');
         orTextElement.textContent = 'or';
 
-        return [
-            authenticSourcePersonIdElement, orTextElement, familyNameElement, givenNameElement,
-            birthdateElement, lineElement, collectIdElement, schemaNameElement, documentTypeElement,
-            credentialTypeElement, authenticSourceElement, createButton
-        ];
+        return [authenticSourcePersonIdElement, orTextElement, familyNameElement, givenNameElement, birthdateElement, lineElement, collectIdElement, schemaNameElement, documentTypeElement, credentialTypeElement, authenticSourceElement, createButton];
     };
 
     const articleIdBasis = generateArticleIDBasis();

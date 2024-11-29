@@ -65,8 +65,16 @@ func (c *APIGWClient) GetDocument(req *GetDocumentRequest) (any, error) {
 }
 
 // Notification sends POST to /api/v1/notification
-func (c *APIGWClient) Notification(request *NotificationRequest) (any, error) {
-	reply, err := c.DoPostJSON("/api/v1/notification", request)
+func (c *APIGWClient) Notification(req *NotificationRequest) (any, error) {
+	reply, err := c.DoPostJSON("/api/v1/notification", req)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func (c *APIGWClient) SearchDocuments(req *apiv1_apigw.SearchDocumentsRequest) (any, error) {
+	reply, err := c.DoPostJSON("/api/v1/document/search", req)
 	if err != nil {
 		return nil, err
 	}

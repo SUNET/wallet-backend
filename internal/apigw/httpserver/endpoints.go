@@ -102,6 +102,23 @@ func (s *Service) endpointGetDocument(ctx context.Context, c *gin.Context) (any,
 	return reply, nil
 }
 
+func (s *Service) endpointSearchDocuments(ctx context.Context, c *gin.Context) (any, error) {
+	ctx, span := s.tracer.Start(ctx, "httpserver:endpointSearchDocuments")
+	defer span.End()
+
+	request := &apiv1.SearchDocumentsRequest{}
+	if err := s.httpHelpers.Binding.Request(ctx, c, request); err != nil {
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+	reply, err := s.apiv1.SearchDocuments(ctx, request)
+	if err != nil {
+		span.SetStatus(codes.Error, err.Error())
+		return nil, err
+	}
+	return reply, nil
+}
+
 func (s *Service) endpointRevokeDocument(ctx context.Context, c *gin.Context) (any, error) {
 	ctx, span := s.tracer.Start(ctx, "httpserver:endpointRevokeDocument")
 	defer span.End()

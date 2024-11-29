@@ -357,3 +357,32 @@ func (c *VCDatastoreColl) Replace(ctx context.Context, doc *model.CompleteDocume
 	c.log.Info("updated document", "document_id", doc.Meta.DocumentID)
 	return nil
 }
+
+type SearchDocumentsQuery struct {
+	AuthenticSource string `json:"authentic_source" bson:"authentic_source"`
+}
+
+func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocumentsQuery) ([]*model.CompleteDocument, error) {
+	if err := helpers.Check(ctx, c.Service.cfg, query, c.Service.log); err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{}
+
+	if query.AuthenticSource != "" {
+		filter["meta.authentic_source"] = bson.M{"$eq": query.AuthenticSource}
+	}
+	//TODO: add more filters
+
+	cursor, err := c.Coll.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	res := []*model.CompleteDocument{}
+	if err := cursor.All(ctx, &res); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}

@@ -23,6 +23,7 @@ type Apiv1 interface {
 	Credential(ctx context.Context, request *apiv1.CredentialRequest) (any, error)
 	GetDocument(ctx context.Context, request *apiv1.GetDocumentRequest) (any, error)
 	Notification(ctx context.Context, reguest *apiv1.NotificationRequest) (any, error)
+	SearchDocuments(ctx context.Context, request *apigw_apiv1.SearchDocumentsRequest) (any, error)
 
 	// mockas
 	HealthMockAS(ctx context.Context, request *apiv1_status.StatusRequest) (any, error)
