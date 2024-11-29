@@ -108,6 +108,7 @@ func New(ctx context.Context, cfg *model.Cfg, apiv1 *apiv1.Client, tracer *trace
 	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "credential", s.endpointCredential)
 	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "document", s.endpointGetDocument)
 	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "notification", s.endpointNotification)
+	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "document/search", s.endpointSearchDocuments)
 
 	// Run http server
 	go func() {

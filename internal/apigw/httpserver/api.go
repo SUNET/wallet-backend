@@ -24,6 +24,9 @@ type Apiv1 interface {
 	AddConsent(ctx context.Context, req *apiv1.AddConsentRequest) error
 	GetConsent(ctx context.Context, req *apiv1.GetConsentRequest) (*model.Consent, error)
 
+	// datastore endpoints - disabled in production
+	SearchDocuments(ctx context.Context, req *apiv1.SearchDocumentsRequest) (*apiv1.SearchDocumentsReply, error)
+
 	// credential endpoints
 	Revoke(ctx context.Context, req *apiv1.RevokeRequest) (*apiv1.RevokeReply, error)
 	Credential(ctx context.Context, req *apiv1.CredentialRequest) (*apiv1_issuer.MakeSDJWTReply, error)

@@ -216,3 +216,16 @@ func (s *Service) endpointDecodeCredential(ctx context.Context, c *gin.Context) 
 	}
 	return reply, nil
 }
+
+func (s *Service) endpointSearchDocuments(ctx context.Context, c *gin.Context) (any, error) {
+	request := &apiv1_apigw.SearchDocumentsRequest{}
+	if err := s.httpHelpers.Binding.Request(ctx, c, request); err != nil {
+		return nil, err
+	}
+
+	reply, err := s.apiv1.SearchDocuments(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return reply, nil
+}

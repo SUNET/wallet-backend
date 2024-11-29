@@ -2,6 +2,7 @@ package apiv1
 
 import (
 	"context"
+	"errors"
 	"time"
 	"vc/internal/apigw/db"
 	"vc/pkg/helpers"
@@ -478,4 +479,28 @@ func (c *Client) RevokeDocument(ctx context.Context, req *RevokeDocumentRequest)
 	c.log.Debug("Document enqueued for update", "document_id", doc.Meta.DocumentID)
 
 	return nil
+}
+
+type SearchDocumentsRequest struct {
+	AuthenticSource string `json:"authentic_source"`
+}
+
+type SearchDocumentsReply struct {
+	Documents []*model.CompleteDocument
+}
+
+func (c *Client) SearchDocuments(ctx context.Context, req *SearchDocumentsRequest) (*SearchDocumentsReply, error) {
+	if c.cfg.Common.Production {
+		return nil, errors.New("Not supported in production mode")
+	}
+
+	docs, err := c.db.VCDatastoreColl.SearchDocuments(ctx, &db.SearchDocumentsQuery{
+		AuthenticSource: req.AuthenticSource,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	resp := &SearchDocumentsReply{Documents: docs}
+	return resp, nil
 }
