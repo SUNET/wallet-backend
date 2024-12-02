@@ -20,8 +20,8 @@ func NewAPIGWClient(cfg *model.Cfg, tracer *trace.Tracer, logger *logger.Log) *A
 }
 
 // DocumentList sends POST to apigw /api/v1/document/list
-func (c *APIGWClient) DocumentList(req *DocumentListRequest) (any, error) {
-	reply, err := c.DoPostJSON("/api/v1/document/list", req)
+func (c *APIGWClient) DocumentList(req *DocumentListRequest) (*apiv1_apigw.DocumentListReply, error) {
+	reply, err := DoPostJSONGeneric[apiv1_apigw.DocumentListReply](c.VCBaseClient, "/api/v1/document/list", req)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +73,9 @@ func (c *APIGWClient) Notification(req *NotificationRequest) (any, error) {
 	return reply, nil
 }
 
-func (c *APIGWClient) SearchDocuments(req *apiv1_apigw.SearchDocumentsRequest) (any, error) {
-	reply, err := c.DoPostJSON("/api/v1/document/search", req)
+func (c *APIGWClient) SearchDocuments(req *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error) {
+	//TODO(mk): return real response type to be used in table in UI
+	reply, err := DoPostJSONGeneric[apiv1_apigw.SearchDocumentsReply](c.VCBaseClient, "/api/v1/document/search", req)
 	if err != nil {
 		return nil, err
 	}

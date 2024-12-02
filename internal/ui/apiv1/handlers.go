@@ -57,7 +57,7 @@ type DocumentListRequest struct {
 	ValidTo         int64           `json:"valid_to"`
 }
 
-func (c *Client) DocumentList(ctx context.Context, req *DocumentListRequest) (any, error) {
+func (c *Client) DocumentList(ctx context.Context, req *DocumentListRequest) (*apiv1_apigw.DocumentListReply, error) {
 	reply, err := c.apigwClient.DocumentList(req)
 	if err != nil {
 		return nil, err
@@ -191,7 +191,7 @@ func (c *Client) DecodeCredential(ctx context.Context, req *apiv1_verifier.Decod
 	return reply, nil
 }
 
-func (c *Client) SearchDocuments(ctx context.Context, req *apiv1_apigw.SearchDocumentsRequest) (any, error) {
+func (c *Client) SearchDocuments(ctx context.Context, req *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error) {
 	reply, err := c.apigwClient.SearchDocuments(req)
 	if err != nil {
 		return nil, err

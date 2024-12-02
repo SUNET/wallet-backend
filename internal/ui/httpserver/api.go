@@ -2,7 +2,7 @@ package httpserver
 
 import (
 	"context"
-	apigw_apiv1 "vc/internal/apigw/apiv1"
+	apiv1_apigw "vc/internal/apigw/apiv1"
 	"vc/internal/gen/status/apiv1_status"
 	apiv1_mockas "vc/internal/mockas/apiv1"
 	"vc/internal/ui/apiv1"
@@ -18,12 +18,12 @@ type Apiv1 interface {
 
 	// apigw
 	HealthAPIGW(ctx context.Context, request *apiv1_status.StatusRequest) (any, error)
-	DocumentList(ctx context.Context, request *apiv1.DocumentListRequest) (any, error)
-	Upload(ctx context.Context, request *apigw_apiv1.UploadRequest) (any, error)
+	DocumentList(ctx context.Context, request *apiv1.DocumentListRequest) (*apiv1_apigw.DocumentListReply, error)
+	Upload(ctx context.Context, request *apiv1_apigw.UploadRequest) (any, error)
 	Credential(ctx context.Context, request *apiv1.CredentialRequest) (any, error)
 	GetDocument(ctx context.Context, request *apiv1.GetDocumentRequest) (any, error)
 	Notification(ctx context.Context, reguest *apiv1.NotificationRequest) (any, error)
-	SearchDocuments(ctx context.Context, request *apigw_apiv1.SearchDocumentsRequest) (any, error)
+	SearchDocuments(ctx context.Context, request *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error)
 
 	// mockas
 	HealthMockAS(ctx context.Context, request *apiv1_status.StatusRequest) (any, error)
