@@ -497,7 +497,7 @@ func (c *Client) SearchDocuments(ctx context.Context, req *SearchDocumentsReques
 
 	docs, hasMore, err := c.db.VCDatastoreColl.SearchDocuments(ctx, &db.SearchDocumentsQuery{
 		AuthenticSource: req.AuthenticSource,
-	})
+	}, nil, nil)
 
 	if err != nil {
 		return nil, err

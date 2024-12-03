@@ -362,7 +362,7 @@ type SearchDocumentsQuery struct {
 	AuthenticSource string `json:"authentic_source" bson:"authentic_source"`
 }
 
-func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocumentsQuery) ([]*model.CompleteDocument, bool, error) {
+func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocumentsQuery, fields []string, sortFields map[string]int) ([]*model.CompleteDocument, bool, error) {
 	if err := helpers.Check(ctx, c.Service.cfg, query, c.Service.log); err != nil {
 		return nil, false, err
 	}
@@ -375,9 +375,28 @@ func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocu
 	//TODO: add more filters
 
 	findOptions := options.Find()
-	var limit int64 = 3
-	// One more than wanted to see if there are more results i db
+	var limit int64 = 50
+	// Set one more than wanted to see if there are more results i db
 	findOptions.SetLimit(limit + 1)
+
+	if len(fields) > 0 {
+		projection := bson.M{}
+		for _, field := range fields {
+			projection[field] = 1
+		}
+		findOptions.SetProjection(projection)
+	}
+
+	sort := bson.D{}
+	if len(sortFields) > 0 {
+		for field, order := range sortFields {
+			// 1 for ascending, -1 for descending
+			sort = append(sort, bson.E{Key: field, Value: order})
+		}
+		findOptions.SetSort(sort)
+	} else {
+		sort = append(sort, bson.E{Key: "meta.document_id", Value: 1})
+	}
 
 	cursor, err := c.Coll.Find(ctx, filter, findOptions)
 	if err != nil {
@@ -391,7 +410,7 @@ func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocu
 
 	hasMore := len(res) > int(limit)
 	if hasMore {
-		// Remove the last entry from the result
+		// Remove the last entry from the result to fit limit value
 		res = res[:limit]
 	}
 
