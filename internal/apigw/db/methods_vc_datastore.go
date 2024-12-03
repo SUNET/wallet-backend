@@ -362,9 +362,9 @@ type SearchDocumentsQuery struct {
 	AuthenticSource string `json:"authentic_source" bson:"authentic_source"`
 }
 
-func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocumentsQuery) ([]*model.CompleteDocument, error) {
+func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocumentsQuery) ([]*model.CompleteDocument, bool, error) {
 	if err := helpers.Check(ctx, c.Service.cfg, query, c.Service.log); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	filter := bson.M{}
@@ -374,15 +374,26 @@ func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocu
 	}
 	//TODO: add more filters
 
-	cursor, err := c.Coll.Find(ctx, filter)
+	findOptions := options.Find()
+	var limit int64 = 3
+	// One more than wanted to see if there are more results i db
+	findOptions.SetLimit(limit + 1)
+
+	cursor, err := c.Coll.Find(ctx, filter, findOptions)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	res := []*model.CompleteDocument{}
 	if err := cursor.All(ctx, &res); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	return res, nil
+	hasMore := len(res) > int(limit)
+	if hasMore {
+		// Remove the last entry from the result
+		res = res[:limit]
+	}
+
+	return res, hasMore, nil
 }

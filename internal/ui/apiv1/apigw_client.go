@@ -74,7 +74,6 @@ func (c *APIGWClient) Notification(req *NotificationRequest) (any, error) {
 }
 
 func (c *APIGWClient) SearchDocuments(req *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error) {
-	//TODO(mk): return real response type to be used in table in UI
 	reply, err := DoPostJSONGeneric[apiv1_apigw.SearchDocumentsReply](c.VCBaseClient, "/api/v1/document/search", req)
 	if err != nil {
 		return nil, err
