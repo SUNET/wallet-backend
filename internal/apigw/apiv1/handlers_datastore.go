@@ -487,6 +487,7 @@ type SearchDocumentsRequest struct {
 
 type SearchDocumentsReply struct {
 	Documents []*model.CompleteDocument
+	HasMore   bool `json:"has_more_results"`
 }
 
 func (c *Client) SearchDocuments(ctx context.Context, req *SearchDocumentsRequest) (*SearchDocumentsReply, error) {
@@ -494,13 +495,16 @@ func (c *Client) SearchDocuments(ctx context.Context, req *SearchDocumentsReques
 		return nil, errors.New("Not supported in production mode")
 	}
 
-	docs, err := c.db.VCDatastoreColl.SearchDocuments(ctx, &db.SearchDocumentsQuery{
+	docs, hasMore, err := c.db.VCDatastoreColl.SearchDocuments(ctx, &db.SearchDocumentsQuery{
 		AuthenticSource: req.AuthenticSource,
 	})
 
 	if err != nil {
 		return nil, err
 	}
-	resp := &SearchDocumentsReply{Documents: docs}
+	resp := &SearchDocumentsReply{
+		Documents: docs,
+		HasMore:   hasMore,
+	}
 	return resp, nil
 }
