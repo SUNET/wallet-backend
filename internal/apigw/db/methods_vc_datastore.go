@@ -358,24 +358,30 @@ func (c *VCDatastoreColl) Replace(ctx context.Context, doc *model.CompleteDocume
 	return nil
 }
 
+// TODO(mk): kolla med masv, visst fyller nedan bson ingen funktion i nedan struct när det används vid söken då bara värdet används (gäller samma för json?)?
 type SearchDocumentsQuery struct {
-	AuthenticSource string `json:"authentic_source" bson:"authentic_source"`
+	AuthenticSource string `json:"authentic_source,omitempty" bson:"authentic_source"`
+	DocumentType    string `json:"document_type,omitempty" bson:"document_type"`
+	DocumentID      string `json:"document_id,omitempty" bson:"document_id"`
+	CollectID       string `json:"collect_id,omitempty" bson:"collect_id"`
+
+	AuthenticSourcePersonID string `json:"authentic_source_person_id,omitempty" bson:"authentic_source_person_id"`
+	FamilyName              string `json:"family_name,omitempty" bson:"family_name"`
+	GivenName               string `json:"given_name,omitempty" bson:"given_name"`
+	BirthDate               string `json:"birth_date,omitempty" bson:"birth_date"`
 }
 
-func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocumentsQuery, fields []string, sortFields map[string]int) ([]*model.CompleteDocument, bool, error) {
+func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocumentsQuery, limit int64, fields []string, sortFields map[string]int) ([]*model.CompleteDocument, bool, error) {
 	if err := helpers.Check(ctx, c.Service.cfg, query, c.Service.log); err != nil {
 		return nil, false, err
 	}
 
-	filter := bson.M{}
-
-	if query.AuthenticSource != "" {
-		filter["meta.authentic_source"] = bson.M{"$eq": query.AuthenticSource}
-	}
-	//TODO: add more filters
+	filter := buildSearchDocumentsFilter(query)
 
 	findOptions := options.Find()
-	var limit int64 = 50
+	if limit == 0 {
+		limit = 50
+	}
 	// Set one more than wanted to see if there are more results i db
 	findOptions.SetLimit(limit + 1)
 
@@ -415,4 +421,44 @@ func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocu
 	}
 
 	return res, hasMore, nil
+}
+
+func buildSearchDocumentsFilter(query *SearchDocumentsQuery) bson.M {
+	filter := bson.M{}
+
+	if query.AuthenticSource != "" {
+		filter["meta.authentic_source"] = query.AuthenticSource
+	}
+	if query.DocumentType != "" {
+		filter["meta.document_type"] = query.DocumentType
+	}
+	if query.DocumentID != "" {
+		filter["meta.document_id"] = query.DocumentID
+	}
+	if query.CollectID != "" {
+		filter["meta.collect.id"] = query.CollectID
+	}
+
+	identityConditions := bson.M{}
+	if query.AuthenticSourcePersonID != "" {
+		identityConditions["authentic_source_person_id"] = query.AuthenticSourcePersonID
+	}
+	if query.FamilyName != "" {
+		identityConditions["family_name"] = query.FamilyName
+	}
+	if query.GivenName != "" {
+		identityConditions["given_name"] = query.GivenName
+	}
+	if query.BirthDate != "" {
+		identityConditions["birth_date"] = query.BirthDate
+	}
+	if len(identityConditions) > 0 {
+		filter["identities"] = bson.M{
+			"$elemMatch": identityConditions,
+		}
+	}
+
+	//TODO(mk): add more filters
+
+	return filter
 }
