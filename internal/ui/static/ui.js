@@ -622,7 +622,8 @@ const addSearchDocumentsFormArticleToContainer = () => {
                 // document_id: documentIDElement.value,
                 // document_type: documentTypeElement.value,
                 authentic_source: authenticSourceElement.value,
-
+                limit: 3,
+                fields: ["meta.document_id", "meta.authentic_source", "meta.document_type", "meta.collect.id", "identities", "qr.credential_offer"],
             };
 
             disableElements([

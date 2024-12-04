@@ -482,12 +482,24 @@ func (c *Client) RevokeDocument(ctx context.Context, req *RevokeDocumentRequest)
 }
 
 type SearchDocumentsRequest struct {
-	AuthenticSource string `json:"authentic_source"`
+	AuthenticSource string `json:"authentic_source,omitempty"`
+	DocumentType    string `json:"document_type,omitempty"`
+	DocumentID      string `json:"document_id,omitempty"`
+	CollectID       string `json:"collect_id,omitempty"`
+
+	AuthenticSourcePersonID string `json:"authentic_source_person_id,omitempty"`
+	FamilyName              string `json:"family_name,omitempty"`
+	GivenName               string `json:"given_name,omitempty"`
+	BirthDate               string `json:"birth_date,omitempty"`
+
+	Limit      int64          `json:"limit,omitempty"`
+	Fields     []string       `json:"fields,omitempty"`
+	SortFields map[string]int `json:"sort_fields,omitempty"`
 }
 
 type SearchDocumentsReply struct {
-	Documents []*model.CompleteDocument
-	HasMore   bool `json:"has_more_results"`
+	Documents      []*model.CompleteDocument
+	HasMoreResults bool `json:"has_more_results"`
 }
 
 func (c *Client) SearchDocuments(ctx context.Context, req *SearchDocumentsRequest) (*SearchDocumentsReply, error) {
@@ -497,14 +509,22 @@ func (c *Client) SearchDocuments(ctx context.Context, req *SearchDocumentsReques
 
 	docs, hasMore, err := c.db.VCDatastoreColl.SearchDocuments(ctx, &db.SearchDocumentsQuery{
 		AuthenticSource: req.AuthenticSource,
-	}, nil, nil)
+		DocumentType:    req.DocumentType,
+		DocumentID:      req.DocumentID,
+		CollectID:       req.CollectID,
+
+		AuthenticSourcePersonID: req.AuthenticSourcePersonID,
+		FamilyName:              req.FamilyName,
+		GivenName:               req.GivenName,
+		BirthDate:               req.BirthDate,
+	}, req.Limit, req.Fields, req.SortFields)
 
 	if err != nil {
 		return nil, err
 	}
 	resp := &SearchDocumentsReply{
-		Documents: docs,
-		HasMore:   hasMore,
+		Documents:      docs,
+		HasMoreResults: hasMore,
 	}
 	return resp, nil
 }
