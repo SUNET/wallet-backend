@@ -40,13 +40,16 @@ func New(ctx context.Context, cfg *model.Cfg, apiv1 *apiv1.Client, tracer *trace
 		return nil, err
 	}
 
-	rgRoot, err := s.httpHelpers.Server.Default(ctx, s.server, s.gin, s.cfg.APIGW.APIServer.Addr)
+	rgRoot, err := s.httpHelpers.Server.Default(ctx, s.server, s.gin, s.cfg.Portal.APIServer.Addr)
 	if err != nil {
 		return nil, err
 	}
 
-	// statics if mainly for images/logos in vctm attribute
-	rgRoot.Static("/statics", "/statics")
+	s.gin.Static("/static", "./static")
+	s.gin.LoadHTMLFiles("./static/index.html")
+	s.gin.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.html", nil)
+	})
 
 	s.httpHelpers.Server.RegEndpoint(ctx, rgRoot, http.MethodGet, "health", s.endpointHealth)
 

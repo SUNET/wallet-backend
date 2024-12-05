@@ -541,10 +541,9 @@ const createInputElement = (placeholder, value = '', type = 'text', disabled = f
     return input;
 };
 
-
 function createCheckboxElement(labelText, disabled = false) {
     const label = document.createElement("label");
-    label.className = "checkbox";
+    label.classList.add("checkbox", "is-medium");
     label.id = generateUUID();
 
     const input = document.createElement("input");

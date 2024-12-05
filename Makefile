@@ -116,7 +116,7 @@ docker-build-ui-goland-debug:
 
 docker-build-portal:
 	$(info Docker building portal with tag: $(VERSION))
-	docker build --build-arg SERVICE_NAME=portal --tag $(DOCKER_TAG_PORTAL) --file dockerfiles/worker .
+	docker build --build-arg SERVICE_NAME=portal --tag $(DOCKER_TAG_PORTAL) --file dockerfiles/portal_worker .
 
 docker-push-gobuild:
 	$(info Pushing docker images)

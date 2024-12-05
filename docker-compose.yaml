@@ -147,7 +147,8 @@ services:
     restart: always
     volumes:
       - ./config.yaml:/config.yaml:ro
-      - ./statics:/statics:ro
+    depends_on:
+      - apigw
     networks:
       vc-dev-net:
         ipv4_address: 172.16.50.24
