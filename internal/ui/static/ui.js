@@ -541,6 +541,26 @@ const createInputElement = (placeholder, value = '', type = 'text', disabled = f
     return input;
 };
 
+
+function createCheckboxElement(labelText, disabled = false) {
+    const label = document.createElement("label");
+    label.className = "checkbox";
+    label.id = generateUUID();
+
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.id = generateUUID();
+    input.disabled = disabled;
+
+    const textNode = document.createTextNode(labelText);
+
+    label.appendChild(input);
+    label.appendChild(textNode);
+
+    return {label, input};
+}
+
+
 const createSelectElement = (options = [], disabled = false) => {
     const div = document.createElement('div');
     div.classList.add('select')
@@ -607,9 +627,28 @@ const addViewDocumentFormArticleToContainer = () => {
 const addSearchDocumentsFormArticleToContainer = () => {
     const buildFormElements = () => {
 
-        // const documentIDElement = createInputElement('document id');
-        // const documentTypeElement = createInputElement('document type (EHIC/PDA1)', 'EHIC');
-        const authenticSourceElement = createInputElement('authentic source (optional)');
+        const documentIDElement = createInputElement('Document id (optional)');
+        const authenticSourceInput = createInputElement('Authentic source (optional)');
+
+        const documentTypeSelectWithinDivElement = createSelectElement([{
+            value: '',
+            label: 'Document type (optional)'
+        }, {value: 'EHIC', label: 'EHIC'}, {value: 'PDA1', label: 'PDA1'}]);
+        const documentTypeDiv = documentTypeSelectWithinDivElement[0];
+        const documentTypeSelect = documentTypeSelectWithinDivElement[1];
+
+        const collectIdInput = createInputElement('Collect ID (optional)');
+
+        const familyNameInput = createInputElement('Family name (optional)');
+        const givenNameInput = createInputElement('Given name (optional)');
+        const birthdateInput = createInputElement('Birth date (YYYY-MM-DD, optional)');
+
+        const {
+            label: checkboxShowCompleteDocsAsRawJsonLabel,
+            input: checkboxShowCompleteDocsAsRawJson
+        } = createCheckboxElement("Show complete documents as raw json");
+
+        const limitInput = createInputElement('Max number of results (optional)', '50');
 
         const searchButton = document.createElement('button');
         searchButton.id = generateUUID();
@@ -619,27 +658,53 @@ const addSearchDocumentsFormArticleToContainer = () => {
             searchButton.disabled = true;
 
             const requestBody = {
-                // document_id: documentIDElement.value,
-                // document_type: documentTypeElement.value,
-                authentic_source: authenticSourceElement.value,
-                limit: 3,
+                document_id: documentIDElement.value,
+                authentic_source: authenticSourceInput.value,
+                document_type: documentTypeSelect.value,
+                collect_id: collectIdInput.value,
+
+                family_name: familyNameInput.value,
+                given_name: givenNameInput.value,
+                birth_date: birthdateInput.value,
+
+                limit: parseInt(limitInput.value, 10),
+
                 fields: ["meta.document_id", "meta.authentic_source", "meta.document_type", "meta.collect.id", "identities", "qr.credential_offer"],
             };
 
+            if (checkboxShowCompleteDocsAsRawJson.checked) {
+                requestBody.fields = [];
+            }
+
             disableElements([
-                // documentIDElement,
-                // documentTypeElement,
-                authenticSourceElement
+                documentIDElement,
+                authenticSourceInput,
+                documentTypeSelect,
+                collectIdInput,
+                familyNameInput,
+                givenNameInput,
+                birthdateInput,
+                checkboxShowCompleteDocsAsRawJson,
+                limitInput
             ]);
 
             postAndDisplayInArticleContainerFor("/secure/apigw/document/search", requestBody, "Documents");
         };
 
+        let brElement = document.createElement('br');
+
         return [
-            //documentIDElement,
-            // documentTypeElement,
-            authenticSourceElement,
-            searchButton];
+            documentIDElement,
+            authenticSourceInput,
+            documentTypeDiv,
+            collectIdInput,
+            familyNameInput,
+            givenNameInput,
+            birthdateInput,
+            searchButton,
+            brElement,
+            checkboxShowCompleteDocsAsRawJsonLabel,
+            limitInput];
     };
 
     const articleIdBasis = generateArticleIDBasis();
