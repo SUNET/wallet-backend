@@ -40,6 +40,9 @@ func New(ctx context.Context, cfg *model.Cfg, apiv1 *apiv1.Client, tracer *trace
 		return nil, err
 	}
 
+	// extra middlewares (must be declared before Server.Default)
+	s.gin.Use(s.httpHelpers.Middleware.Gzip(ctx))
+
 	rgRoot, err := s.httpHelpers.Server.Default(ctx, s.server, s.gin, s.cfg.Portal.APIServer.Addr)
 	if err != nil {
 		return nil, err
