@@ -414,17 +414,19 @@ func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocu
 		return nil, false, err
 	}
 
-	hasMore := len(res) > int(limit)
-	if hasMore {
+	hasMoreResults := len(res) > int(limit)
+	if hasMoreResults {
 		// Remove the last entry from the result to fit limit value
 		res = res[:limit]
 	}
 
-	return res, hasMore, nil
+	return res, hasMoreResults, nil
 }
 
 func buildSearchDocumentsFilter(query *SearchDocumentsQuery) bson.M {
 	filter := bson.M{}
+
+	//TODO(mk): check explain to see if any indexes are needed
 
 	if query.AuthenticSource != "" {
 		filter["meta.authentic_source"] = query.AuthenticSource
@@ -458,7 +460,7 @@ func buildSearchDocumentsFilter(query *SearchDocumentsQuery) bson.M {
 		}
 	}
 
-	//TODO(mk): add more filters
+	//TODO(mk): add more filters?
 
 	return filter
 }
