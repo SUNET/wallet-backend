@@ -76,7 +76,7 @@ build-ui:
 
 docker-build: docker-build-verifier docker-build-registry docker-build-persistent docker-build-mockas docker-build-apigw docker-build-issuer docker-build-ui docker-build-portal
 
-docker-build-goland-debug: docker-build-verifier docker-build-registry docker-build-persistent docker-build-mockas docker-build-apigw docker-build-issuer docker-build-ui-goland-debug
+docker-build-debug: docker-build-verifier docker-build-registry docker-build-persistent docker-build-mockas docker-build-apigw docker-build-issuer docker-build-ui-debug docker-build-portal-debug
 
 docker-build-gobuild:
 	$(info Docker Building gobuild with tag: $(VERSION))
@@ -108,15 +108,19 @@ docker-build-issuer:
 
 docker-build-ui:
 	$(info Docker building ui with tag: $(VERSION))
-	docker build --build-arg SERVICE_NAME=ui --tag $(DOCKER_TAG_UI) --file dockerfiles/ui_worker .
+	docker build --build-arg SERVICE_NAME=ui --tag $(DOCKER_TAG_UI) --file dockerfiles/web_worker .
 
-docker-build-ui-goland-debug:
+docker-build-ui-debug:
 	$(info Docker building ui with tag: $(VERSION))
-	docker build --build-arg SERVICE_NAME=ui --tag $(DOCKER_TAG_UI) --file dockerfiles/ui_worker_goland_debug .
+	docker build --build-arg SERVICE_NAME=ui --tag $(DOCKER_TAG_UI) --file dockerfiles/web_worker_debug .
 
 docker-build-portal:
 	$(info Docker building portal with tag: $(VERSION))
-	docker build --build-arg SERVICE_NAME=portal --tag $(DOCKER_TAG_PORTAL) --file dockerfiles/portal_worker .
+	docker build --build-arg SERVICE_NAME=portal --tag $(DOCKER_TAG_PORTAL) --file dockerfiles/web_worker .
+
+docker-build-portal-debug:
+	$(info Docker building portal with tag: $(VERSION))
+	docker build --build-arg SERVICE_NAME=portal --tag $(DOCKER_TAG_PORTAL) --file dockerfiles/web_worker_debug .
 
 docker-push-gobuild:
 	$(info Pushing docker images)
