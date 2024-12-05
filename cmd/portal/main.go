@@ -2,16 +2,23 @@ package main
 
 import (
 	"context"
+	"encoding/gob"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 	"vc/internal/portal/apiv1"
 	"vc/internal/portal/httpserver"
 	"vc/pkg/configuration"
 	"vc/pkg/logger"
 	"vc/pkg/trace"
 )
+
+func init() {
+	// Needed to serialize/deserialize time.Time in the session and cookie
+	gob.Register(time.Time{})
+}
 
 type service interface {
 	Close(ctx context.Context) error

@@ -14,17 +14,17 @@
 
 <br>
 
-<div style="text-align: center;">
-    <p id="title" class="title is-1">VC portal</p>
-    <p id="subtitle" class="subtitle is-5">View QR-codes</p>
-</div>
 
-<div id="user_container" class="container is-max-tablet">
+<p id="title" class="title is-1 has-text-centered">VC portal</p>
+<p id="subtitle" class="subtitle is-5 has-text-centered">View QR-codes</p>
+
+
+<div id="user_container" class="container is-max-tablet has-text-centered is-hidden">
     <a id="do-logout-btn" onclick="doLogout()" class="button" style="display: inline;">Logout</a>
     <br><br>
 </div>
 
-<div id="infobar_container" class="container is-max-tablet">
+<div id="infobar_container" class="container is-max-tablet has-text-centered is-hidden">
     Error/Info here...
     <br><br>
 </div>
@@ -32,26 +32,28 @@
 <div id="login_container" class="container is-max-tablet">
     <input id="username" class="input" type="text" placeholder="Username">
     <input id="password" class="input" type="password" placeholder="Password">
-    <button class="button is-success is-justify-content-left">Login</button>
+    <button id="do-login-btn" onclick="doLogin()" class="button is-success is-justify-content-left">Login</button>
 </div>
 
-<div id="qr_container" class="container is-max-tablet">
-
+<div id="qr_container" class="container is-max-tablet is-hidden">
     <div class="fixed-grid">
         <div class="grid">
             <div class="cell"><img
                     src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAABlBMVEX///8AAABVwtN+AAAIC0lEQVR42uzYP4r7MNMH8BGCqAlW60KgKySd0lhXWdgLOLg1tkPaEF9gYa8iN1aXXEGQwq1MGgWM5sXZ/b1v924g5qke1x9C/Ecz3xn47/WfuyROgbmBWQs9KDJeR7+P+1jWd/zGaREgQAwpOmOMIdjri+5GX7cHX/KTAPESQJEOTAIE1ZMukmvk44iRNrQR9ddiwA1DUMwa8oibJOMNJHufQ/G1HJAylYAMexZXPILGMSZA8SReBCBADtIqDQ+zCwm5bJL6DOs1/b8n+SaQOA3pkFplVb/rd5ftZXven/en4lT87+t+EwAAC4iWaYgZrHjMNrxJ6vt9Kpp/n+X/DyhIhwEMMnygWWXJFiMf/bqs0UG5DBAgpUNAZZU2uw5NkuSQQ3Eq8Na8AoRDKcOgjEX76LUnY3cm6Ndrend0GQDSpWFgxgLrVzpsL/zqIeft0RfTh1gECCmcA9DM2LBihnQXqHFs76eynj7gJQAATgYVrM607bNskyXkXPG7L76nchEAbkI5BGUtEIvYddi1ft+sy8J/fsEyQNI0BTQMMe6wz7jhbVNV/OiB/nzVfwEpERgbGNM6rAheIxnj3gPQO7pPtwwQFBBTZrUK5PEwkAA5eHJs1vRLfCwDJgwoU2aZsX0Gmw1kAHndQA6iLF8Ccj7fLuBcjDM2Gu3zOvKjz0v4+FgECJjkEGSwmoVdWIEeTQL1OBUTv93ca8DJNGUMmd7NZRjj9pznQO8NdfUyAG6YOoZgAHRcZdmGmISfAfi/IrkAmECmAXUwWq2YHX1G0Fd164tGuo9XgHSTCyCDtSZkxHY+yfh5f66PE52EWAQIdwMnnbEIGbHos4w0UMGa+mKqp4UAMmCBgQEF5OGT7XiusYH6fvqpo38CKhyTDBUavXsYRS6g24PPeZPnFN0iQCI6YAyNRcSw87rDuI8JFBPHSSwC4AZuSKVWCGYXiM+STTJX+/tEmxJeAVSKIYBDo1UXV2T0fGx9Rdr7sf16Fsr3gbgBYkgVMIi7HvQ1bvgh7hvqi+anobwNpETHJDDU+DDAcJwfFB6aYqKIzUsAIIUUtAHTGRIgyaDa+4r7kn5/iUUATAJQMkADj0fQZgN6PPPDqazvx58Y9BcQ0qF0YLRmNmgb+Wjqpqob3sBvnXwbUCoBHTNWBwCCGLNNPY7nwufclWIRIOCGjKUhBEMirPR1vOSQ79sJ1lCWrwDpEGUKCMgUsT0322us8TBRT6ffEPQugIkySB1aZruedWMXt2Pr67ad6u+jWwTICQcHzgJgyHZhk2x9ziPAugRRvwQoUBdQIlrVr3bdaDbknOfVeo7/z5bxPpBSBsZSMEFjr5gnOMYqr9v7VIpnnlwATDCEgQWlNHaIF34d20OcA0YJvxHlDwAOUxlQAyA+YpYQo89VvvdlmdfP6P4+kEAZYxLncwNKJdvx2o4NUA/8dpxeAZRKh0MILLAVqGxr5gklVuv63n4/j/f7QFBgYXAWmVWwYthdR5y/uOMJPp8l6H0wT0jz02LK9jtro776/Yhte7wf3WfzChB0HqrTgKB2ZhfJZcNbX+3beQz6/Q/vApCCyQFDANZZs7tkGiM/tFN9v3//Nox3gZAwpCENTOFKP+9ysz+M2N49nWTzCqA3gSwFFQIaRewl23pI9odmXdy/n4PW+0A4kENAFQxkO6N9suFNnuybYsplIxYBc2OGwJ5HMyjW4UXHvOLtqSzQvQQoBQcgGSJYA5BtuOdNlRSnNW/Kj0UASDEMLkCwKq5WKoPteCaeTHyiXz/R/S8gbjAETOdE2QOx43j1SQ6k9SVt6mYRQBExlci0xu7xsF3ndazI4VTfEX9e9/tgAjlIaQNA2PWQAL+2hxaPx4n+9u6/AAC6FCBoYzLSBRKThBzaWExl/W8X9C4QlKKToDUy0rOeX4gBqPbt/cS/nVgEUCEgBYfBqi4qfcXreK6eQet4+25eAdJROWcIpVWviPWweS4wWl+W4jmhvA8oYpDDgAHtShvYRuIrHonnOH0+88MCYLq5FJ21wfSk12aju/FwJsfjaV1+lC+Bm8R0SE0whpkddhh1k1f8BOX64+eLehsI6tJhcIYZuzOs6y4JH88VORX3++2nyr0NKJ0gTQEQbE/Q8AtsIx99vi6OzWfzCpDzoJYGHUB3ve4zEiGBuU7iJH9HuXeBEPPbxKCsZSHLEsi2kbftaZ0D/en+fwEKdEDHZkFw/nl9PYyI7f1Uu+c6+n0gBQ7BDWgM2xndXaPGw3kfi6mY5Pe0CKDCuVQ+Y1BUJG7I2HkA4PdTWbvyJQASGaY2KLvr7ON6gQ1v8dCUxfFnznofwG0OvgGNtY9eKW3IhbS+bqCE+tstAgSdm38KSrOuzxTHbjzX4+jXhafH1wBSx4bUhhD6bEV8BlufV6T1eXH72dO+D4TE+W2CUs+b2F4ve0/O9XEq6fFrESCpc2mKRquQrcgDjb4eDnGeL/j318crQDyzGoCxGMjDABkxEhxP6/x3OfA+eOYgh4FZMMx2aLJNso85UP9vUfMXkDgNbJAWmTI7k83pv4379lTW+PUMOe8DAYIxhoAIUceVviQbft5H2uS8+VgIoJjbKjDEoHbW8IvGZo/z0fzZaL0CpETGdGCgg9p2ZpNUUNGjr/G52F8EgBtSY5RewWqVaMPjfmz4VKMrP5YBIIJDqTTDzmSsu3aRjE3Fm7z8+RN/AokTGxADGojkYci1i9UeD9O6LD9/Nlpvg/9ey1z/EwAA///mfVHt9u7RvwAAAABJRU5ErkJggg=="/>
             </div>
-            <div class="cell has-text-left">EHIC etc etc etc etc...</div>
+            <div class="cell has-text-left"><b>EHIC</b><br>Försäkringskassan<br>Anna Larsson</br>Giltig t o m 2029-02-15
+            </div>
             <div class="cell"><img
                     src="data:image/png;base64,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"/>
             </div>
-            <div class="cell has-text-left">PDA1 etc etc etc etc etc etc etc etc etc etc etc etc etc etc etc etc etc etc
-                etc etc etc etc etc etc etc etc etc etc etc etc etc...
+            <div class="cell has-text-left"><b>PDA1</b><br>Aaa aaaaa<br>Bbbbb bbbb<br>Cccccccccc ccccc ccccccccccc
+                cccccccc
+                cccccc cccc cccccc cccccc ccc cc ccccc ccccc ccccc ccccccc ccccccc cccccc cccc ccc cc c cccc<br>Dd d dd
+                d ddddd<br>Eeeeee eee eeeee e e eeeee e ee e eeee<br>Fff ffff fff<br>Ggggg gg ggggg<br>H hhh hhhhhh hhhh<br>Iiii
+                iiii iiii iiii iiiii iiiiii<br>https://www.sitenabcdefghijklmnopqrstuvwxyz.nu/resurs?cxsafasdf=413421342134123412423423423423423423424
             </div>
         </div>
     </div>
-
 </div>
 
 </body>
