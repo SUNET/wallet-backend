@@ -6,10 +6,6 @@ const removeElementById = (id) => {
     getElementById(id)?.remove();
 };
 
-const validateHasValueAndNotEmpty = (element) => {
-    return element && element.value && element.value.trim() !== "" && element.value.trim() !== " ";
-};
-
 const clearContainer = (id) => {
     //console.debug(`Clearing element : ${id}`);
     const element = getElementById(id);
