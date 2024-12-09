@@ -634,6 +634,7 @@ const addSearchDocumentsFormArticleToContainer = () => {
 
         const collectIdInput = createInputElement('Collect ID (optional)');
 
+        const authenticSourcePersonIdInput = createInputElement('Authentic source person id (optional)');
         const familyNameInput = createInputElement('Family name (optional)');
         const givenNameInput = createInputElement('Given name (optional)');
         const birthdateInput = createInputElement('Birth date (YYYY-MM-DD, optional)');
@@ -658,6 +659,7 @@ const addSearchDocumentsFormArticleToContainer = () => {
                 document_type: documentTypeSelect.value,
                 collect_id: collectIdInput.value,
 
+                authentic_source_person_id: authenticSourcePersonIdInput.value,
                 family_name: familyNameInput.value,
                 given_name: givenNameInput.value,
                 birth_date: birthdateInput.value,
@@ -676,6 +678,7 @@ const addSearchDocumentsFormArticleToContainer = () => {
                 authenticSourceInput,
                 documentTypeSelect,
                 collectIdInput,
+                authenticSourcePersonIdInput,
                 familyNameInput,
                 givenNameInput,
                 birthdateInput,
@@ -693,6 +696,7 @@ const addSearchDocumentsFormArticleToContainer = () => {
             authenticSourceInput,
             documentTypeDiv,
             collectIdInput,
+            authenticSourcePersonIdInput,
             familyNameInput,
             givenNameInput,
             birthdateInput,

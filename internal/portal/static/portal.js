@@ -37,13 +37,13 @@ const clearInnerElementsOf = (elementId) => {
     }
 };
 
-function isEmptyObject(obj) {
+const isEmptyObject = (obj) => {
     return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
-}
+};
 
 
-function displayError(errorText) {
-    let pError = document.createElement("p");
+const displayError = (errorText) => {
+    const pError = document.createElement("p");
     pError.innerText = errorText;
     pError.classList.add("has-text-danger");
     document.getElementById("error_container").appendChild(pError);
@@ -68,11 +68,11 @@ const doLogin = () => {
 
     usernameElement.value = "";
     passwordElement.value = "";
-
     clearInnerElementsOf("error_container");
     showElement("logout_container");
     hideElement("login_container");
 
+    // read and display qr-codes after login
     const url = new URL("/secure/apigw/document/search", baseUrl);
     const headers = {
         'Accept': 'application/json', 'Content-Type': 'application/json; charset=utf-8',
@@ -82,10 +82,10 @@ const doLogin = () => {
         limit: 100,
         fields: ["meta.document_id", "meta.authentic_source", "meta.document_type", "meta.collect.id", "identities", "qr"],
     };
-    console.debug(requestBody);
     const options = {
         method: `POST`, headers: headers, body: JSON.stringify(requestBody),
     };
+    console.debug(url, options);
 
     fetchData(url, options).then(data => {
         displayQrCodes(data, username);
@@ -93,14 +93,11 @@ const doLogin = () => {
         console.debug("Unexpected error:", err);
         displayError("Failed to fetch documents: " + err);
     });
-
-    //TODO(mk): read and display qr-codes or "No business decision found"
-
 };
 
 const doLogout = () => {
 
-    //TODO(mk): impl logout for session and on server
+    //TODO(mk): impl real logout for session and on server when real login implemented
 
     hideElement("logout_container");
     clearInnerElementsOf("error_container");
@@ -110,23 +107,22 @@ const doLogout = () => {
 
 
 async function fetchData(url, options) {
-    try {
-        const response = await fetch(url, options);
-        if (!response.ok) {
-            if (response.status === 401) {
-                return new Error("Unauthorized/session expired");
-                //TODO(mk): clear all personal data in DOM and show login with error message
-            }
-            throw new Error(`HTTP error! status: ${response.status}, method: ${response.method}, url: ${url}`);
-        }
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        if (response.status === 401) {
+            hideElement("logout_container");
+            clearInnerElementsOf("error_container");
+            clearInnerElementsOf("qr_container");
+            showElement("login_container");
 
-        const data = await response.json();
-        //console.debug(JSON.stringify(data, null, 2));
-        return data;
-    } catch (err) {
-        //console.error("Error fetching data", err);
-        throw err;
+            throw new Error("Unauthorized/session expired");
+        }
+        throw new Error(`HTTP error! status: ${response.status}, method: ${response.method}, url: ${url}`);
     }
+
+    const data = await response.json();
+    //console.debug(JSON.stringify(data, null, 2));
+    return data;
 }
 
 function displayQrCodes(data, username) {
@@ -134,14 +130,20 @@ function displayQrCodes(data, username) {
 
     const qrContainer = document.getElementById("qr_container");
 
-    const header = document.createElement("p");
-    header.classList.add("subtitle", "is-5", "has-text-centered");
-    header.innerText = "Business decisions for " + username;
+    const usernameStrong = document.createElement("strong");
+    usernameStrong.appendChild(document.createTextNode(username));
 
-    qrContainer.appendChild(header);
+    const textBusinessDecisionFor = document.createTextNode("Business decisions for ");
+
+    const pQrHeader = document.createElement("p");
+    pQrHeader.classList.add("subtitle", "is-5", "has-text-centered");
+    pQrHeader.appendChild(textBusinessDecisionFor);
+    pQrHeader.appendChild(usernameStrong);
+
+    qrContainer.appendChild(pQrHeader);
 
     if (isEmptyObject(data) || (Array.isArray(data.Documents) && data.Documents.length === 0)) {
-        console.log("No business decision found");
+        console.debug("No business decision found");
         let p = document.createElement("p");
         p.classList.add("has-text-centered");
         p.innerText = "No business decision found";
@@ -180,30 +182,32 @@ function displayQrCodes(data, username) {
         const boldText = document.createElement("b");
         boldText.textContent = doc.meta?.document_type || "";
         cell2.appendChild(boldText);
-        cell2.appendChild(br);
 
         const pAS = document.createElement("p");
         pAS.innerText = "Authentic source: " + doc.meta?.authentic_source || "";
         cell2.appendChild(pAS);
-        cell2.appendChild(br);
 
         const pDocId = document.createElement("p");
         pDocId.innerText = "Document ID: " + doc.meta?.document_id || "";
         cell2.appendChild(pDocId);
-        cell2.appendChild(br);
 
         const pColId = document.createElement("p");
         pColId.innerText = "Collect ID: " + doc.meta?.collect?.id || "";
         cell2.appendChild(pColId);
-        cell2.appendChild(br);
+
+        if (doc.qr?.credential_offer) {
+            const qrLink = document.createElement('a');
+            qrLink.href = doc.qr.credential_offer;
+            qrLink.textContent = "QR-code link";
+            qrLink.classList.add("is-Link");
+            cell2.appendChild(qrLink);
+        }
 
         gridDiv.appendChild(cell1);
         gridDiv.appendChild(cell2);
 
-        //console.debug("DocumentID:", doc.meta?.document_id || "");
+        qrContainer.appendChild(fixedGridDiv);
     });
-
-    qrContainer.appendChild(fixedGridDiv);
 }
 
 //TODO(mk): add listener to handle if logged in or logged out on load/reload
