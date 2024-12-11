@@ -619,6 +619,163 @@ const addViewDocumentFormArticleToContainer = () => {
     document.getElementById(articleIdBasis.articleID).querySelector('input').focus();
 };
 
+
+function buildDocumentsTableWithoutContent() {
+    const table = document.createElement('table');
+    table.className = 'table is-bordered is-striped is-narrow is-hoverable is-fullwidth';
+
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+
+    const headers = [
+        {title: 'Document ID', abbr: 'Document ID'},
+        {title: 'Collect ID', abbr: 'Collect ID'},
+        {title: 'Document type', abbr: 'Document type'},
+        {title: 'Authentic source', abbr: 'Authentic source'},
+        {title: 'Family name', abbr: 'Family name'},
+        {title: 'Given name', abbr: 'Given name'},
+        {title: 'Birthdate', abbr: null},
+        {title: 'Action', abbr: null}
+    ];
+
+    headers.forEach(header => {
+        const th = document.createElement('th');
+
+        if (header.abbr) {
+            const abbr = document.createElement('abbr');
+            abbr.title = header.abbr;
+            abbr.textContent = header.title;
+            th.appendChild(abbr);
+        } else {
+            th.textContent = header.title;
+        }
+
+        headerRow.appendChild(th);
+    });
+
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    table.appendChild(tbody);
+
+    return {table: table, tbody: tbody};
+}
+
+function buildTableRow(doc) {
+    const row = document.createElement('tr');
+
+    const tdDocumentId = document.createElement('td');
+    tdDocumentId.textContent = doc.meta?.document_id || "";
+    row.appendChild(tdDocumentId);
+
+    const tdCollectId = document.createElement('td');
+    tdCollectId.textContent = doc.meta?.collect?.id || "";
+    row.appendChild(tdCollectId);
+
+    const tdDocumentType = document.createElement('td');
+    tdDocumentType.textContent = doc.meta?.document_type;
+    row.appendChild(tdDocumentType);
+
+
+    const tdAuthenticSource = document.createElement('td');
+    tdAuthenticSource.textContent = doc.meta?.authentic_source;
+    row.appendChild(tdAuthenticSource);
+
+
+    const tdFamilyName = document.createElement('td');
+    const fnStringBuilder = [];
+    doc.identities.forEach(identity => {
+        fnStringBuilder.push(identity.family_name || "");
+    });
+    tdFamilyName.textContent = fnStringBuilder.join("<br>");
+    row.appendChild(tdFamilyName);
+
+
+    const tdGivenName = document.createElement('td');
+    const gnStringBuilder = [];
+    doc.identities.forEach(identity => {
+        gnStringBuilder.push(identity.given_name || "");
+    });
+    tdGivenName.textContent = gnStringBuilder.join("<br>");
+    row.appendChild(tdGivenName);
+
+
+    const tdBirthDate = document.createElement('td');
+    const bdStringBuilder = [];
+    doc.identities.forEach(identity => {
+        bdStringBuilder.push(identity.birth_date || "");
+    });
+    tdBirthDate.textContent = bdStringBuilder.join("<br>");
+    row.appendChild(tdBirthDate);
+
+    const tdActions = document.createElement('td');
+    const divSelect = document.createElement('div');
+    divSelect.className = 'select'; // is-small';
+
+    const select = document.createElement('select');
+    select.id = generateUUID();
+
+    const optionDefault = document.createElement('option');
+    optionDefault.value = '';
+    optionDefault.textContent = 'select...';
+    select.appendChild(optionDefault);
+
+    const optionViewDocument = document.createElement('option');
+    optionViewDocument.value = 'VIEW_COMPLETE_DOCUMENT';
+    optionViewDocument.textContent = 'View complete document';
+    select.appendChild(optionViewDocument);
+
+    const optionViewQR = document.createElement('option');
+    optionViewQR.value = 'VIEW_QR';
+    optionViewQR.textContent = 'View QR';
+    select.appendChild(optionViewQR);
+
+    const optionCreateCredential = document.createElement('option');
+    optionCreateCredential.value = 'CREATE_CREDENTIAL';
+    optionCreateCredential.textContent = 'Create credential';
+    select.appendChild(optionCreateCredential);
+
+    select.appendChild(document.createElement('hr'));
+
+    const optionDeleteDocument = document.createElement('option');
+    optionDeleteDocument.value = 'DELETE_DOCUMENT';
+    optionDeleteDocument.textContent = 'Delete document';
+    select.appendChild(optionDeleteDocument);
+
+    divSelect.appendChild(select);
+    tdActions.appendChild(divSelect);
+    row.appendChild(tdActions);
+
+    return row;
+}
+
+function displayDocumentsTable(data, divResultContainer) {
+    divResultContainer.appendChild(document.createElement("br"));
+    divResultContainer.appendChild(document.createElement("br"));
+
+    if (Array.isArray(data.Documents) && data.Documents.length === 0) {
+        const danger = document.createElement("span");
+        danger.classList.add("tag", "is-info", "is-medium");
+        danger.innerText = "No matching documents found";
+        divResultContainer.appendChild(danger);
+        return;
+    } else if (data.has_more_results) {
+        const warning = document.createElement("span");
+        warning.classList.add("tag", "is-warning", "is-medium");
+        warning.innerText = 'There are more search results available. Narrow down your search criteria to view them all.';
+        divResultContainer.appendChild(warning);
+    }
+
+    const tableBasis = buildDocumentsTableWithoutContent();
+    divResultContainer.appendChild(tableBasis.table);
+    data.Documents.forEach(doc => {
+        tableBasis.tbody.appendChild(buildTableRow(doc));
+    });
+
+}
+
+
 const addSearchDocumentsFormArticleToContainer = () => {
     const buildFormElements = () => {
 
@@ -644,14 +801,21 @@ const addSearchDocumentsFormArticleToContainer = () => {
             input: checkboxShowCompleteDocsAsRawJson
         } = createCheckboxElement("Show complete documents as raw json");
 
-        const limitInput = createInputElement('Max number of results (optional)', '50');
+        const limitInput = createInputElement('Max number of results (optional, default is 50)', '50');
+
+        const divResultContainer = document.createElement("div");
+        divResultContainer.id = generateUUID();
 
         const searchButton = document.createElement('button');
         searchButton.id = generateUUID();
         searchButton.classList.add('button', 'is-link');
         searchButton.textContent = 'Search';
         searchButton.onclick = () => {
-            searchButton.disabled = true;
+            const path = "/secure/apigw/document/search";
+            divResultContainer.innerHTML = '';
+            if (checkboxShowCompleteDocsAsRawJson.checked) {
+                searchButton.disabled = true;
+            }
 
             const requestBody = {
                 document_id: documentIDElement.value,
@@ -670,23 +834,41 @@ const addSearchDocumentsFormArticleToContainer = () => {
             };
 
             if (checkboxShowCompleteDocsAsRawJson.checked) {
-                requestBody.fields = [];
+                requestBody.fields = []; // request all fields
+                disableElements([
+                    documentIDElement,
+                    authenticSourceInput,
+                    documentTypeSelect,
+                    collectIdInput,
+                    authenticSourcePersonIdInput,
+                    familyNameInput,
+                    givenNameInput,
+                    birthdateInput,
+                    checkboxShowCompleteDocsAsRawJson,
+                    limitInput
+                ]);
+                //TODO(mk): display raw json in same container as the table
+                postAndDisplayInArticleContainerFor(path, requestBody, "Documents");
+            } else {
+                const url = new URL(path, baseUrl);
+                const headers = {
+                    'Accept': 'application/json', 'Content-Type': 'application/json; charset=utf-8',
+                };
+                const options = {
+                    method: `POST`, headers: headers, body: JSON.stringify(requestBody),
+                };
+                fetchData(url, options).then(data => {
+                    displayDocumentsTable(data, divResultContainer);
+                }).catch(err => {
+                    console.debug("Unexpected error:", err);
+                    const danger = document.createElement("span");
+                    danger.classList.add("tag", "is-danger", "is-medium");
+                    danger.innerText = "Failed to search for documents: " + err;
+                    divResultContainer.appendChild(document.createElement("br"));
+                    divResultContainer.appendChild(document.createElement("br"));
+                    divResultContainer.appendChild(danger);
+                });
             }
-
-            disableElements([
-                documentIDElement,
-                authenticSourceInput,
-                documentTypeSelect,
-                collectIdInput,
-                authenticSourcePersonIdInput,
-                familyNameInput,
-                givenNameInput,
-                birthdateInput,
-                checkboxShowCompleteDocsAsRawJson,
-                limitInput
-            ]);
-
-            postAndDisplayInArticleContainerFor("/secure/apigw/document/search", requestBody, "Documents");
         };
 
         let brElement = document.createElement('br');
@@ -703,7 +885,8 @@ const addSearchDocumentsFormArticleToContainer = () => {
             searchButton,
             brElement,
             checkboxShowCompleteDocsAsRawJsonLabel,
-            limitInput];
+            limitInput,
+            divResultContainer];
     };
 
     const articleIdBasis = generateArticleIDBasis();
@@ -713,6 +896,22 @@ const addSearchDocumentsFormArticleToContainer = () => {
 
     document.getElementById(articleIdBasis.articleID).querySelector('input').focus();
 };
+
+async function fetchData(url, options) {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+        if (response.status === 401) {
+            //TODO(mk): handle not auth/session expired in ui
+            throw new Error("Unauthorized/session expired");
+        }
+        throw new Error(`HTTP error! status: ${response.status}, method: ${response.method}, url: ${url}`);
+    }
+
+    const data = await response.json();
+    //console.debug(JSON.stringify(data, null, 2));
+    return data;
+}
+
 
 const addViewNotificationFormArticleToContainer = () => {
     const buildFormElements = () => {

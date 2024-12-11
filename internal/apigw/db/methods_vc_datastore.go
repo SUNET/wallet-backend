@@ -358,17 +358,16 @@ func (c *VCDatastoreColl) Replace(ctx context.Context, doc *model.CompleteDocume
 	return nil
 }
 
-// TODO(mk): kolla med masv, visst fyller nedan bson ingen funktion i nedan struct när det används vid söken då bara värdet används (gäller samma för json?)?
 type SearchDocumentsQuery struct {
-	AuthenticSource string `json:"authentic_source,omitempty" bson:"authentic_source"`
-	DocumentType    string `json:"document_type,omitempty" bson:"document_type"`
-	DocumentID      string `json:"document_id,omitempty" bson:"document_id"`
-	CollectID       string `json:"collect_id,omitempty" bson:"collect_id"`
+	AuthenticSource string `json:"authentic_source,omitempty"`
+	DocumentType    string `json:"document_type,omitempty"`
+	DocumentID      string `json:"document_id,omitempty"`
+	CollectID       string `json:"collect_id,omitempty"`
 
-	AuthenticSourcePersonID string `json:"authentic_source_person_id,omitempty" bson:"authentic_source_person_id"`
-	FamilyName              string `json:"family_name,omitempty" bson:"family_name"`
-	GivenName               string `json:"given_name,omitempty" bson:"given_name"`
-	BirthDate               string `json:"birth_date,omitempty" bson:"birth_date"`
+	AuthenticSourcePersonID string `json:"authentic_source_person_id,omitempty"`
+	FamilyName              string `json:"family_name,omitempty"`
+	GivenName               string `json:"given_name,omitempty"`
+	BirthDate               string `json:"birth_date,omitempty"`
 }
 
 func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocumentsQuery, limit int64, fields []string, sortFields map[string]int) ([]*model.CompleteDocument, bool, error) {
