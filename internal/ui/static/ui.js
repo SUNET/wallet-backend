@@ -214,7 +214,6 @@ async function postAndDisplayInArticleContainerFor(path, requestBody, articleHea
     await doFetchAPICallAndHandleResult(url, options, elements);
 }
 
-
 const createMock = () => {
     //console.debug("createMock");
 
@@ -632,6 +631,7 @@ function buildDocumentsTableWithoutContent() {
         {title: 'Collect ID', abbr: 'Collect ID'},
         {title: 'Document type', abbr: 'Document type'},
         {title: 'Authentic source', abbr: 'Authentic source'},
+        {title: 'Authentic source person ID', abbr: 'Authentic source person ID'},
         {title: 'Family name', abbr: 'Family name'},
         {title: 'Given name', abbr: 'Given name'},
         {title: 'Birthdate', abbr: null},
@@ -662,51 +662,231 @@ function buildDocumentsTableWithoutContent() {
     return {table: table, tbody: tbody};
 }
 
-function buildTableRow(doc) {
+function buildAndDisplayModal(title) {
+    const modalId = generateUUID();
+    const closeIconId = generateUUID();
+    const closeButtonId = generateUUID();
+    const modalBodyDivId = generateUUID();
+    const copyButtonId = generateUUID();
+
+    const modal = document.createElement('div');
+    modal.id = modalId;
+    modal.className = 'modal is-active';
+    modal.innerHTML = `
+    <div class="modal-background"></div>
+      <div class="modal-card" style="width: 90%; max-width: 1200px;">
+      <header class="modal-card-head">
+        <p class="modal-card-title">${title}</p>
+        <button id="${closeIconId}" class="delete" aria-label="close"></button>
+      </header>
+      <section class="modal-card-body">
+        <div id="${modalBodyDivId}"></div>
+      </section>
+      <footer class="modal-card-foot">
+        <button id="${closeButtonId}" class="button is-success">Close</button> <button id="${copyButtonId}" class="button">Copy content</button>
+      </footer>
+    </div>
+  `;
+
+    document.body.appendChild(modal);
+
+    const closeIcon = document.getElementById(closeIconId);
+    const closeButton = document.getElementById(closeButtonId);
+    const copyButton = document.getElementById(copyButtonId);
+
+    closeIcon.addEventListener('click', () => closeModalAndRemoveFromDOM(modalId));
+    closeButton.addEventListener('click', () => closeModalAndRemoveFromDOM(modalId));
+    copyButton.addEventListener('click', () => copyContentWithinDivToClipboard(modalBodyDivId));
+
+    const modalBody = modal.querySelector('.modal-card-body');
+    const modalBodyDiv = document.getElementById(modalBodyDivId);
+
+    return {
+        modal: modal,
+        modalBody: modalBody,
+        modalBodyDiv: modalBodyDiv,
+    };
+}
+
+function copyContentWithinDivToClipboard(divId) {
+    const contentDiv = document.getElementById(divId);
+
+    if (contentDiv) {
+        const content = contentDiv.textContent || contentDiv.innerText;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            // Modern Clipboard API
+            navigator.clipboard.writeText(content)
+                .then(() => alert('Content copied to clipboard!'))
+                .catch(err => {
+                    console.error('Failed to copy content: ', err);
+                    alert('Failed to copy content.');
+                });
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = content;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert('Content copied to clipboard!');
+            } catch (err) {
+                console.error('Fallback: Unable to copy', err);
+                alert('Failed to copy content.');
+            }
+            document.body.removeChild(textArea);
+        }
+    } else {
+        alert('No content to copy!');
+    }
+}
+
+
+function closeModalAndRemoveFromDOM(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('is-active'); // Hide modal
+        setTimeout(() => {
+            modal.remove(); // Remove modal from DOM
+        }, 300); // Wait until Bulma animations are done
+    }
+}
+
+function displayError(errorText, err, parentElement) {
+    const danger = document.createElement("span");
+    danger.classList.add("tag", "is-danger", "is-medium");
+    danger.innerText = errorText + err;
+    parentElement.appendChild(document.createElement("br"));
+    parentElement.appendChild(document.createElement("br"));
+    parentElement.appendChild(danger);
+}
+
+function displayCompleteDocumentInModal(rowData) {
+    const modalParts = buildAndDisplayModal("Complete document as json");
+    const modalBodyDiv = modalParts.modalBodyDiv;
+
+    fetchData(new URL("/secure/apigw/document/search", baseUrl), {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: JSON.stringify({
+            document_id: rowData.documentId,
+            authentic_source: rowData.authenticSource,
+            document_type: rowData.documentType,
+            limit: parseInt(1, 10),
+            fields: [],
+        }),
+    }).then(data => {
+        modalBodyDiv.innerText = JSON.stringify(data, null, 2);
+    }).catch(err => {
+        console.err("Unexpected error:", err);
+        displayError("Failed to search for documents: ", err, modalBodyDiv);
+    });
+}
+
+function displayQRInModal(rowData) {
+    const modalParts = buildAndDisplayModal("QR-code");
+    const modalBodyDiv = modalParts.modalBodyDiv;
+
+    displayError("To be implemented!", "", modalBodyDiv);
+}
+
+function displayCreateCredentialInModal(rowData) {
+    const modalParts = buildAndDisplayModal("Credential as json");
+    const modalBodyDiv = modalParts.modalBodyDiv;
+
+    fetchData(new URL("/secure/apigw/credential", baseUrl), {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: JSON.stringify({
+            authentic_source: rowData.authenticSource,
+            identity: {
+                authentic_source_person_id: rowData.firstIdentityAuthenticSourcePersonId,
+                schema: {
+                    name: rowData.firstIdentitySchemaName,
+                },
+                family_name: "",
+                given_name: "",
+                birth_date: "",
+            },
+            document_type: rowData.documentType,
+            credential_type: "vc+sd-jwt",
+            collect_id: rowData.collectId,
+        }),
+    }).then(data => {
+        modalBodyDiv.innerText = JSON.stringify(data, null, 2);
+    }).catch(err => {
+        console.error("Unexpected error:", err);
+        displayError("Failed to create credential: ", err, modalBodyDiv);
+    });
+}
+
+function displayDeleteDocumentInModal(rowData) {
+    const modalParts = buildAndDisplayModal("Document deleted");
+    const modalBodyDiv = modalParts.modalBodyDiv;
+
+    displayError("To be implemented!", "", modalBodyDiv);
+}
+
+function buildDocumentTableRow(doc) {
     const row = document.createElement('tr');
 
     const tdDocumentId = document.createElement('td');
-    tdDocumentId.textContent = doc.meta?.document_id || "";
+    const documentId = doc.meta?.document_id || "";
+    tdDocumentId.textContent = documentId;
     row.appendChild(tdDocumentId);
 
     const tdCollectId = document.createElement('td');
-    tdCollectId.textContent = doc.meta?.collect?.id || "";
+    const collectId = doc.meta?.collect?.id || "";
+    tdCollectId.textContent = collectId;
     row.appendChild(tdCollectId);
 
     const tdDocumentType = document.createElement('td');
-    tdDocumentType.textContent = doc.meta?.document_type;
+    const documentType = doc.meta?.document_type || "";
+    tdDocumentType.textContent = documentType;
     row.appendChild(tdDocumentType);
 
-
     const tdAuthenticSource = document.createElement('td');
-    tdAuthenticSource.textContent = doc.meta?.authentic_source;
+    const authenticSource = doc.meta?.authentic_source || "";
+    tdAuthenticSource.textContent = authenticSource;
     row.appendChild(tdAuthenticSource);
 
+    const tdASPersonId = document.createElement('td');
+    const aspidStringBuilder = [];
+    doc.identities.forEach(identity => {
+        aspidStringBuilder.push(identity.authentic_source_person_id || "");
+    });
+    tdASPersonId.innerHTML = aspidStringBuilder.join("<br>");
+    row.appendChild(tdASPersonId);
 
     const tdFamilyName = document.createElement('td');
     const fnStringBuilder = [];
     doc.identities.forEach(identity => {
         fnStringBuilder.push(identity.family_name || "");
     });
-    tdFamilyName.textContent = fnStringBuilder.join("<br>");
+    tdFamilyName.innerHTML = fnStringBuilder.join("<br>");
     row.appendChild(tdFamilyName);
-
 
     const tdGivenName = document.createElement('td');
     const gnStringBuilder = [];
     doc.identities.forEach(identity => {
         gnStringBuilder.push(identity.given_name || "");
     });
-    tdGivenName.textContent = gnStringBuilder.join("<br>");
+    tdGivenName.innerHTML = gnStringBuilder.join("<br>");
     row.appendChild(tdGivenName);
-
 
     const tdBirthDate = document.createElement('td');
     const bdStringBuilder = [];
     doc.identities.forEach(identity => {
         bdStringBuilder.push(identity.birth_date || "");
     });
-    tdBirthDate.textContent = bdStringBuilder.join("<br>");
+    tdBirthDate.innerHTML = bdStringBuilder.join("<br>");
     row.appendChild(tdBirthDate);
 
     const tdActions = document.createElement('td');
@@ -743,6 +923,36 @@ function buildTableRow(doc) {
     optionDeleteDocument.textContent = 'Delete document';
     select.appendChild(optionDeleteDocument);
 
+    const rowData = {
+        documentId: documentId,
+        authenticSource: authenticSource,
+        documentType: documentType,
+        collectId: collectId,
+        firstIdentityAuthenticSourcePersonId: doc.identities[0].authentic_source_person_id,
+        firstIdentitySchemaName: doc.identities[0].schema.name,
+    };
+
+    select.addEventListener('change', function () {
+        const selectedValue = this.value;
+        switch (selectedValue) {
+            case 'VIEW_COMPLETE_DOCUMENT':
+                displayCompleteDocumentInModal(rowData);
+                break;
+            case 'VIEW_QR':
+                displayQRInModal(rowData);
+                break;
+            case 'CREATE_CREDENTIAL':
+                displayCreateCredentialInModal(rowData);
+                break;
+            case 'DELETE_DOCUMENT':
+                displayDeleteDocumentInModal(rowData);
+                break;
+            default:
+                break;
+        }
+        this.value = '';
+    });
+
     divSelect.appendChild(select);
     tdActions.appendChild(divSelect);
     row.appendChild(tdActions);
@@ -770,9 +980,8 @@ function displayDocumentsTable(data, divResultContainer) {
     const tableBasis = buildDocumentsTableWithoutContent();
     divResultContainer.appendChild(tableBasis.table);
     data.Documents.forEach(doc => {
-        tableBasis.tbody.appendChild(buildTableRow(doc));
+        tableBasis.tbody.appendChild(buildDocumentTableRow(doc));
     });
-
 }
 
 
@@ -850,23 +1059,18 @@ const addSearchDocumentsFormArticleToContainer = () => {
                 //TODO(mk): display raw json in same container as the table
                 postAndDisplayInArticleContainerFor(path, requestBody, "Documents");
             } else {
-                const url = new URL(path, baseUrl);
-                const headers = {
-                    'Accept': 'application/json', 'Content-Type': 'application/json; charset=utf-8',
-                };
-                const options = {
-                    method: `POST`, headers: headers, body: JSON.stringify(requestBody),
-                };
-                fetchData(url, options).then(data => {
+                fetchData(new URL(path, baseUrl), {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json; charset=utf-8',
+                    },
+                    body: JSON.stringify(requestBody),
+                }).then(data => {
                     displayDocumentsTable(data, divResultContainer);
                 }).catch(err => {
                     console.debug("Unexpected error:", err);
-                    const danger = document.createElement("span");
-                    danger.classList.add("tag", "is-danger", "is-medium");
-                    danger.innerText = "Failed to search for documents: " + err;
-                    divResultContainer.appendChild(document.createElement("br"));
-                    divResultContainer.appendChild(document.createElement("br"));
-                    divResultContainer.appendChild(danger);
+                    displayError("Failed to search for documents: ", err, modalBodyDiv);
                 });
             }
         };
