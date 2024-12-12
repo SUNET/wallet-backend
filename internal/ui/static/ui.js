@@ -1070,7 +1070,7 @@ const addSearchDocumentsFormArticleToContainer = () => {
                     displayDocumentsTable(data, divResultContainer);
                 }).catch(err => {
                     console.debug("Unexpected error:", err);
-                    displayError("Failed to search for documents: ", err, modalBodyDiv);
+                    displayError("Failed to search for documents: ", err, divResultContainer);
                 });
             }
         };

@@ -8,7 +8,6 @@ common:
     type: jaeger
     #timeout: 10
   qr:
-    base_url: 'http://www.nonexistingdummyurl.se'
     recovery_level: 2
     size: 256
     issuing_base_url: https://satosa-test-1.sunet.se
