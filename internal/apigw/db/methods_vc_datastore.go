@@ -404,6 +404,8 @@ func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocu
 		sort = append(sort, bson.E{Key: "meta.document_id", Value: 1})
 	}
 
+	c.log.Debug("Searching documents using", "filter", filter, "findOptions", findOptions)
+
 	cursor, err := c.Coll.Find(ctx, filter, findOptions)
 	if err != nil {
 		return nil, false, err
@@ -429,16 +431,16 @@ func buildSearchDocumentsFilter(query *SearchDocumentsQuery) bson.M {
 	//TODO(mk): check explain to see if any indexes are needed
 
 	if query.AuthenticSource != "" {
-		filter["meta.authentic_source"] = query.AuthenticSource
+		filter["meta.authentic_source"] = bson.M{"$eq": query.AuthenticSource}
 	}
 	if query.DocumentType != "" {
-		filter["meta.document_type"] = query.DocumentType
+		filter["meta.document_type"] = bson.M{"$eq": query.DocumentType}
 	}
 	if query.DocumentID != "" {
-		filter["meta.document_id"] = query.DocumentID
+		filter["meta.document_id"] = bson.M{"$eq": query.DocumentID}
 	}
 	if query.CollectID != "" {
-		filter["meta.collect.id"] = query.CollectID
+		filter["meta.collect.id"] = bson.M{"$eq": query.CollectID}
 	}
 
 	identityConditions := bson.M{}

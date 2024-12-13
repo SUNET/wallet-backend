@@ -667,7 +667,7 @@ function buildAndDisplayModal(title) {
     const closeIconId = generateUUID();
     const closeButtonId = generateUUID();
     const modalBodyDivId = generateUUID();
-    const copyButtonId = generateUUID();
+    const footerId = generateUUID();
 
     const modal = document.createElement('div');
     modal.id = modalId;
@@ -682,8 +682,8 @@ function buildAndDisplayModal(title) {
       <section class="modal-card-body">
         <div id="${modalBodyDivId}"></div>
       </section>
-      <footer class="modal-card-foot">
-        <button id="${closeButtonId}" class="button is-success">Close</button> <button id="${copyButtonId}" class="button">Copy content</button>
+      <footer id="${footerId}" class="modal-card-foot">
+        <button id="${closeButtonId}" class="button is-success">Close</button>
       </footer>
     </div>
   `;
@@ -692,11 +692,9 @@ function buildAndDisplayModal(title) {
 
     const closeIcon = document.getElementById(closeIconId);
     const closeButton = document.getElementById(closeButtonId);
-    const copyButton = document.getElementById(copyButtonId);
 
     closeIcon.addEventListener('click', () => closeModalAndRemoveFromDOM(modalId));
     closeButton.addEventListener('click', () => closeModalAndRemoveFromDOM(modalId));
-    copyButton.addEventListener('click', () => copyContentWithinDivToClipboard(modalBodyDivId));
 
     const modalBody = modal.querySelector('.modal-card-body');
     const modalBodyDiv = document.getElementById(modalBodyDivId);
@@ -705,35 +703,37 @@ function buildAndDisplayModal(title) {
         modal: modal,
         modalBody: modalBody,
         modalBodyDiv: modalBodyDiv,
+        footer: document.getElementById(footerId),
     };
 }
 
-function copyContentWithinDivToClipboard(divId) {
+function copyContentWithinDivToClipboard(divId, jsonParseAndStringify = false) {
     const contentDiv = document.getElementById(divId);
 
     if (contentDiv) {
-        const content = contentDiv.textContent || contentDiv.innerText;
+        let content = contentDiv.textContent || contentDiv.innerText;
+        if (jsonParseAndStringify) {
+            content = JSON.stringify(JSON.parse(content));
+        }
 
         if (navigator.clipboard && navigator.clipboard.writeText) {
-            // Modern Clipboard API
+            // Modern Clipboard API (requires https)
             navigator.clipboard.writeText(content)
-                .then(() => alert('Content copied to clipboard!'))
                 .catch(err => {
                     console.error('Failed to copy content: ', err);
-                    alert('Failed to copy content.');
+                    alert('Failed to copy content');
                 });
         } else {
-            // Fallback for older browsers
+            // Fallback for older browsers (or http)
             const textArea = document.createElement('textarea');
             textArea.value = content;
             document.body.appendChild(textArea);
             textArea.select();
             try {
                 document.execCommand('copy');
-                alert('Content copied to clipboard!');
             } catch (err) {
                 console.error('Fallback: Unable to copy', err);
-                alert('Failed to copy content.');
+                alert('Failed to copy content');
             }
             document.body.removeChild(textArea);
         }
@@ -741,7 +741,6 @@ function copyContentWithinDivToClipboard(divId) {
         alert('No content to copy!');
     }
 }
-
 
 function closeModalAndRemoveFromDOM(modalId) {
     const modal = document.getElementById(modalId);
@@ -794,6 +793,13 @@ function displayCompleteDocumentInModal(rowData) {
         }),
     }).then(data => {
         modalBodyDiv.innerText = JSON.stringify(data, null, 2);
+
+        const copyButton = document.createElement("button");
+        copyButton.id = generateUUID();
+        copyButton.classList.add("button");
+        copyButton.textContent = "Copy json";
+        copyButton.addEventListener('click', () => copyContentWithinDivToClipboard(modalParts.modalBodyDiv.id, true));
+        modalParts.footer.appendChild(copyButton);
     }).catch(err => {
         console.error("Unexpected error:", err);
         displayErrorTag("Failed to search for documents: ", modalBodyDiv, err);
@@ -823,29 +829,28 @@ function displayQRInModal(rowData) {
             return;
         }
 
+
         //TODO(mk): check/error handling if no qr or base64_image exist
         const img = document.createElement("img");
         img.src = `data:image/png;base64,${data.Documents[0].qr.base64_image}`;
         modalBodyDiv.appendChild(img);
+
+        const followLinkButton = document.createElement("button");
+        followLinkButton.id = generateUUID();
+        followLinkButton.classList.add("button", "is-link");
+        followLinkButton.title = data.Documents[0].qr.credential_offer;
+        followLinkButton.textContent = "Follow QR-code (opens a new browser window or tab)";
+        followLinkButton.addEventListener("click", function () {
+            const url = data.Documents[0].qr.credential_offer;
+            window.open(`${url}`, "_blank");
+        });
+        modalParts.footer.appendChild(followLinkButton);
 
         //modalBodyDiv.innerText = JSON.stringify(data, null, 2);
     }).catch(err => {
         console.error("Unexpected error:", err);
         displayErrorTag("Failed to display QR-code: ", modalBodyDiv, err);
     });
-
-
-    // if (doc.qr?.base64_image) {
-    //     const img = document.createElement("img");
-    //     img.src = `data:image/png;base64,${doc.qr.base64_image}`;
-    //     cell1.appendChild(img);
-    // } else {
-    //     const pQrNotFound = document.createElement("p");
-    //     pQrNotFound.innerText = "No qr code found in document";
-    //     cell1.appendChild(pQrNotFound);
-    // }
-
-
 }
 
 function displayCreateCredentialInModal(rowData) {
@@ -875,6 +880,13 @@ function displayCreateCredentialInModal(rowData) {
         }),
     }).then(data => {
         modalBodyDiv.innerText = JSON.stringify(data, null, 2);
+
+        const copyButton = document.createElement("button");
+        copyButton.id = generateUUID();
+        copyButton.classList.add("button");
+        copyButton.textContent = "Copy json";
+        copyButton.addEventListener('click', () => copyContentWithinDivToClipboard(modalParts.modalBodyDiv.id, true));
+        modalParts.footer.appendChild(copyButton);
     }).catch(err => {
         console.error("Unexpected error:", err);
         displayErrorTag("Failed to create credential: ", modalBodyDiv, err);
