@@ -352,6 +352,7 @@ async function doLogin() {
         clearContainer("login-container");
         displaySecureMenyItems();
         //TODO(mk): display current logged in user in UI?
+        addSearchDocumentsFormArticleToContainer();
     } else {
         usernameInput.disabled = false;
         passwordInput.disabled = false;
@@ -887,6 +888,20 @@ function displayCreateCredentialInModal(rowData) {
         copyButton.textContent = "Copy json";
         copyButton.addEventListener('click', () => copyContentWithinDivToClipboard(modalParts.modalBodyDiv.id, true));
         modalParts.footer.appendChild(copyButton);
+
+        const verifyCredentialButton = document.createElement("button");
+        verifyCredentialButton.id = generateUUID();
+        verifyCredentialButton.classList.add("button");
+        verifyCredentialButton.textContent = "Verify";
+        verifyCredentialButton.disabled = true;
+        modalParts.footer.appendChild(verifyCredentialButton);
+
+        const decodeCredentialButton = document.createElement("button");
+        decodeCredentialButton.id = generateUUID();
+        decodeCredentialButton.classList.add("button");
+        decodeCredentialButton.textContent = "Decode";
+        decodeCredentialButton.disabled = true;
+        modalParts.footer.appendChild(decodeCredentialButton);
     }).catch(err => {
         console.error("Unexpected error:", err);
         displayErrorTag("Failed to create credential: ", modalBodyDiv, err);
