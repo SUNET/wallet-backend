@@ -627,13 +627,13 @@ function buildDocumentsTableWithoutContent() {
     const headerRow = document.createElement('tr');
 
     const headers = [
-        {title: 'Document ID', abbr: 'Document ID'},
-        {title: 'Collect ID', abbr: 'Collect ID'},
-        {title: 'Document type', abbr: 'Document type'},
-        {title: 'Authentic source', abbr: 'Authentic source'},
-        {title: 'Authentic source person ID', abbr: 'Authentic source person ID'},
-        {title: 'Family name', abbr: 'Family name'},
-        {title: 'Given name', abbr: 'Given name'},
+        {title: 'Document ID', abbr: null},
+        {title: 'Collect ID', abbr: null},
+        {title: 'Document type', abbr: null},
+        {title: 'Authentic source', abbr: null},
+        {title: 'Authentic source person ID', abbr: null},
+        {title: 'Family name', abbr: null},
+        {title: 'Given name', abbr: null},
         {title: 'Birthdate', abbr: null},
         {title: 'Action', abbr: null}
     ];
@@ -753,14 +753,27 @@ function closeModalAndRemoveFromDOM(modalId) {
     }
 }
 
-function displayError(errorText, err, parentElement) {
+function displayErrorTag(errorText, parentElement, err = "") {
     const danger = document.createElement("span");
     danger.classList.add("tag", "is-danger", "is-medium");
     danger.innerText = errorText + err;
-    parentElement.appendChild(document.createElement("br"));
-    parentElement.appendChild(document.createElement("br"));
     parentElement.appendChild(danger);
 }
+
+function displayWarningTag(warningText, parentElement) {
+    const warning = document.createElement("span");
+    warning.classList.add("tag", "is-warning", "is-medium");
+    warning.innerText = warningText;
+    parentElement.appendChild(warning);
+}
+
+function displayInfoTag(infoText, parentElement) {
+    const warning = document.createElement("span");
+    warning.classList.add("tag", "is-info", "is-medium");
+    warning.innerText = infoText;
+    parentElement.appendChild(warning);
+}
+
 
 function displayCompleteDocumentInModal(rowData) {
     const modalParts = buildAndDisplayModal("Complete document as json");
@@ -782,8 +795,8 @@ function displayCompleteDocumentInModal(rowData) {
     }).then(data => {
         modalBodyDiv.innerText = JSON.stringify(data, null, 2);
     }).catch(err => {
-        console.err("Unexpected error:", err);
-        displayError("Failed to search for documents: ", err, modalBodyDiv);
+        console.error("Unexpected error:", err);
+        displayErrorTag("Failed to search for documents: ", modalBodyDiv, err);
     });
 }
 
@@ -791,7 +804,48 @@ function displayQRInModal(rowData) {
     const modalParts = buildAndDisplayModal("QR-code");
     const modalBodyDiv = modalParts.modalBodyDiv;
 
-    displayError("To be implemented!", "", modalBodyDiv);
+    fetchData(new URL("/secure/apigw/document/search", baseUrl), {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: JSON.stringify({
+            document_id: rowData.documentId,
+            authentic_source: rowData.authenticSource,
+            document_type: rowData.documentType,
+            limit: parseInt(1, 10),
+            fields: ["qr"],
+        }),
+    }).then(data => {
+        if (Array.isArray(data.Documents) && data.Documents.length === 0) {
+            displayErrorTag("No document found", modalBodyDiv);
+            return;
+        }
+
+        //TODO(mk): check/error handling if no qr or base64_image exist
+        const img = document.createElement("img");
+        img.src = `data:image/png;base64,${data.Documents[0].qr.base64_image}`;
+        modalBodyDiv.appendChild(img);
+
+        //modalBodyDiv.innerText = JSON.stringify(data, null, 2);
+    }).catch(err => {
+        console.error("Unexpected error:", err);
+        displayErrorTag("Failed to display QR-code: ", modalBodyDiv, err);
+    });
+
+
+    // if (doc.qr?.base64_image) {
+    //     const img = document.createElement("img");
+    //     img.src = `data:image/png;base64,${doc.qr.base64_image}`;
+    //     cell1.appendChild(img);
+    // } else {
+    //     const pQrNotFound = document.createElement("p");
+    //     pQrNotFound.innerText = "No qr code found in document";
+    //     cell1.appendChild(pQrNotFound);
+    // }
+
+
 }
 
 function displayCreateCredentialInModal(rowData) {
@@ -823,7 +877,7 @@ function displayCreateCredentialInModal(rowData) {
         modalBodyDiv.innerText = JSON.stringify(data, null, 2);
     }).catch(err => {
         console.error("Unexpected error:", err);
-        displayError("Failed to create credential: ", err, modalBodyDiv);
+        displayErrorTag("Failed to create credential: ", modalBodyDiv, err);
     });
 }
 
@@ -831,7 +885,7 @@ function displayDeleteDocumentInModal(rowData) {
     const modalParts = buildAndDisplayModal("Document deleted");
     const modalBodyDiv = modalParts.modalBodyDiv;
 
-    displayError("To be implemented!", "", modalBodyDiv);
+    displayErrorTag("To be implemented!", modalBodyDiv);
 }
 
 function buildDocumentTableRow(doc) {
@@ -965,16 +1019,10 @@ function displayDocumentsTable(data, divResultContainer) {
     divResultContainer.appendChild(document.createElement("br"));
 
     if (Array.isArray(data.Documents) && data.Documents.length === 0) {
-        const danger = document.createElement("span");
-        danger.classList.add("tag", "is-info", "is-medium");
-        danger.innerText = "No matching documents found";
-        divResultContainer.appendChild(danger);
+        displayInfoTag("No matching documents found", divResultContainer);
         return;
     } else if (data.has_more_results) {
-        const warning = document.createElement("span");
-        warning.classList.add("tag", "is-warning", "is-medium");
-        warning.innerText = 'There are more search results available. Narrow down your search criteria to view them all.';
-        divResultContainer.appendChild(warning);
+        displayWarningTag("There are more search results available. Narrow down your search criteria to view them all.", divResultContainer);
     }
 
     const tableBasis = buildDocumentsTableWithoutContent();
@@ -983,7 +1031,6 @@ function displayDocumentsTable(data, divResultContainer) {
         tableBasis.tbody.appendChild(buildDocumentTableRow(doc));
     });
 }
-
 
 const addSearchDocumentsFormArticleToContainer = () => {
     const buildFormElements = () => {
@@ -1039,7 +1086,7 @@ const addSearchDocumentsFormArticleToContainer = () => {
 
                 limit: parseInt(limitInput.value, 10),
 
-                fields: ["meta.document_id", "meta.authentic_source", "meta.document_type", "meta.collect.id", "identities", "qr.credential_offer"],
+                fields: ["meta.document_id", "meta.authentic_source", "meta.document_type", "meta.collect.id", "identities"],
             };
 
             if (checkboxShowCompleteDocsAsRawJson.checked) {
@@ -1070,7 +1117,7 @@ const addSearchDocumentsFormArticleToContainer = () => {
                     displayDocumentsTable(data, divResultContainer);
                 }).catch(err => {
                     console.debug("Unexpected error:", err);
-                    displayError("Failed to search for documents: ", err, divResultContainer);
+                    displayErrorTag("Failed to search for documents: ", divResultContainer, err);
                 });
             }
         };
