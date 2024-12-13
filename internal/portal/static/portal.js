@@ -142,7 +142,7 @@ function displayQrCodes(data, username) {
 
     qrContainer.appendChild(pQrHeader);
 
-    if (isEmptyObject(data) || (Array.isArray(data.Documents) && data.Documents.length === 0)) {
+    if (isEmptyObject(data) || (Array.isArray(data.documents) && data.documents.length === 0)) {
         console.debug("No business decision found");
         let p = document.createElement("p");
         p.classList.add("has-text-centered");
@@ -161,7 +161,7 @@ function displayQrCodes(data, username) {
 
     const br = document.createElement("br");
 
-    data.Documents.forEach((doc) => {
+    data.documents.forEach((doc) => {
 
         const cell1 = document.createElement("div");
         cell1.classList.add("cell");

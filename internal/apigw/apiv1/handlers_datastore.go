@@ -2,7 +2,6 @@ package apiv1
 
 import (
 	"context"
-	"errors"
 	"time"
 	"vc/internal/apigw/db"
 	"vc/pkg/helpers"
@@ -498,15 +497,11 @@ type SearchDocumentsRequest struct {
 }
 
 type SearchDocumentsReply struct {
-	Documents      []*model.CompleteDocument
-	HasMoreResults bool `json:"has_more_results"`
+	Documents      []*model.CompleteDocument `json:"documents"`
+	HasMoreResults bool                      `json:"has_more_results"`
 }
 
 func (c *Client) SearchDocuments(ctx context.Context, req *SearchDocumentsRequest) (*SearchDocumentsReply, error) {
-	if c.cfg.Common.Production {
-		return nil, errors.New("Not supported in production mode")
-	}
-
 	docs, hasMore, err := c.db.VCDatastoreColl.SearchDocuments(ctx, &db.SearchDocumentsQuery{
 		AuthenticSource: req.AuthenticSource,
 		DocumentType:    req.DocumentType,

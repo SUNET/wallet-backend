@@ -824,23 +824,23 @@ function displayQRInModal(rowData) {
             fields: ["qr"],
         }),
     }).then(data => {
-        if (Array.isArray(data.Documents) && data.Documents.length === 0) {
+        if (Array.isArray(data.documents) && data.documents.length === 0) {
             displayErrorTag("No document found", modalBodyDiv);
             return;
         }
 
         //TODO(mk): check/error handling if no qr or base64_image exist
         const img = document.createElement("img");
-        img.src = `data:image/png;base64,${data.Documents[0].qr.base64_image}`;
+        img.src = `data:image/png;base64,${data.documents[0].qr.base64_image}`;
         modalBodyDiv.appendChild(img);
 
         const followLinkButton = document.createElement("button");
         followLinkButton.id = generateUUID();
         followLinkButton.classList.add("button", "is-link");
-        followLinkButton.title = data.Documents[0].qr.credential_offer;
+        followLinkButton.title = data.documents[0].qr.credential_offer;
         followLinkButton.textContent = "Follow QR-code (opens a new browser window or tab)";
         followLinkButton.addEventListener("click", function () {
-            const url = data.Documents[0].qr.credential_offer;
+            const url = data.documents[0].qr.credential_offer;
             window.open(`${url}`, "_blank");
         });
         modalParts.footer.appendChild(followLinkButton);
@@ -1060,7 +1060,7 @@ function displayDocumentsTable(data, divResultContainer) {
     divResultContainer.appendChild(document.createElement("br"));
     divResultContainer.appendChild(document.createElement("br"));
 
-    if (Array.isArray(data.Documents) && data.Documents.length === 0) {
+    if (Array.isArray(data.documents) && data.documents.length === 0) {
         displayInfoTag("No matching documents found", divResultContainer);
         return;
     } else if (data.has_more_results) {
@@ -1069,7 +1069,7 @@ function displayDocumentsTable(data, divResultContainer) {
 
     const tableBasis = buildDocumentsTableWithoutContent();
     divResultContainer.appendChild(tableBasis.table);
-    data.Documents.forEach(doc => {
+    data.documents.forEach(doc => {
         tableBasis.tbody.appendChild(buildDocumentTableRow(doc));
     });
 }

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"vc/pkg/helpers"
 	"vc/pkg/logger"
 	"vc/pkg/model"
@@ -371,6 +372,10 @@ type SearchDocumentsQuery struct {
 }
 
 func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocumentsQuery, limit int64, fields []string, sortFields map[string]int) ([]*model.CompleteDocument, bool, error) {
+	if c.Service.cfg.Common.Production {
+		return nil, false, errors.New("Not supported in production mode")
+	}
+
 	if err := helpers.Check(ctx, c.Service.cfg, query, c.Service.log); err != nil {
 		return nil, false, err
 	}
