@@ -109,6 +109,7 @@ func New(ctx context.Context, cfg *model.Cfg, apiv1 *apiv1.Client, tracer *trace
 	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "document", s.endpointGetDocument)
 	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "notification", s.endpointNotification)
 	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodPost, "document/search", s.endpointSearchDocuments)
+	s.httpHelpers.Server.RegEndpoint(ctx, rgAPIGWSecure, http.MethodDelete, "document", s.endpointDeleteDocument)
 
 	// Run http server
 	go func() {
@@ -116,7 +117,6 @@ func New(ctx context.Context, cfg *model.Cfg, apiv1 *apiv1.Client, tracer *trace
 		if err != nil {
 			s.log.Trace("listen_error", "error", err)
 		}
-
 	}()
 
 	s.log.Info("Started")

@@ -229,3 +229,16 @@ func (s *Service) endpointSearchDocuments(ctx context.Context, c *gin.Context) (
 	}
 	return reply, nil
 }
+
+func (s *Service) endpointDeleteDocument(ctx context.Context, c *gin.Context) (any, error) {
+	request := &apiv1_apigw.DeleteDocumentRequest{}
+	if err := s.httpHelpers.Binding.Request(ctx, c, request); err != nil {
+		return nil, err
+	}
+
+	err := s.apiv1.DeleteDocument(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}

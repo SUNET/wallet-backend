@@ -80,3 +80,11 @@ func (c *APIGWClient) SearchDocuments(req *apiv1_apigw.SearchDocumentsRequest) (
 	}
 	return reply, nil
 }
+
+func (c *APIGWClient) DeleteDocument(req *apiv1_apigw.DeleteDocumentRequest) error {
+	err := c.DoDelete("/api/v1/document", req)
+	if err != nil {
+		return err
+	}
+	return nil
+}

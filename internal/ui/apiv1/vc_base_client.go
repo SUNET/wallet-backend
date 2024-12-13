@@ -99,6 +99,35 @@ func DoPostJSONGeneric[T any](c *VCBaseClient, endpoint string, reqBody any) (*T
 	return &jsonResp, nil
 }
 
+func (c *VCBaseClient) DoDelete(endpoint string, reqBody any) error {
+	url := c.url(endpoint)
+
+	reqBodyJSON, err := json.Marshal(reqBody)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("DELETE", url, bytes.NewBuffer(reqBodyJSON))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer c.closeBody(resp)
+
+	_, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *VCBaseClient) DoGetJSON(endpoint string) (*map[string]any, error) {
 	url := c.url(endpoint)
 

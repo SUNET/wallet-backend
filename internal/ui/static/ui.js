@@ -774,7 +774,6 @@ function displayInfoTag(infoText, parentElement) {
     parentElement.appendChild(warning);
 }
 
-
 function displayCompleteDocumentInModal(rowData) {
     const modalParts = buildAndDisplayModal("Complete document as json");
     const modalBodyDiv = modalParts.modalBodyDiv;
@@ -829,7 +828,6 @@ function displayQRInModal(rowData) {
             displayErrorTag("No document found", modalBodyDiv);
             return;
         }
-
 
         //TODO(mk): check/error handling if no qr or base64_image exist
         const img = document.createElement("img");
@@ -912,7 +910,24 @@ function displayDeleteDocumentInModal(rowData) {
     const modalParts = buildAndDisplayModal("Document deleted");
     const modalBodyDiv = modalParts.modalBodyDiv;
 
-    displayErrorTag("To be implemented!", modalBodyDiv);
+    fetchData(new URL("/secure/apigw/document", baseUrl), {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: JSON.stringify({
+            authentic_source: rowData.authenticSource,
+            document_type: rowData.documentType,
+            document_id: rowData.documentId,
+        }),
+    }).then(data => {
+        displayInfoTag("Document deleted! A new search documents is required to refresh the result table in the browser", modalBodyDiv);
+        //modalBodyDiv.innerText = JSON.stringify(data, null, 2);
+    }).catch(err => {
+        console.error("Unexpected error:", err);
+        displayErrorTag("Failed to delete document: ", modalBodyDiv, err);
+    });
 }
 
 function buildDocumentTableRow(doc) {

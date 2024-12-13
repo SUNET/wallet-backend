@@ -198,3 +198,11 @@ func (c *Client) SearchDocuments(ctx context.Context, req *apiv1_apigw.SearchDoc
 	}
 	return reply, nil
 }
+
+func (c *Client) DeleteDocument(ctx context.Context, req *apiv1_apigw.DeleteDocumentRequest) error {
+	err := c.apigwClient.DeleteDocument(req)
+	if err != nil {
+		return err
+	}
+	return nil
+}

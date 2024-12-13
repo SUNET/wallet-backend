@@ -24,6 +24,7 @@ type Apiv1 interface {
 	GetDocument(ctx context.Context, request *apiv1.GetDocumentRequest) (any, error)
 	Notification(ctx context.Context, reguest *apiv1.NotificationRequest) (any, error)
 	SearchDocuments(ctx context.Context, request *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error)
+	DeleteDocument(ctx context.Context, request *apiv1_apigw.DeleteDocumentRequest) error
 
 	// mockas
 	HealthMockAS(ctx context.Context, request *apiv1_status.StatusRequest) (any, error)
