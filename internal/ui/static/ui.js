@@ -792,7 +792,12 @@ function displayCompleteDocumentInModal(rowData) {
             fields: [],
         }),
     }).then(data => {
-        modalBodyDiv.innerText = JSON.stringify(data, null, 2);
+        if (Array.isArray(data.documents) && data.documents.length === 0) {
+            displayErrorTag("No document found", modalBodyDiv);
+            return;
+        }
+
+        modalBodyDiv.innerText = JSON.stringify(data.documents[0], null, 2);
 
         const copyButton = document.createElement("button");
         copyButton.id = generateUUID();
