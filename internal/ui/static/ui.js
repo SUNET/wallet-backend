@@ -1104,7 +1104,7 @@ const addSearchDocumentsFormArticleToContainer = () => {
             input: checkboxShowCompleteDocsAsRawJson
         } = createCheckboxElement("Show complete documents as raw json");
 
-        const limitInput = createInputElement('Max number of results (optional, default is 50)', '50');
+        const limitInput = createInputElement('Max number of results (optional, default is 50, max is 500)', '50');
 
         const divResultContainer = document.createElement("div");
         divResultContainer.id = generateUUID();

@@ -19,6 +19,7 @@ func NewAPIGWClient(cfg *model.Cfg, tracer *trace.Tracer, logger *logger.Log) *A
 	}
 }
 
+// SearchDocuments sends POST to /api/v1/document/search
 func (c *APIGWClient) SearchDocuments(req *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error) {
 	reply, err := DoPostJSONGeneric[apiv1_apigw.SearchDocumentsReply](c.VCBaseClient, "/api/v1/document/search", req)
 	if err != nil {

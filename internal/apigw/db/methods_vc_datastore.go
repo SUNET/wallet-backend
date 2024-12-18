@@ -359,18 +359,24 @@ func (c *VCDatastoreColl) Replace(ctx context.Context, doc *model.CompleteDocume
 	return nil
 }
 
+// SearchDocumentsQuery the query to search for documents
 type SearchDocumentsQuery struct {
-	AuthenticSource string `json:"authentic_source,omitempty"`
-	DocumentType    string `json:"document_type,omitempty"`
-	DocumentID      string `json:"document_id,omitempty"`
-	CollectID       string `json:"collect_id,omitempty"`
+	AuthenticSource string `json:"authentic_source,omitempty" validate:"omitempty,max=1000"`
+	DocumentType    string `json:"document_type,omitempty" validate:"omitempty,max=1000"`
+	DocumentID      string `json:"document_id,omitempty" validate:"omitempty,max=1000"`
+	CollectID       string `json:"collect_id,omitempty" validate:"omitempty,max=1000"`
 
 	AuthenticSourcePersonID string `json:"authentic_source_person_id,omitempty"`
-	FamilyName              string `json:"family_name,omitempty"`
-	GivenName               string `json:"given_name,omitempty"`
-	BirthDate               string `json:"birth_date,omitempty"`
+	FamilyName              string `json:"family_name,omitempty" validate:"omitempty,max=597"`
+	GivenName               string `json:"given_name,omitempty" validate:"omitempty,max=1019"`
+	BirthDate               string `json:"birth_date,omitempty" validate:"omitempty,datetime=2006-01-02"`
 }
 
+// SearchDocuments search documents in datastore
+//
+// @return return matching documents, has more results (refine query), or error
+// @Description not supported in production mode
+// @Deprecated
 func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocumentsQuery, limit int64, fields []string, sortFields map[string]int) ([]*model.CompleteDocument, bool, error) {
 	if c.Service.cfg.Common.Production {
 		return nil, false, errors.New("Not supported in production mode")
@@ -384,8 +390,11 @@ func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocu
 	filter := buildSearchDocumentsFilter(query)
 
 	findOptions := options.Find()
+	const maxLimit = 500
 	if limit == 0 {
 		limit = 50
+	} else if limit > maxLimit {
+		limit = maxLimit
 	}
 	// Set one more than wanted to see if there are more results i db
 	findOptions.SetLimit(limit + 1)

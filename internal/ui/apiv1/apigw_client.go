@@ -73,6 +73,7 @@ func (c *APIGWClient) Notification(req *NotificationRequest) (any, error) {
 	return reply, nil
 }
 
+// SearchDocuments sends POST to /api/v1/document/search
 func (c *APIGWClient) SearchDocuments(req *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error) {
 	reply, err := DoPostJSONGeneric[apiv1_apigw.SearchDocumentsReply](c.VCBaseClient, "/api/v1/document/search", req)
 	if err != nil {
@@ -81,6 +82,7 @@ func (c *APIGWClient) SearchDocuments(req *apiv1_apigw.SearchDocumentsRequest) (
 	return reply, nil
 }
 
+// DeleteDocument sends DELETE to /api/v1/document
 func (c *APIGWClient) DeleteDocument(req *apiv1_apigw.DeleteDocumentRequest) error {
 	err := c.DoDelete("/api/v1/document", req)
 	if err != nil {

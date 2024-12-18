@@ -16,6 +16,7 @@ func (c *Client) Status(ctx context.Context, req *apiv1_status.StatusRequest) (*
 	return status, nil
 }
 
+// SearchDocuments search for documents
 func (c *Client) SearchDocuments(ctx context.Context, req *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error) {
 	reply, err := c.apigwClient.SearchDocuments(req)
 	if err != nil {

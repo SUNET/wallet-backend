@@ -480,6 +480,7 @@ func (c *Client) RevokeDocument(ctx context.Context, req *RevokeDocumentRequest)
 	return nil
 }
 
+// SearchDocumentsRequest the request to search for documents
 type SearchDocumentsRequest struct {
 	AuthenticSource string `json:"authentic_source,omitempty"`
 	DocumentType    string `json:"document_type,omitempty"`
@@ -496,11 +497,13 @@ type SearchDocumentsRequest struct {
 	SortFields map[string]int `json:"sort_fields,omitempty"`
 }
 
+// SearchDocumentsReply the reply from search documents
 type SearchDocumentsReply struct {
 	Documents      []*model.CompleteDocument `json:"documents"`
 	HasMoreResults bool                      `json:"has_more_results"`
 }
 
+// SearchDocuments search for documents
 func (c *Client) SearchDocuments(ctx context.Context, req *SearchDocumentsRequest) (*SearchDocumentsReply, error) {
 	docs, hasMore, err := c.db.VCDatastoreColl.SearchDocuments(ctx, &db.SearchDocumentsQuery{
 		AuthenticSource: req.AuthenticSource,
