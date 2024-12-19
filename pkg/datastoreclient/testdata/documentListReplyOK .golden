@@ -1,0 +1,43 @@
+{
+    "data": {
+        "meta": {
+            "authentic_source": "SUNET",
+            "document_version": "1.0.0",
+            "document_type": "EHIC",
+            "document_id": "test_document_id",
+            "real_data": false,
+            "collect": {
+                "id": "test_collect_id",
+                "valid_until": 1731767173
+            },
+            "revocation": {
+                "id": "test_revocation_id",
+                "reference": {
+                    "authentic_source": "SUNET",
+                    "document_type": "EHIC",
+                    "document_id": "test_document_id"
+                }
+            },
+            "credential_valid_from": 695706629,
+            "credential_valid_to": -1730367911
+        },
+        "document_data": {
+            "subject": {
+                "forename": "test_forename",
+                "family_name": "test_family_name",
+                "date_of_birth": "1986-02-23"
+            },
+            "social_security_pin": "1234",
+            "period_entitlement": {
+                "starting_date": "1970-01-01",
+                "ending_date": "2038-01-19"
+            },
+            "document_id": "test_document_id",
+            "competent_institution": {
+                "institution_id": "SE:1234",
+                "institution_name": "Myndigheten",
+                "institution_country": "SE"
+            }
+        }
+    }
+}
