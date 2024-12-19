@@ -2,8 +2,8 @@ package httpserver
 
 import (
 	"context"
-	apiv1_apigw "vc/internal/apigw/apiv1"
 	"vc/internal/gen/status/apiv1_status"
+	"vc/pkg/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +18,7 @@ func (s *Service) endpointHealth(ctx context.Context, c *gin.Context) (any, erro
 }
 
 func (s *Service) endpointSearchDocuments(ctx context.Context, c *gin.Context) (any, error) {
-	request := &apiv1_apigw.SearchDocumentsRequest{}
+	request := &model.SearchDocumentsRequest{}
 	if err := s.httpHelpers.Binding.Request(ctx, c, request); err != nil {
 		return nil, err
 	}

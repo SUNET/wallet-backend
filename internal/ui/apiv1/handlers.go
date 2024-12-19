@@ -191,7 +191,7 @@ func (c *Client) DecodeCredential(ctx context.Context, req *apiv1_verifier.Decod
 	return reply, nil
 }
 
-func (c *Client) SearchDocuments(ctx context.Context, req *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error) {
+func (c *Client) SearchDocuments(ctx context.Context, req *model.SearchDocumentsRequest) (*model.SearchDocumentsReply, error) {
 	reply, err := c.apigwClient.SearchDocuments(req)
 	if err != nil {
 		return nil, err

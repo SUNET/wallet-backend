@@ -26,7 +26,7 @@ func (s *identityHandler) Mapping(ctx context.Context, query *IdentityMappingQue
 
 	url := fmt.Sprintf("%s/%s", s.service, "mapping")
 	reply := ""
-	resp, err := s.client.call(ctx, http.MethodPost, url, nil, reply)
+	resp, err := s.client.call(ctx, http.MethodPost, url, nil, reply, true)
 	if err != nil {
 		return "", resp, err
 	}

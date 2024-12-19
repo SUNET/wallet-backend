@@ -384,3 +384,26 @@ type QR struct {
 	// required: true
 	CredentialOfferURL string `json:"credential_offer,omitempty" bson:"credential_offer"`
 }
+
+// SearchDocumentsReply the reply from search documents
+type SearchDocumentsReply struct {
+	Documents      []*CompleteDocument `json:"documents"`
+	HasMoreResults bool                `json:"has_more_results"`
+}
+
+// SearchDocumentsRequest the request to search for documents
+type SearchDocumentsRequest struct {
+	AuthenticSource string `json:"authentic_source,omitempty"`
+	DocumentType    string `json:"document_type,omitempty"`
+	DocumentID      string `json:"document_id,omitempty"`
+	CollectID       string `json:"collect_id,omitempty"`
+
+	AuthenticSourcePersonID string `json:"authentic_source_person_id,omitempty"`
+	FamilyName              string `json:"family_name,omitempty"`
+	GivenName               string `json:"given_name,omitempty"`
+	BirthDate               string `json:"birth_date,omitempty"`
+
+	Limit      int64          `json:"limit,omitempty"`
+	Fields     []string       `json:"fields,omitempty"`
+	SortFields map[string]int `json:"sort_fields,omitempty"`
+}

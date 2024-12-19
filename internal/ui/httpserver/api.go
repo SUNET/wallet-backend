@@ -7,6 +7,7 @@ import (
 	apiv1_mockas "vc/internal/mockas/apiv1"
 	"vc/internal/ui/apiv1"
 	apiv1_verifier "vc/internal/verifier/apiv1"
+	"vc/pkg/model"
 )
 
 type Apiv1 interface {
@@ -23,7 +24,7 @@ type Apiv1 interface {
 	Credential(ctx context.Context, request *apiv1.CredentialRequest) (any, error)
 	GetDocument(ctx context.Context, request *apiv1.GetDocumentRequest) (any, error)
 	Notification(ctx context.Context, reguest *apiv1.NotificationRequest) (any, error)
-	SearchDocuments(ctx context.Context, request *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error)
+	SearchDocuments(ctx context.Context, request *model.SearchDocumentsRequest) (*model.SearchDocumentsReply, error)
 	DeleteDocument(ctx context.Context, request *apiv1_apigw.DeleteDocumentRequest) error
 
 	// mockas

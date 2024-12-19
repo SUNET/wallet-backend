@@ -2,7 +2,8 @@ package apiv1
 
 import (
 	"context"
-	apiv1_apigw "vc/internal/apigw/apiv1"
+	"errors"
+	"net/http"
 	"vc/internal/gen/status/apiv1_status"
 	"vc/pkg/model"
 )
@@ -17,10 +18,14 @@ func (c *Client) Status(ctx context.Context, req *apiv1_status.StatusRequest) (*
 }
 
 // SearchDocuments search for documents
-func (c *Client) SearchDocuments(ctx context.Context, req *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error) {
-	reply, err := c.apigwClient.SearchDocuments(req)
+func (c *Client) SearchDocuments(ctx context.Context, req *model.SearchDocumentsRequest) (*model.SearchDocumentsReply, error) {
+	//reply, err := c.apigwClient.SearchDocuments(req)
+	reply, httpResponse, err := c.datastoreClient.Document.Search(ctx, req)
 	if err != nil {
 		return nil, err
+	}
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, errors.New(httpResponse.Status)
 	}
 	return reply, nil
 }

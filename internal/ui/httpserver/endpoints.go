@@ -9,6 +9,7 @@ import (
 	apiv1_mockas "vc/internal/mockas/apiv1"
 	"vc/internal/ui/apiv1"
 	apiv1_verifier "vc/internal/verifier/apiv1"
+	"vc/pkg/model"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -218,7 +219,7 @@ func (s *Service) endpointDecodeCredential(ctx context.Context, c *gin.Context) 
 }
 
 func (s *Service) endpointSearchDocuments(ctx context.Context, c *gin.Context) (any, error) {
-	request := &apiv1_apigw.SearchDocumentsRequest{}
+	request := &model.SearchDocumentsRequest{}
 	if err := s.httpHelpers.Binding.Request(ctx, c, request); err != nil {
 		return nil, err
 	}

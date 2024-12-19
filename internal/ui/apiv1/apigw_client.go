@@ -74,8 +74,8 @@ func (c *APIGWClient) Notification(req *NotificationRequest) (any, error) {
 }
 
 // SearchDocuments sends POST to /api/v1/document/search
-func (c *APIGWClient) SearchDocuments(req *apiv1_apigw.SearchDocumentsRequest) (*apiv1_apigw.SearchDocumentsReply, error) {
-	reply, err := DoPostJSONGeneric[apiv1_apigw.SearchDocumentsReply](c.VCBaseClient, "/api/v1/document/search", req)
+func (c *APIGWClient) SearchDocuments(req *model.SearchDocumentsRequest) (*model.SearchDocumentsReply, error) {
+	reply, err := DoPostJSONGeneric[model.SearchDocumentsReply](c.VCBaseClient, "/api/v1/document/search", req)
 	if err != nil {
 		return nil, err
 	}

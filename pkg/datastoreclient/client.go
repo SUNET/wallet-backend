@@ -81,7 +81,7 @@ func (c *Client) newRequest(ctx context.Context, method, path string, body any) 
 }
 
 // Do does the new request
-func (c *Client) do(ctx context.Context, req *http.Request, reply any) (*http.Response, error) {
+func (c *Client) do(ctx context.Context, req *http.Request, reply any, prefixReplyJsonWithData bool) (*http.Response, error) {
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -100,18 +100,33 @@ func (c *Client) do(ctx context.Context, req *http.Request, reply any) (*http.Re
 		return nil, err
 	}
 
-	r := struct {
-		Data any `json:"data"`
-	}{
-		Data: reply,
+	var r any
+	if prefixReplyJsonWithData {
+		r = &struct {
+			Data any `json:"data"`
+		}{
+			Data: reply,
+		}
+	} else {
+		r = &reply
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
 		c.log.Error(err, "failed to decode response")
 		return nil, err
 	}
 
 	return resp, nil
+
+}
+
+// read body and make it reusable
+func readBody(body io.ReadCloser) ([]byte, error) {
+	buf := &bytes.Buffer{}
+	if _, err := buf.ReadFrom(body); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
 
 func checkResponse(r *http.Response) error {
@@ -127,7 +142,7 @@ func checkResponse(r *http.Response) error {
 	return ErrInvalidRequest
 }
 
-func (c *Client) call(ctx context.Context, method, url string, body, reply any) (*http.Response, error) {
+func (c *Client) call(ctx context.Context, method, url string, body, reply any, prefixReplyJsonWithData bool) (*http.Response, error) {
 	request, err := c.newRequest(
 		ctx,
 		method,
@@ -138,7 +153,7 @@ func (c *Client) call(ctx context.Context, method, url string, body, reply any) 
 		return nil, err
 	}
 
-	resp, err := c.do(ctx, request, reply)
+	resp, err := c.do(ctx, request, reply, prefixReplyJsonWithData)
 	if err != nil {
 		return resp, err
 	}
