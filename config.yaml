@@ -22,11 +22,11 @@ authentic_sources:
     country_code: "SE"
     notification_endpoint:
       url: "http://vc_dev_apigw:8080/api/v1/document/notify"
-    authentic_source_endpoint: 
+    authentic_source_endpoint:
       url: "http://vc_dev_apigw:8080"
-    signature_service_endpoint: 
+    signature_service_endpoint:
       url: "http://vc_dev_issuer:8080"
-    revocation_service_endpoint: 
+    revocation_service_endpoint:
       url: "http://vc_dev_apigw:8080/api/v1/document/revok"
     credential_types:
       EHIC:
@@ -59,7 +59,7 @@ issuer:
     addr: vc_dev_issuer:8090
   signing_key_path: "/private_ec256.pem"
   jwt_attribute:
-    issuer:  https://issuer.sunet.se
+    issuer: https://issuer.sunet.se
     enable_not_before: true
     valid_duration: 3600
     verifiable_credential_type: "https://credential.sunet.se/identity_credential"
@@ -123,6 +123,5 @@ ui:
 portal:
   api_server:
     addr: :8080
-  services:
-    apigw:
-      base_url: http://vc_dev_apigw:8080
+  apigw_api_server:
+    addr: http://vc_dev_apigw:8080
