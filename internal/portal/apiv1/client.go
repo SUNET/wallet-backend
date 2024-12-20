@@ -14,21 +14,19 @@ type Client struct {
 	log    *logger.Log
 	tracer *trace.Tracer
 
-	apigwClient     *APIGWClient
-	datastoreClient *datastoreclient.Client
+	apigwClient *datastoreclient.Client
 }
 
 // New creates a new instance of the public api
 func New(ctx context.Context, tracer *trace.Tracer, cfg *model.Cfg, log *logger.Log) (*Client, error) {
 	c := &Client{
-		cfg:         cfg,
-		tracer:      tracer,
-		log:         log.New("apiv1"),
-		apigwClient: NewAPIGWClient(cfg, tracer, log.New("apiwg_client")),
+		cfg:    cfg,
+		tracer: tracer,
+		log:    log.New("apiv1"),
 	}
 
 	var err error
-	c.datastoreClient, err = datastoreclient.New(&datastoreclient.Config{URL: cfg.Portal.ApigwApiServer.Addr})
+	c.apigwClient, err = datastoreclient.New(&datastoreclient.Config{URL: cfg.Portal.ApigwApiServer.Addr})
 	if err != nil {
 		return nil, err
 	}

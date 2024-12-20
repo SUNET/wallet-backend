@@ -19,8 +19,7 @@ func (c *Client) Status(ctx context.Context, req *apiv1_status.StatusRequest) (*
 
 // SearchDocuments search for documents
 func (c *Client) SearchDocuments(ctx context.Context, req *model.SearchDocumentsRequest) (*model.SearchDocumentsReply, error) {
-	//reply, err := c.apigwClient.SearchDocuments(req)
-	reply, httpResponse, err := c.datastoreClient.Document.Search(ctx, req)
+	reply, httpResponse, err := c.apigwClient.Document.Search(ctx, req)
 	if err != nil {
 		return nil, err
 	}
