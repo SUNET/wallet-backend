@@ -28,7 +28,7 @@ func New(ctx context.Context, tracer *trace.Tracer, cfg *model.Cfg, log *logger.
 	}
 
 	var err error
-	c.datastoreClient, err = datastoreclient.New(&datastoreclient.Config{URL: cfg.Portal.Services.APIGW.BaseURL})
+	c.datastoreClient, err = datastoreclient.New(&datastoreclient.Config{URL: cfg.Portal.ApigwApiServer.Addr})
 	if err != nil {
 		return nil, err
 	}

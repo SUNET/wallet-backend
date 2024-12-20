@@ -158,12 +158,8 @@ type APIGW struct {
 
 // Portal holds the persistent storage configuration
 type Portal struct {
-	APIServer APIServer `yaml:"api_server" validate:"required"`
-	Services  struct {
-		APIGW struct {
-			BaseURL string `yaml:"base_url"`
-		} `yaml:"apigw"`
-	} `yaml:"services"`
+	APIServer      APIServer `yaml:"api_server" validate:"required"`
+	ApigwApiServer APIServer `yaml:"apigw_api_server" validate:"required"`
 }
 
 // OTEL holds the opentelemetry configuration
