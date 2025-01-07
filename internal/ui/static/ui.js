@@ -1195,6 +1195,110 @@ const addSearchDocumentsFormArticleToContainer = () => {
     document.getElementById(articleIdBasis.articleID).querySelector('input').focus();
 };
 
+
+const addUploadDocumentsUsingCvsFormArticleToContainer = () => {
+    const buildFormElements = () => {
+        const fileDiv = document.createElement('div');
+        fileDiv.className = 'file has-name is-fullwidth';
+
+        const label = document.createElement('label');
+        label.className = 'file-label';
+
+        const input = document.createElement('input');
+        input.className = 'file-input';
+        input.type = 'file';
+        input.name = 'resume';
+        //input.id = 'csvFile';
+        input.id = generateUUID();
+        input.accept = '.csv';
+
+        const fileCta = document.createElement('span');
+        fileCta.className = 'file-cta';
+
+        const fileIcon = document.createElement('span');
+        fileIcon.className = 'file-icon';
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-upload';
+        fileIcon.appendChild(icon);
+
+        const fileLabel = document.createElement('span');
+        fileLabel.className = 'file-label';
+        fileLabel.textContent = 'Choose a *.cvs file…';
+
+        fileCta.appendChild(fileIcon);
+        fileCta.appendChild(fileLabel);
+
+        const fileName = document.createElement('span');
+        fileName.className = 'file-name';
+        //fileName.id = 'fileName';
+        fileName.id = generateUUID();
+        fileName.textContent = 'No file selected';
+
+
+        const tableContainer = document.createElement('div');
+        tableContainer.className = 'table-container';
+        tableContainer.style.marginTop = '20px';
+
+        const table = document.createElement('table');
+        table.className = 'table is-striped is-hoverable is-fullwidth';
+        table.id = 'csvTable';
+
+        tableContainer.appendChild(table);
+
+        input.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const content = e.target.result;
+                    displayCSV(content, table);
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        label.appendChild(input);
+        label.appendChild(fileCta);
+        label.appendChild(fileName);
+
+        fileDiv.appendChild(label);
+
+        let brElement = document.createElement('br');
+
+        return {
+            formElements: [fileDiv, brElement, tableContainer],
+            table: table,
+            cvsFileElement: input,
+            csvFileName: fileName,
+        };
+    };
+
+    const articleIdBasis = generateArticleIDBasis();
+    const elements = buildFormElements();
+    const articleDiv = buildArticle(articleIdBasis.articleID, "Upload documents using csv", elements.formElements);
+    const articleContainer = document.getElementById('article-container');
+    articleContainer.prepend(articleDiv);
+
+    function displayCSV(data, table) {
+        const rows = data.split('\n');
+        //const table = document.getElementById('csvTable');
+        table.innerHTML = ''; // Clear previous content
+
+        rows.forEach((row, rowIndex) => {
+            const cols = row.split(',');
+            const tr = document.createElement('tr');
+            cols.forEach((col) => {
+                const cell = rowIndex === 0 ? document.createElement('th') : document.createElement('td');
+                cell.textContent = col.trim();
+                tr.appendChild(cell);
+            });
+            table.appendChild(tr);
+        });
+    }
+};
+
 async function fetchData(url, options) {
     const response = await fetch(url, options);
     if (!response.ok) {
