@@ -1196,7 +1196,7 @@ const addSearchDocumentsFormArticleToContainer = () => {
 };
 
 
-const addUploadDocumentsUsingCvsFormArticleToContainer = () => {
+const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
     const buildFormElements = () => {
         const fileDiv = document.createElement('div');
         fileDiv.className = 'file has-name is-fullwidth';
@@ -1223,7 +1223,7 @@ const addUploadDocumentsUsingCvsFormArticleToContainer = () => {
 
         const fileLabel = document.createElement('span');
         fileLabel.className = 'file-label';
-        fileLabel.textContent = 'Choose a *.cvs file…';
+        fileLabel.textContent = 'Choose a *.csv file…';
 
         fileCta.appendChild(fileIcon);
         fileCta.appendChild(fileLabel);
@@ -1233,7 +1233,6 @@ const addUploadDocumentsUsingCvsFormArticleToContainer = () => {
         //fileName.id = 'fileName';
         fileName.id = generateUUID();
         fileName.textContent = 'No file selected';
-
 
         const tableContainer = document.createElement('div');
         tableContainer.className = 'table-container';
@@ -1247,16 +1246,90 @@ const addUploadDocumentsUsingCvsFormArticleToContainer = () => {
 
         input.addEventListener('change', function (event) {
             const file = event.target.files[0];
-            if (file) {
-                fileName.textContent = file.name;
-
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const content = e.target.result;
-                    displayCSV(content, table);
-                };
-                reader.readAsText(file);
+            if (!file) {
+                alert('Please select a CSV file.');
+                return;
             }
+            fileName.textContent = file.name;
+            alert('File found, starting to read it');
+
+            //==============================================
+            const reader = new FileReader();
+            //reader.onload = async function (e) {
+            reader.onload = function (e) {
+                const csvData = e.target.result;
+                displayCSV(csvData, table);
+                const jsonData = csvToJson(csvData);
+
+                console.debug("csvData", csvData);
+                console.debug("jsonData", jsonData);
+
+                //---------------------------------
+                //jsonData.forEach((row) => {
+                let shouldStop = false;
+                for (const row of jsonData) {
+                    if (shouldStop) return;
+                    try {
+                        bodyData = createUploadBodyFrom(row);
+
+                        console.debug("row", row)
+                        console.debug("bodyData", bodyData)
+
+                        fetchData(new URL("/secure/apigw/upload", baseUrl), {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json; charset=utf-8',
+                            },
+                            body: JSON.stringify(bodyData),
+                        }).then(data => {
+                            alert(`Row uploaded: ${JSON.stringify(row)}`);
+                        }).catch(err => {
+                            console.debug("Unexpected error:", err);
+                            alert(`Failed to upload row: ${JSON.stringify(row)}, Error: ${err}`);
+                            //displayErrorTag("Failed to search for documents: ", divResultContainer, err);
+                            //TODO(mk): remove this return when first row can be uploaded correctly in test
+                            shouldStop = true;
+                        });
+
+                    } catch (error) {
+                        alert(`Error preparing row for upload: ${JSON.stringify(row)}, Error: ${error}`);
+                        //TODO(mk): remove this return when first row can be uploaded correctly in test
+                        shouldStop = true;
+                    }
+                }
+                //});
+                //---------------------------------------
+
+                //
+                // fetchData(new URL("upload/csv", baseUrl), {
+                //     method: 'POST',
+                //     headers: {
+                //         'Accept': 'application/json',
+                //         'Content-Type': 'application/json; charset=utf-8',
+                //     },
+                //     body: JSON.stringify(jsonData),
+                // }).then(data => {
+                //     alert('CSV uploaded successfully!');
+                //     //displayDocumentsTable(data, divResultContainer);
+                // }).catch(err => {
+                //     console.debug("Unexpected error:", err);
+                //     alert('Failed to upload CSV.');
+                //     //displayErrorTag("Failed to search for documents: ", divResultContainer, err);
+                // });
+            };
+            reader.readAsText(file);
+            //================end================================
+            // if (file) {
+            //     fileName.textContent = file.name;
+            //
+            //     const reader = new FileReader();
+            //     reader.onload = function (e) {
+            //         const content = e.target.result;
+            //         displayCSV(content, table);
+            //     };
+            //     reader.readAsText(file);
+            // }
         });
 
         label.appendChild(input);
@@ -1270,7 +1343,7 @@ const addUploadDocumentsUsingCvsFormArticleToContainer = () => {
         return {
             formElements: [fileDiv, brElement, tableContainer],
             table: table,
-            cvsFileElement: input,
+            csvFileElement: input,
             csvFileName: fileName,
         };
     };
@@ -1280,6 +1353,44 @@ const addUploadDocumentsUsingCvsFormArticleToContainer = () => {
     const articleDiv = buildArticle(articleIdBasis.articleID, "Upload documents using csv", elements.formElements);
     const articleContainer = document.getElementById('article-container');
     articleContainer.prepend(articleDiv);
+
+    function createUploadBodyFrom(row) {
+        return {
+            //TODO remove default values (or maybe som needs to be hardcoded?)
+            meta: {
+                authentic_source: row.authentic_source || "DefaultSource",
+                document_version: row.document_version || "1.0.0",
+                document_type: row.document_type || "EHIC",
+                document_id: row.document_id || "default-id",
+                real_data: row.real_data === "true",
+                credential_valid_from: parseInt(row.ehic_start_date) || null,
+                credential_valid_to: parseInt(row.credential_valid_to) || null,
+                document_data_validation: row.document_data_validation || null,
+            },
+            identities: [
+                {
+                    authentic_source_person_id: row.authentic_source_person_id || "default-person-id",
+                    schema: {
+                        name: row.schema_name || "DefaultSchemaName",
+                        version: row.schema_version || "1.0.0",
+                    },
+                    family_name: row.family_name || "DefaultFamilyName",
+                    given_name: row.given_name || "DefaultGivenName",
+                    birth_date: row.birth_date || "1974-05-02",
+                    gender: row.gender || null,
+                    nationality: row.nationality || null,
+                    resident_address: row.resident_address || null,
+                    resident_country: row.resident_country || null,
+                },
+            ],
+            document_display: null,
+            document_data: {
+                unique_field1: "unique_value1",
+                unique_field2: "unique_value2"
+            },
+            document_data_version: row.document_data_version || "1.0.0",
+        };
+    }
 
     function displayCSV(data, table) {
         const rows = data.split('\n');
@@ -1296,6 +1407,23 @@ const addUploadDocumentsUsingCvsFormArticleToContainer = () => {
             });
             table.appendChild(tr);
         });
+    }
+
+    function csvToJson(csv) {
+        const lines = csv.split('\n');
+        const headers = lines[0].split(',').map((header) => header.trim());
+        const rows = lines.slice(1);
+
+        return rows
+            .filter((row) => row.trim() !== '')// ignore empty lines
+            .map((row) => {
+                const values = row.split(',').map((value) => value.trim());
+                const obj = {};
+                headers.forEach((header, index) => {
+                    obj[header] = values[index];
+                });
+                return obj;
+            });
     }
 };
 
