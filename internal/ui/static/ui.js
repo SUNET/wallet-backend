@@ -47,8 +47,10 @@ function displaySecureMenyItems() {
     hideAElement("show-login-form-btn");
 }
 
+/**
+ * @returns {string} containing UUID v4
+ */
 const generateUUID = () => {
-    //UUID v4
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
@@ -628,6 +630,7 @@ function buildDocumentsTableWithoutContent() {
     const headerRow = document.createElement('tr');
 
     const headers = [
+        {title: 'Action', abbr: null},
         {title: 'Document ID', abbr: null},
         {title: 'Collect ID', abbr: null},
         {title: 'Document type', abbr: null},
@@ -636,7 +639,7 @@ function buildDocumentsTableWithoutContent() {
         {title: 'Family name', abbr: null},
         {title: 'Given name', abbr: null},
         {title: 'Birthdate', abbr: null},
-        {title: 'Action', abbr: null}
+        {title: 'QR credential offer url', abbr: null}
     ];
 
     headers.forEach(header => {
@@ -938,6 +941,46 @@ function displayDeleteDocumentInModal(rowData) {
 function buildDocumentTableRow(doc) {
     const row = document.createElement('tr');
 
+    //------select start-------------------
+    const tdActions = document.createElement('td');
+    const divSelect = document.createElement('div');
+    divSelect.className = 'select'; // is-small';
+
+    const select = document.createElement('select');
+    select.id = generateUUID();
+
+    const optionDefault = document.createElement('option');
+    optionDefault.value = '';
+    optionDefault.textContent = 'select...';
+    select.appendChild(optionDefault);
+
+    const optionViewDocument = document.createElement('option');
+    optionViewDocument.value = 'VIEW_COMPLETE_DOCUMENT';
+    optionViewDocument.textContent = 'View complete document';
+    select.appendChild(optionViewDocument);
+
+    const optionViewQR = document.createElement('option');
+    optionViewQR.value = 'VIEW_QR';
+    optionViewQR.textContent = 'View QR';
+    select.appendChild(optionViewQR);
+
+    const optionCreateCredential = document.createElement('option');
+    optionCreateCredential.value = 'CREATE_CREDENTIAL';
+    optionCreateCredential.textContent = 'Create credential';
+    select.appendChild(optionCreateCredential);
+
+    select.appendChild(document.createElement('hr'));
+
+    const optionDeleteDocument = document.createElement('option');
+    optionDeleteDocument.value = 'DELETE_DOCUMENT';
+    optionDeleteDocument.textContent = 'Delete document';
+    select.appendChild(optionDeleteDocument);
+
+    divSelect.appendChild(select);
+    tdActions.appendChild(divSelect);
+    row.appendChild(tdActions);
+    //-------------------------
+
     const tdDocumentId = document.createElement('td');
     const documentId = doc.meta?.document_id || "";
     tdDocumentId.textContent = documentId;
@@ -990,39 +1033,10 @@ function buildDocumentTableRow(doc) {
     tdBirthDate.innerHTML = bdStringBuilder.join("<br>");
     row.appendChild(tdBirthDate);
 
-    const tdActions = document.createElement('td');
-    const divSelect = document.createElement('div');
-    divSelect.className = 'select'; // is-small';
-
-    const select = document.createElement('select');
-    select.id = generateUUID();
-
-    const optionDefault = document.createElement('option');
-    optionDefault.value = '';
-    optionDefault.textContent = 'select...';
-    select.appendChild(optionDefault);
-
-    const optionViewDocument = document.createElement('option');
-    optionViewDocument.value = 'VIEW_COMPLETE_DOCUMENT';
-    optionViewDocument.textContent = 'View complete document';
-    select.appendChild(optionViewDocument);
-
-    const optionViewQR = document.createElement('option');
-    optionViewQR.value = 'VIEW_QR';
-    optionViewQR.textContent = 'View QR';
-    select.appendChild(optionViewQR);
-
-    const optionCreateCredential = document.createElement('option');
-    optionCreateCredential.value = 'CREATE_CREDENTIAL';
-    optionCreateCredential.textContent = 'Create credential';
-    select.appendChild(optionCreateCredential);
-
-    select.appendChild(document.createElement('hr'));
-
-    const optionDeleteDocument = document.createElement('option');
-    optionDeleteDocument.value = 'DELETE_DOCUMENT';
-    optionDeleteDocument.textContent = 'Delete document';
-    select.appendChild(optionDeleteDocument);
+    const tdQRCredentialOfferUrl = document.createElement('td');
+    const credentialOfferUrl = doc.qr?.credential_offer || "";
+    tdQRCredentialOfferUrl.textContent = credentialOfferUrl;
+    row.appendChild(tdQRCredentialOfferUrl);
 
     const rowData = {
         documentId: documentId,
@@ -1054,10 +1068,6 @@ function buildDocumentTableRow(doc) {
         this.value = '';
     });
 
-    divSelect.appendChild(select);
-    tdActions.appendChild(divSelect);
-    row.appendChild(tdActions);
-
     return row;
 }
 
@@ -1065,18 +1075,53 @@ function displayDocumentsTable(data, divResultContainer) {
     divResultContainer.appendChild(document.createElement("br"));
     divResultContainer.appendChild(document.createElement("br"));
 
-    if (Array.isArray(data.documents) && data.documents.length === 0) {
+    if (data.documents == null || (Array.isArray(data.documents) && data.documents.length === 0)) {
         displayInfoTag("No matching documents found", divResultContainer);
         return;
     } else if (data.has_more_results) {
         displayWarningTag("There are more search results available. Narrow down your search criteria to view them all.", divResultContainer);
     }
 
+    const exportToCsvButton = document.createElement("button");
+    exportToCsvButton.id = generateUUID();
+    exportToCsvButton.classList.add("button");
+    exportToCsvButton.textContent = "Export result to csv file";
+    exportToCsvButton.disabled = false;
+    divResultContainer.appendChild(exportToCsvButton);
+
     const tableBasis = buildDocumentsTableWithoutContent();
+    exportToCsvButton.addEventListener('click', () => exportTableToCSV(tableBasis.table));
     divResultContainer.appendChild(tableBasis.table);
     data.documents.forEach(doc => {
         tableBasis.tbody.appendChild(buildDocumentTableRow(doc));
     });
+}
+
+function exportTableToCSV(table) {
+    const rows = table.querySelectorAll('tr');
+    let csvContent = "";
+
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('th, td');
+        const rowContent = Array.from(cells)
+            .map(cell => `"${cell.innerText}"`) // Wrap cell values in quotes to handle commas
+            .join(","); // Join cell values with a comma
+        csvContent += rowContent + "\n";
+    });
+
+
+    const blob = new Blob([csvContent], {type: 'text/csv'});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'search_result.csv';
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 const addSearchDocumentsFormArticleToContainer = () => {
@@ -1133,7 +1178,7 @@ const addSearchDocumentsFormArticleToContainer = () => {
 
                 limit: parseInt(limitInput.value, 10),
 
-                fields: ["meta.document_id", "meta.authentic_source", "meta.document_type", "meta.collect.id", "identities"],
+                fields: ["meta.document_id", "meta.authentic_source", "meta.document_type", "meta.collect.id", "identities", "qr.credential_offer"],
             };
 
             if (checkboxShowCompleteDocsAsRawJson.checked) {
@@ -1195,7 +1240,6 @@ const addSearchDocumentsFormArticleToContainer = () => {
     document.getElementById(articleIdBasis.articleID).querySelector('input').focus();
 };
 
-
 const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
     const buildFormElements = () => {
         const fileDiv = document.createElement('div');
@@ -1208,7 +1252,6 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
         input.className = 'file-input';
         input.type = 'file';
         input.name = 'resume';
-        //input.id = 'csvFile';
         input.id = generateUUID();
         input.accept = '.csv';
 
@@ -1230,7 +1273,6 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
 
         const fileName = document.createElement('span');
         fileName.className = 'file-name';
-        //fileName.id = 'fileName';
         fileName.id = generateUUID();
         fileName.textContent = 'No file selected';
 
@@ -1318,36 +1360,32 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
     articleContainer.prepend(articleDiv);
 
     function createUploadRequestFrom(row) {
+        const generatedDocumentId = generateUUID();
         return {
-            //TODO remove default values (or maybe some needs to be hardcoded?)
             meta: {
                 authentic_source: row.authentic_source,
                 document_version: row.document_version || "1.0.0",
-                document_type: row.document_type || "EHIC", //ta in via dropdown alt. analys av csv
-                document_id: row.document_id || generateUUID(),
+                document_type: row.document_type || "EHIC",
+                document_id: row.document_id || generatedDocumentId,
                 real_data: row.real_data === "true",
                 credential_valid_from: row.credential_valid_from || null,
                 credential_valid_to: row.credential_valid_to || null,
                 document_data_validation: row.document_data_validation || null,
-                "collect": {
-                    id: generateUUID(),
-                    valid_until: 909567558
+                collect: {
+                    id: row.collect_id || generatedDocumentId,
+                    valid_until: convertToUnixTimestampOrNull(row.ehic_expiry_date),
                 },
             },
             identities: [
                 {
-                    authentic_source_person_id: row.pid_id || generateUUID(),
+                    authentic_source_person_id: prefixWithAuthenticSourcePersonIdOrNull(row.pid_id),
                     schema: {
                         name: row.pid_issuing_country,
                         version: row.schema_version || "1.0.0",
                     },
                     family_name: row.family_name,
                     given_name: row.given_name,
-                    birth_date: "1973-05-02", //TODO: row.birth_date -> hantera felaktigt format i csv YYYY/MM/DD
-                    gender: row.gender || null,
-                    nationality: row.nationality || null,
-                    resident_address: row.resident_address || null,
-                    resident_country: row.resident_country || null,
+                    birth_date: row.birth_date,
                 },
             ],
             document_display: null,
@@ -1355,7 +1393,7 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
                 subject: {
                     forename: row.given_name,
                     family_name: row.family_name,
-                    date_of_birth: "1973-05-02" //TODO: row.birth_date -> hantera felaktigt format i csv YYYY/MM/DD
+                    date_of_birth: row.birth_date,
                 },
                 social_security_pin: row.social_security_pin,
                 period_entitlement: {
@@ -1366,7 +1404,7 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
                 competent_institution: {
                     institution_id: row.ehic_institution_id,
                     institution_name: row.ehic_institution_name,
-                    institution_country: row.ehic_institution_country_code_
+                    institution_country: row.ehic_institution_country_code,
                 }
             },
             document_data_version: row.document_data_version || "1.0.0",
@@ -1375,7 +1413,6 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
 
     function displayCSV(data, table) {
         const rows = data.split('\n');
-        //const table = document.getElementById('csvTable');
         table.innerHTML = ''; // Clear previous content
 
         rows.forEach((row, rowIndex) => {
@@ -1388,6 +1425,10 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
             });
             table.appendChild(tr);
         });
+    }
+
+    function prefixWithAuthenticSourcePersonIdOrNull(pid_id) {
+        return pid_id ? `authentic_source_person_id_${pid_id}` : null;
     }
 
     function csvToJson(csv) {
@@ -1407,6 +1448,15 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
             });
     }
 };
+
+/**
+ * @param dateString YYYY-MM-DD
+ */
+function convertToUnixTimestampOrNull(dateString) {
+    if (dateString == null) return null;
+    const date = new Date(dateString);
+    return Math.floor(date.getTime() / 1000);
+}
 
 async function fetchData(url, options) {
     const response = await fetch(url, options);
