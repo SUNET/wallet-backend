@@ -1247,16 +1247,14 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
         input.addEventListener('change', function (event) {
             const file = event.target.files[0];
             if (!file) {
-                alert('Please select a CSV file.');
+                alert('Please select a csv file.');
                 return;
             }
             fileName.textContent = file.name;
-            alert('File found, starting to read it');
+            alert('File found, start process to import documents?');
 
-            //==============================================
             const reader = new FileReader();
-            //reader.onload = async function (e) {
-            reader.onload = function (e) {
+            reader.onload = async function (e) {
                 const csvData = e.target.result;
                 displayCSV(csvData, table);
                 const jsonData = csvToJson(csvData);
@@ -1264,13 +1262,11 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
                 console.debug("csvData", csvData);
                 console.debug("jsonData", jsonData);
 
-                //---------------------------------
-                //jsonData.forEach((row) => {
-                let shouldStop = false;
-                for (const row of jsonData) {
-                    if (shouldStop) return;
+
+                jsonData.forEach((row) => {
+
                     try {
-                        bodyData = createUploadBodyFrom(row);
+                        bodyData = createUploadRequestFrom(row);
 
                         console.debug("row", row)
                         console.debug("bodyData", bodyData)
@@ -1283,53 +1279,20 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
                             },
                             body: JSON.stringify(bodyData),
                         }).then(data => {
-                            alert(`Row uploaded: ${JSON.stringify(row)}`);
+                            //alert(`Row uploaded: ${JSON.stringify(row)}`);
                         }).catch(err => {
-                            console.debug("Unexpected error:", err);
-                            alert(`Failed to upload row: ${JSON.stringify(row)}, Error: ${err}`);
+                            console.error("Unexpected error while uploading credential from csv:", err);
+                            //alert(`Failed to upload row: ${JSON.stringify(row)}, Error: ${err}`);
                             //displayErrorTag("Failed to search for documents: ", divResultContainer, err);
-                            //TODO(mk): remove this return when first row can be uploaded correctly in test
-                            shouldStop = true;
                         });
 
                     } catch (error) {
-                        alert(`Error preparing row for upload: ${JSON.stringify(row)}, Error: ${error}`);
-                        //TODO(mk): remove this return when first row can be uploaded correctly in test
-                        shouldStop = true;
+                        console.error(`Error preparing row from csv for upload: ${JSON.stringify(row)}, Error: ${error}`);
                     }
-                }
-                //});
-                //---------------------------------------
 
-                //
-                // fetchData(new URL("upload/csv", baseUrl), {
-                //     method: 'POST',
-                //     headers: {
-                //         'Accept': 'application/json',
-                //         'Content-Type': 'application/json; charset=utf-8',
-                //     },
-                //     body: JSON.stringify(jsonData),
-                // }).then(data => {
-                //     alert('CSV uploaded successfully!');
-                //     //displayDocumentsTable(data, divResultContainer);
-                // }).catch(err => {
-                //     console.debug("Unexpected error:", err);
-                //     alert('Failed to upload CSV.');
-                //     //displayErrorTag("Failed to search for documents: ", divResultContainer, err);
-                // });
+                });
             };
             reader.readAsText(file);
-            //================end================================
-            // if (file) {
-            //     fileName.textContent = file.name;
-            //
-            //     const reader = new FileReader();
-            //     reader.onload = function (e) {
-            //         const content = e.target.result;
-            //         displayCSV(content, table);
-            //     };
-            //     reader.readAsText(file);
-            // }
         });
 
         label.appendChild(input);
@@ -1354,29 +1317,33 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
     const articleContainer = document.getElementById('article-container');
     articleContainer.prepend(articleDiv);
 
-    function createUploadBodyFrom(row) {
+    function createUploadRequestFrom(row) {
         return {
-            //TODO remove default values (or maybe som needs to be hardcoded?)
+            //TODO remove default values (or maybe some needs to be hardcoded?)
             meta: {
-                authentic_source: row.authentic_source || "DefaultSource",
+                authentic_source: row.authentic_source,
                 document_version: row.document_version || "1.0.0",
-                document_type: row.document_type || "EHIC",
-                document_id: row.document_id || "default-id",
+                document_type: row.document_type || "EHIC", //ta in via dropdown alt. analys av csv
+                document_id: row.document_id || generateUUID(),
                 real_data: row.real_data === "true",
-                credential_valid_from: parseInt(row.ehic_start_date) || null,
-                credential_valid_to: parseInt(row.credential_valid_to) || null,
+                credential_valid_from: row.credential_valid_from || null,
+                credential_valid_to: row.credential_valid_to || null,
                 document_data_validation: row.document_data_validation || null,
+                "collect": {
+                    id: generateUUID(),
+                    valid_until: 909567558
+                },
             },
             identities: [
                 {
-                    authentic_source_person_id: row.authentic_source_person_id || "default-person-id",
+                    authentic_source_person_id: row.pid_id || generateUUID(),
                     schema: {
-                        name: row.schema_name || "DefaultSchemaName",
+                        name: row.pid_issuing_country,
                         version: row.schema_version || "1.0.0",
                     },
-                    family_name: row.family_name || "DefaultFamilyName",
-                    given_name: row.given_name || "DefaultGivenName",
-                    birth_date: row.birth_date || "1974-05-02",
+                    family_name: row.family_name,
+                    given_name: row.given_name,
+                    birth_date: "1973-05-02", //TODO: row.birth_date -> hantera felaktigt format i csv YYYY/MM/DD
                     gender: row.gender || null,
                     nationality: row.nationality || null,
                     resident_address: row.resident_address || null,
@@ -1385,8 +1352,22 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
             ],
             document_display: null,
             document_data: {
-                unique_field1: "unique_value1",
-                unique_field2: "unique_value2"
+                subject: {
+                    forename: row.given_name,
+                    family_name: row.family_name,
+                    date_of_birth: "1973-05-02" //TODO: row.birth_date -> hantera felaktigt format i csv YYYY/MM/DD
+                },
+                social_security_pin: row.social_security_pin,
+                period_entitlement: {
+                    starting_date: row.ehic_start_date,
+                    ending_date: row.ehic_end_date
+                },
+                document_id: row.ehic_card_identification_number,
+                competent_institution: {
+                    institution_id: row.ehic_institution_id,
+                    institution_name: row.ehic_institution_name,
+                    institution_country: row.ehic_institution_country_code_
+                }
             },
             document_data_version: row.document_data_version || "1.0.0",
         };
