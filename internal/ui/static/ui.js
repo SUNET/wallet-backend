@@ -560,11 +560,10 @@ function createCheckboxElement(labelText, disabled = false) {
 
 const createSelectElement = (options = [], disabled = false) => {
     const div = document.createElement('div');
-    div.classList.add('select')
+    div.classList.add('select');
 
     const select = document.createElement('select');
     select.id = generateUUID();
-    //select.classList.add('select');
     select.disabled = disabled;
 
     options.forEach(({value, label}) => {
@@ -1242,6 +1241,8 @@ const addSearchDocumentsFormArticleToContainer = () => {
 
 const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
     const buildFormElements = () => {
+        const documentTypeSelectWithinDivElement = createSelectElement([{value: 'EHIC', label: 'EHIC'}], false);
+
         const fileDiv = document.createElement('div');
         fileDiv.className = 'file has-name is-fullwidth';
 
@@ -1346,7 +1347,7 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
         let brElement = document.createElement('br');
 
         return {
-            formElements: [fileDiv, brElement, tableContainer],
+            formElements: [documentTypeSelectWithinDivElement[0], fileDiv, brElement, tableContainer],
             table: table,
             csvFileElement: input,
             csvFileName: fileName,
@@ -1431,6 +1432,15 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
         return pid_id ? `authentic_source_person_id_${pid_id}` : null;
     }
 
+    /**
+     * @param dateString YYYY-MM-DD
+     */
+    function convertToUnixTimestampOrNull(dateString) {
+        if (dateString == null) return null;
+        const date = new Date(dateString);
+        return Math.floor(date.getTime() / 1000);
+    }
+
     function csvToJson(csv) {
         const lines = csv.split('\n');
         const headers = lines[0].split(',').map((header) => header.trim());
@@ -1449,14 +1459,6 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
     }
 };
 
-/**
- * @param dateString YYYY-MM-DD
- */
-function convertToUnixTimestampOrNull(dateString) {
-    if (dateString == null) return null;
-    const date = new Date(dateString);
-    return Math.floor(date.getTime() / 1000);
-}
 
 async function fetchData(url, options) {
     const response = await fetch(url, options);
