@@ -1277,42 +1277,68 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
         fileName.id = generateUUID();
         fileName.textContent = 'No file selected';
 
+        const uploadButton = document.createElement('button');
+        uploadButton.id = generateUUID();
+        uploadButton.classList.add('button', 'is-link');
+        uploadButton.textContent = 'Upload';
+
         const tableContainer = document.createElement('div');
         tableContainer.className = 'table-container';
         tableContainer.style.marginTop = '20px';
 
-        const table = document.createElement('table');
-        table.className = 'table is-striped is-hoverable is-fullwidth';
-        table.id = 'csvTable';
-
-        tableContainer.appendChild(table);
-
+        let selectedFile = null;
         input.addEventListener('change', function (event) {
             const file = event.target.files[0];
             if (!file) {
                 alert('Please select a csv file.');
                 return;
             }
+            selectedFile = file;
             fileName.textContent = file.name;
-            alert('File found, start process to import documents?');
+        });
+
+        uploadButton.onclick = () => {
+            if (!selectedFile) {
+                alert('Please select a csv file.');
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = async function (e) {
+                tableContainer.innerHTML = "";
+
                 const csvData = e.target.result;
-                displayCSV(csvData, table);
+
+                //displayCSV(csvData, table);
                 const jsonData = csvToJson(csvData);
 
                 console.debug("csvData", csvData);
                 console.debug("jsonData", jsonData);
 
+                const table = document.createElement('table');
+                table.className = 'table is-striped is-hoverable is-fullwidth';
+                table.id = generateUUID();
+                tableContainer.appendChild(table);
+
+                const headers = ["Upload status", "CSV input", "Error information"];
+                const thead = document.createElement("thead");
+                const headerRow = document.createElement("tr");
+                headers.forEach(headerText => {
+                    const th = document.createElement("th");
+                    th.textContent = headerText;
+                    headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+                const tbody = document.createElement("tbody");
+                table.appendChild(tbody);
 
                 jsonData.forEach((row) => {
-
                     try {
-                        bodyData = createUploadRequestFrom(row);
+                        const bodyData = createUploadRequestFrom(row, documentTypeSelectWithinDivElement[1].value);
 
-                        console.debug("row", row)
-                        console.debug("bodyData", bodyData)
+                        console.debug("row", row);
+                        console.debug("bodyData", bodyData);
 
                         fetchData(new URL("/secure/apigw/upload", baseUrl), {
                             method: 'POST',
@@ -1323,20 +1349,20 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
                             body: JSON.stringify(bodyData),
                         }).then(data => {
                             //alert(`Row uploaded: ${JSON.stringify(row)}`);
+                            addTableRow(tbody, ["SUCCESS", JSON.stringify(bodyData), ""]);
                         }).catch(err => {
                             console.error("Unexpected error while uploading credential from csv:", err);
-                            //alert(`Failed to upload row: ${JSON.stringify(row)}, Error: ${err}`);
-                            //displayErrorTag("Failed to search for documents: ", divResultContainer, err);
+                            addTableRow(tbody, ["FAILED", JSON.stringify(bodyData), err]);
                         });
 
                     } catch (error) {
                         console.error(`Error preparing row from csv for upload: ${JSON.stringify(row)}, Error: ${error}`);
+                        addTableRow(tbody, ["FAILED", JSON.stringify(bodyData), error]);
                     }
-
                 });
             };
-            reader.readAsText(file);
-        });
+            reader.readAsText(selectedFile);
+        };
 
         label.appendChild(input);
         label.appendChild(fileCta);
@@ -1347,8 +1373,7 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
         let brElement = document.createElement('br');
 
         return {
-            formElements: [documentTypeSelectWithinDivElement[0], fileDiv, brElement, tableContainer],
-            table: table,
+            formElements: [documentTypeSelectWithinDivElement[0], fileDiv, uploadButton, brElement, tableContainer],
             csvFileElement: input,
             csvFileName: fileName,
         };
@@ -1360,13 +1385,14 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
     const articleContainer = document.getElementById('article-container');
     articleContainer.prepend(articleDiv);
 
-    function createUploadRequestFrom(row) {
+    function createUploadRequestFrom(row, documentType) {
         const generatedDocumentId = generateUUID();
+
         return {
             meta: {
                 authentic_source: row.authentic_source,
                 document_version: row.document_version || "1.0.0",
-                document_type: row.document_type || "EHIC",
+                document_type: documentType,
                 document_id: row.document_id || generatedDocumentId,
                 real_data: row.real_data === "true",
                 credential_valid_from: row.credential_valid_from || null,
@@ -1410,6 +1436,16 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
             },
             document_data_version: row.document_data_version || "1.0.0",
         };
+    }
+
+    function addTableRow(tbody, cellTexts) {
+        const tr = document.createElement("tr");
+        cellTexts.forEach(text => {
+            const td = document.createElement("td");
+            td.textContent = text;
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
     }
 
     function displayCSV(data, table) {
@@ -1459,22 +1495,36 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
     }
 };
 
-
 async function fetchData(url, options) {
-    const response = await fetch(url, options);
-    if (!response.ok) {
-        if (response.status === 401) {
-            //TODO(mk): handle not auth/session expired in ui
-            throw new Error("Unauthorized/session expired");
+    try {
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+            let errorDetails = `HTTP error! status: ${response.status}, url: ${url}`;
+
+            try {
+                const errorData = await response.json();
+                errorDetails += `, details: ${JSON.stringify(errorData)}`;
+            } catch (jsonError) {
+                errorDetails += `, details: (Unable to parse JSON)`;
+            }
+
+            if (response.status === 401) {
+                throw new Error("Unauthorized/session expired");
+            }
+
+            throw new Error(errorDetails);
         }
-        throw new Error(`HTTP error! status: ${response.status}, method: ${response.method}, url: ${url}`);
+
+        return await response.json();
+    } catch (error) {
+        if (error instanceof TypeError) {
+            throw new Error(`Network error or server did not respond. URL: ${url}, Details: ${error.message}`);
+        }
+
+        throw new Error(`Error: ${error.message}`);
     }
-
-    const data = await response.json();
-    //console.debug(JSON.stringify(data, null, 2));
-    return data;
 }
-
 
 const addViewNotificationFormArticleToContainer = () => {
     const buildFormElements = () => {
