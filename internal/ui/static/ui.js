@@ -1083,7 +1083,7 @@ function displayDocumentsTable(data, divResultContainer) {
 
     const exportToCsvButton = document.createElement("button");
     exportToCsvButton.id = generateUUID();
-    exportToCsvButton.classList.add("button");
+    exportToCsvButton.classList.add('button', 'is-link');
     exportToCsvButton.textContent = "Export result to csv file";
     exportToCsvButton.disabled = false;
     divResultContainer.appendChild(exportToCsvButton);
@@ -1194,7 +1194,7 @@ const addSearchDocumentsFormArticleToContainer = () => {
                     checkboxShowCompleteDocsAsRawJson,
                     limitInput
                 ]);
-                //TODO(mk): display raw json in same container as the table
+                //TODO(mk): display raw json in same div as the result table
                 postAndDisplayInArticleContainerFor(path, requestBody, "Documents");
             } else {
                 fetchData(new URL(path, baseUrl), {
@@ -1308,7 +1308,6 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
                 tableContainer.innerHTML = "";
 
                 const csvData = e.target.result;
-
                 //displayCSV(csvData, table);
                 const jsonData = csvToJson(csvData);
 
@@ -1320,7 +1319,7 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
                 table.id = generateUUID();
                 tableContainer.appendChild(table);
 
-                const headers = ["Upload status", "CSV input", "Error information"];
+                const headers = ["Upload status", "Upload data", "More information"];
                 const thead = document.createElement("thead");
                 const headerRow = document.createElement("tr");
                 headers.forEach(headerText => {
@@ -1335,10 +1334,10 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
 
                 jsonData.forEach((row) => {
                     try {
-                        const bodyData = createUploadRequestFrom(row, documentTypeSelectWithinDivElement[1].value);
+                        const uploadRequest = createUploadRequestFrom(row, documentTypeSelectWithinDivElement[1].value);
 
                         console.debug("row", row);
-                        console.debug("bodyData", bodyData);
+                        console.debug("bodyData", uploadRequest);
 
                         fetchData(new URL("/secure/apigw/upload", baseUrl), {
                             method: 'POST',
@@ -1346,18 +1345,29 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json; charset=utf-8',
                             },
-                            body: JSON.stringify(bodyData),
+                            body: JSON.stringify(uploadRequest),
                         }).then(data => {
-                            //alert(`Row uploaded: ${JSON.stringify(row)}`);
-                            addTableRow(tbody, ["SUCCESS", JSON.stringify(bodyData), ""]);
+                            let dataOutput;
+                            if (data && typeof data === 'object') {
+                                try {
+                                    dataOutput = JSON.stringify(data, null, 2);
+                                } catch (e) {
+                                    console.error("Failed to stringify data:", e);
+                                    dataOutput = "[Unserializable Object]";
+                                }
+                            } else if (data != null) {
+                                dataOutput = String(data);
+                            } else {
+                                dataOutput = "";
+                            }
+                            addTableRow(tbody, ["SUCCESS", JSON.stringify(uploadRequest), dataOutput]);
                         }).catch(err => {
                             console.error("Unexpected error while uploading credential from csv:", err);
-                            addTableRow(tbody, ["FAILED", JSON.stringify(bodyData), err]);
+                            addTableRow(tbody, ["FAILED", JSON.stringify(uploadRequest), err]);
                         });
-
                     } catch (error) {
-                        console.error(`Error preparing row from csv for upload: ${JSON.stringify(row)}, Error: ${error}`);
-                        addTableRow(tbody, ["FAILED", JSON.stringify(bodyData), error]);
+                        console.error(`Error preparing uploadRequest data from csv: ${JSON.stringify(row)}, Error: ${error}`);
+                        addTableRow(tbody, ["FAILED", JSON.stringify(row), error]);
                     }
                 });
             };
@@ -1391,24 +1401,24 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
         return {
             meta: {
                 authentic_source: row.authentic_source,
-                document_version: row.document_version || "1.0.0",
+                document_version: "1.0.0",
                 document_type: documentType,
-                document_id: row.document_id || generatedDocumentId,
+                document_id: row.document_id,
                 real_data: row.real_data === "true",
-                credential_valid_from: row.credential_valid_from || null,
-                credential_valid_to: row.credential_valid_to || null,
-                document_data_validation: row.document_data_validation || null,
+                credential_valid_from: convertToUnixTimestampOrNull(row.ehic_start_date),
+                credential_valid_to: convertToUnixTimestampOrNull(row.ehic_end_date),
+                document_data_validation: null,
                 collect: {
-                    id: row.collect_id || generatedDocumentId,
+                    id: row.document_id,
                     valid_until: convertToUnixTimestampOrNull(row.ehic_expiry_date),
                 },
             },
             identities: [
                 {
-                    authentic_source_person_id: prefixWithAuthenticSourcePersonIdOrNull(row.pid_id),
+                    authentic_source_person_id: row.authentic_source_person_id,
                     schema: {
-                        name: row.pid_issuing_country,
-                        version: row.schema_version || "1.0.0",
+                        name: "DefaultSchema",
+                        version: "1.0.0",
                     },
                     family_name: row.family_name,
                     given_name: row.given_name,

@@ -413,10 +413,10 @@ func (c *VCDatastoreColl) SearchDocuments(ctx context.Context, query *SearchDocu
 			// 1 for ascending, -1 for descending
 			sort = append(sort, bson.E{Key: field, Value: order})
 		}
-		findOptions.SetSort(sort)
 	} else {
 		sort = append(sort, bson.E{Key: "meta.document_id", Value: 1})
 	}
+	findOptions.SetSort(sort)
 
 	c.log.Debug("Searching documents using", "filter", filter, "findOptions", findOptions)
 
