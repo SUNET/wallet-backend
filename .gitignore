@@ -8,3 +8,4 @@ kraft[0-9]*-data/
 **/.*.orig
 developer_tools/*.pem
 .env
+.~lock.*.csv#
