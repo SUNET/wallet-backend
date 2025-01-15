@@ -1334,7 +1334,7 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
 
                 jsonData.forEach((row) => {
                     try {
-                        const uploadRequest = createUploadRequestFrom(row, documentTypeSelectWithinDivElement[1].value);
+                        const uploadRequest = buildUploadRequestFrom(row, documentTypeSelectWithinDivElement[1].value);
 
                         console.debug("row", row);
                         console.debug("bodyData", uploadRequest);
@@ -1395,56 +1395,75 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
     const articleContainer = document.getElementById('article-container');
     articleContainer.prepend(articleDiv);
 
-    function createUploadRequestFrom(row, documentType) {
+    function buildUploadRequestFrom(row, documentType) {
         const generatedDocumentId = generateUUID();
+
+        function asString(value) {
+            return value != null ? String(value) : null;
+        }
+
+        function asDate(value) {
+            if (!value) return null;
+            const date = new Date(value);
+            return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0]; // Return as YYYY-MM-DD or null
+        }
+
+        function asBoolean(value) {
+            return value === true || value === "true";
+        }
+
+        function asNumber(value) {
+            const num = parseFloat(value);
+            return isNaN(num) ? null : num;
+        }
 
         return {
             meta: {
-                authentic_source: row.authentic_source,
-                document_version: "1.0.0",
-                document_type: documentType,
-                document_id: row.document_id,
-                real_data: row.real_data === "true",
-                credential_valid_from: convertToUnixTimestampOrNull(row.ehic_start_date),
-                credential_valid_to: convertToUnixTimestampOrNull(row.ehic_end_date),
+                authentic_source: asString(row.authentic_source),
+                document_version: asString(row.document_version) || "1.0.0",
+                document_type: asString(documentType),
+                document_id: asString(row.document_id || generatedDocumentId),
+                real_data: asBoolean(row.real_data) || false,
+                credential_valid_from: convertToUnixTimestampOrNull(asDate(row.ehic_start_date)),
+                credential_valid_to: convertToUnixTimestampOrNull(asDate(row.ehic_end_date)),
                 document_data_validation: null,
                 collect: {
-                    id: row.document_id,
-                    valid_until: convertToUnixTimestampOrNull(row.ehic_expiry_date),
+                    id: asString(row.document_id || generatedDocumentId),
+                    valid_until: convertToUnixTimestampOrNull(asDate(row.ehic_expiry_date)),
                 },
             },
             identities: [
                 {
-                    authentic_source_person_id: row.authentic_source_person_id,
+                    authentic_source_person_id: asString(row.authentic_source_person_id),
                     schema: {
-                        name: "DefaultSchema",
-                        version: "1.0.0",
+                        name: asString(row.identity_schema_name) || "DefaultSchema",
+                        version: asString(row.identity_schema_version) || "1.0.0",
                     },
-                    family_name: row.family_name,
-                    given_name: row.given_name,
-                    birth_date: row.birth_date,
+                    family_name: asString(row.family_name),
+                    given_name: asString(row.given_name),
+                    birth_date: asDate(row.birth_date),
                 },
             ],
             document_display: null,
             document_data: {
                 subject: {
-                    forename: row.given_name,
-                    family_name: row.family_name,
-                    date_of_birth: row.birth_date,
+                    forename: asString(row.given_name),
+                    family_name: asString(row.family_name),
+                    date_of_birth: asDate(row.birth_date),
                 },
-                social_security_pin: row.social_security_pin,
+                social_security_pin: asString(row.social_security_pin),
                 period_entitlement: {
-                    starting_date: row.ehic_start_date,
-                    ending_date: row.ehic_end_date
+                    starting_date: asDate(row.ehic_start_date),
+                    ending_date: asDate(row.ehic_end_date),
                 },
-                document_id: row.ehic_card_identification_number,
+                document_id: asString(row.ehic_card_identification_number),
                 competent_institution: {
-                    institution_id: row.ehic_institution_id,
-                    institution_name: row.ehic_institution_name,
-                    institution_country: row.ehic_institution_country_code,
-                }
+                    institution_id: asString(row.ehic_institution_id),
+                    institution_name: asString(row.ehic_institution_name),
+                    institution_country: asString(row.ehic_institution_country_code),
+                },
             },
-            document_data_version: row.document_data_version || "1.0.0",
+            document_data_version: asString(row.document_data_version) || "1.0.0",
         };
     }
 
