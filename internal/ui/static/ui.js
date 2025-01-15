@@ -1428,7 +1428,7 @@ const addUploadDocumentsUsingCsvFormArticleToContainer = () => {
                 credential_valid_to: convertToUnixTimestampOrNull(asDate(row.ehic_end_date)),
                 document_data_validation: null,
                 collect: {
-                    id: asString(row.document_id),
+                    id: asString(row.document_id || generatedDocumentId),
                     valid_until: convertToUnixTimestampOrNull(asDate(row.ehic_expiry_date)),
                 },
             },
